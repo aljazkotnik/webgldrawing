@@ -1,0 +1,7 @@
+Unfinished project.
+
+For 2D drawing it's better to use 2D rendering as it avoids an extra coordinate being created and passed along. It only saves the extra coordinate for the current time step.
+
+
+
+What about using iframe? Does that allow using contexts from other, virtual 'tabs'. Could multiple canvases be combined in that way? I think iframe just embeds the canvas, i.e. the context still counts towards the same restriction.
