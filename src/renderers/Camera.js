@@ -63,30 +63,39 @@ export default class Camera{
 
 	
  
-// Method to calculate the starting position for the camera? Based on the default field of view in radians the offset can be calculated.
+// The differences between the cameras are just the movement controls.
 export class Camera2D extends Camera{
   // The 2D camera has panning instead of changing the camera angle.
+  
+  // The z coordinate is not important here because it gets defined in the shaders as 0 in any case.
   
   constructor(){
 	super()
 	let obj = this;
+	
+	obj.k = 1;
   } // constructor
   
   
-  move(x,y){
+  move(x,y, vpp){
 	// Instead of changing the camera pitch/yaw/roll pan the view.
 	let obj = this;
+	vpp = vpp == undefined ? 1 : vpp;
 	
 	if(obj.mouseDown){
 		// Angles have to be in radians!! Division by 4 is just a relaxation parameter.
-		let diffX = (x - obj.mouseStart[0])/4;
-		let diffY = (y - obj.mouseStart[1])/4;
+		let diffX = (x - obj.mouseStart[0])*vpp;
+		let diffY = (y - obj.mouseStart[1])*vpp;
 		
 		// Limit the panning?
-		obj.x = obj.xStart + diffX;
+		obj.x = obj.xStart - diffX;
 		obj.y = obj.yStart + diffY;
 	} // if  
   } // move
+  
+  incrementZoomValue(d){
+	this.k += d;
+  } // incrementZoomValue
 } // Camera2D
 
 

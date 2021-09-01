@@ -84,7 +84,7 @@ export default class MeshRenderer{
 		  obj.updateViewport(item)
 		
 		  // Perform the actual draw
-		  gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
+		  gl.drawElements(gl.TRIANGLES, item.geometry.indicesLength, gl.UNSIGNED_SHORT, 0);
 		
 		} // if
 	}) // forEach

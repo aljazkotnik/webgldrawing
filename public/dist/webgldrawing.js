@@ -1449,34 +1449,11 @@
 
     return inputMatrix;
   }
-  function rotateXMatrix(a) {
-    var cos = Math.cos;
-    var sin = Math.sin;
-    return [1, 0, 0, 0, 0, cos(a), -sin(a), 0, 0, sin(a), cos(a), 0, 0, 0, 0, 1];
-  }
-  function rotateYMatrix(a) {
-    var cos = Math.cos;
-    var sin = Math.sin;
-    return [cos(a), 0, sin(a), 0, 0, 1, 0, 0, -sin(a), 0, cos(a), 0, 0, 0, 0, 1];
-  }
   function scaleMatrix(w, h, d) {
     return [w, 0, 0, 0, 0, h, 0, 0, 0, 0, d, 0, 0, 0, 0, 1];
   }
   function translateMatrix(x, y, z) {
     return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1];
-  }
-  function perspectiveMatrix(fieldOfViewInRadians, aspectRatio, near, far) {
-    // Construct a perspective matrix
-
-    /*
-       Field of view - the angle in radians of what's in view along the Y axis
-       Aspect Ratio - the ratio of the canvas, typically canvas.width / canvas.height
-       Near - Anything before this point in the Z direction gets clipped (resultside of the clip space)
-       Far - Anything after this point in the Z direction gets clipped (outside of the clip space)
-    */
-    var f = 1.0 / Math.tan(fieldOfViewInRadians / 2);
-    var rangeInv = 1 / (near - far);
-    return [f / aspectRatio, 0, 0, 0, 0, f, 0, 0, 0, 0, (near + far) * rangeInv, -1, 0, 0, near * far * rangeInv * 2, 0];
   }
   function invertMatrix(matrix) {
     // Adapted from: https://github.com/mrdoob/three.js/blob/master/src/math/Matrix4.js
@@ -1528,62 +1505,48 @@
     return result;
   }
 
-  var vertices = [// Front face
-  -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0, // Back face
-  -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0, // Top face
-  -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, // Bottom face
-  -1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0, // Right face
-  1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, // Left face
-  -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0];
-  var colorsOfFaces = [[0.3, 1.0, 1.0, 1.0], // Front face: cyan
-  [1.0, 0.3, 0.3, 1.0], // Back face: red
-  [0.3, 1.0, 0.3, 1.0], // Top face: green
-  [0.3, 0.3, 1.0, 1.0], // Bottom face: blue
-  [1.0, 1.0, 0.3, 1.0], // Right face: yellow
-  [1.0, 0.3, 1.0, 1.0] // Left face: purple
-  ];
-  var colors = [];
+  /*
+  A test mesh for use during transitioning.
+  */
 
-  for (var j = 0; j < 6; j++) {
-    var polygonColor = colorsOfFaces[j];
+  var vertices = [0, 0, 1, 0, 2, 0, 0, 1, 1, 1, 2, 1, 3, 1, 1, 2, 2, 2, 3, 2, 1, 3, 2, 3]; // vertices
+  // clockwise triangles. 
 
-    for (var i$1 = 0; i$1 < 4; i$1++) {
-      colors = colors.concat(polygonColor);
-    } // for
+  var indices = [0, 3, 4, 0, 4, 1, 1, 4, 5, 1, 5, 2, 4, 7, 8, 4, 8, 5, 5, 8, 9, 5, 9, 6, 7, 10, 11, 7, 11, 8]; // indices
 
-  } // for
+  var values = [0, 0, 0, 0, 1, 2, 3, 2, 4, 6, 3, 6]; // values
 
+  var Mesh2D = function Mesh2D(gl) {
+    _classCallCheck(this, Mesh2D);
 
-  var indices = [0, 1, 2, 0, 2, 3, // front
-  4, 5, 6, 4, 6, 7, // back
-  8, 9, 10, 8, 10, 11, // top
-  12, 13, 14, 12, 14, 15, // bottom
-  16, 17, 18, 16, 18, 19, // right
-  20, 21, 22, 20, 22, 23 // left
-  ];
-
-  var Cube = function Cube(gl) {
-    _classCallCheck(this, Cube);
-
-    var obj = this;
-    obj.vertices = vertices;
-    obj.indices = indices;
-    obj.colors = colors; // "In case of glBufferData, the buffer object currently bound to target is used." (https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml)
+    this.domain = {
+      x: [0, 3],
+      y: [0, 3],
+      v: [0, 6],
+      c: [0, 6]
+    };
+    var obj = this; // obj.vertices = vertices;
+    // obj.indices = indices;
+    // obj.colors = colors;
+    // "In case of glBufferData, the buffer object currently bound to target is used." (https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml)
+    // Size of the data used by each vertex is selected in 'MeshRenderer.updateAttributesAndUniforms'. However, that should really be kept with the data specification, so that MeshRenderer doesn't need to change if the data changes. Then the MeshRenderer becomes independent of the dimension of data.
 
     var verticesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     obj.verticesBuffer = verticesBuffer;
-    var colorsBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorsBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-    obj.colorsBuffer = colorsBuffer;
+    var valuesBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, valuesBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(values), gl.STATIC_DRAW);
+    obj.valuesBuffer = valuesBuffer;
     var indicesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
     obj.indicesBuffer = indicesBuffer;
+    obj.indicesLength = indices.length;
   } // constructor
-  ; // Cube
+  ; // Mesh2D
+   // getBinData
 
   var Camera = /*#__PURE__*/function () {
     // A third angle could be used to encode the camera 'roll'. 'z' is not changed in the current apps, but it would be used if the camera had 'walking' controls, e.g. through the arrow keys.
@@ -1657,6 +1620,7 @@
     _inherits(Camera2D, _Camera);
 
     var _super = _createSuper(Camera2D); // The 2D camera has panning instead of changing the camera angle.
+    // The z coordinate is not important here because it gets defined in the shaders as 0 in any case.
 
 
     function Camera2D() {
@@ -1666,28 +1630,36 @@
 
       _this = _super.call(this);
 
-      _assertThisInitialized(_this);
+      var obj = _assertThisInitialized(_this);
 
+      obj.k = 1;
       return _this;
     } // constructor
 
 
     _createClass(Camera2D, [{
       key: "move",
-      value: function move(x, y) {
+      value: function move(x, y, vpp) {
         // Instead of changing the camera pitch/yaw/roll pan the view.
         var obj = this;
+        vpp = vpp == undefined ? 1 : vpp;
 
         if (obj.mouseDown) {
           // Angles have to be in radians!! Division by 4 is just a relaxation parameter.
-          var diffX = (x - obj.mouseStart[0]) / 4;
-          var diffY = (y - obj.mouseStart[1]) / 4; // Limit the panning?
+          var diffX = (x - obj.mouseStart[0]) * vpp;
+          var diffY = (y - obj.mouseStart[1]) * vpp; // Limit the panning?
 
-          obj.x = obj.xStart + diffX;
+          obj.x = obj.xStart - diffX;
           obj.y = obj.yStart + diffY;
         } // if  
 
       } // move
+
+    }, {
+      key: "incrementZoomValue",
+      value: function incrementZoomValue(d) {
+        this.k += d;
+      } // incrementZoomValue
 
     }]);
 
@@ -1708,15 +1680,15 @@
 
   var template = "\n<div class=\"item\">\n  <div class=\"view\" style=\"width:300px; height:300px; opacity:0;\">\n  </div>\n  \n  <div class=\"label\">\n  </div>\n</div>\n";
 
-  var ViewFrame = /*#__PURE__*/function () {
-    function ViewFrame(gl) {
-      _classCallCheck(this, ViewFrame);
+  var ViewFrame2D = /*#__PURE__*/function () {
+    function ViewFrame2D(gl) {
+      _classCallCheck(this, ViewFrame2D);
 
       var obj = this;
       obj.gl = gl;
       obj.node = html2element(template); // Actual geometry to be drawn.
 
-      obj.geometry = new Cube(gl); // Transformation matrices.
+      obj.geometry = new Mesh2D(gl); // Transformation matrices.
 
       obj.transforms = {};
       /*
@@ -1727,7 +1699,9 @@
       For 3D adjusting the camera angle is better.
       */
 
-      obj.camera = new Camera2D(); // (e.clientX, e.clientY)
+      obj.camera = new Camera2D();
+      obj.camera.nearClippingPlaneDistance = -1;
+      obj.camera.farClippingPlaneDistance = 1; // (e.clientX, e.clientY)
 
       var view = obj.node.querySelector("div.view");
 
@@ -1748,7 +1722,9 @@
       };
 
       view.onwheel = function (e) {
-        e.preventDefault();
+        e.preventDefault(); // Store the zoom point.
+
+        obj.cameraMoveStart(e);
         obj.cameraChangeDist(e.deltaY);
       };
     } // constructor
@@ -1756,53 +1732,46 @@
     /* The geometry moving is implemented in 'computeModelMatrix'. User interaction movement is implemented in 'computeViewMatrix'.  */
 
 
-    _createClass(ViewFrame, [{
+    _createClass(ViewFrame2D, [{
       key: "computeModelMatrix",
       value: function computeModelMatrix(now) {
-        // This is the transformation of the scene coordinate system - not the single object coordinate system. However, since in this case the scene shows a single object, they are both the same.
-        //Scale up
-        var scale = scaleMatrix(1, 1, 1); // Rotate a slight tilt
+        // The model matrix incorporates the initial scaling and translation to make sure the data fits in view.
+        var dom = this.geometry.domain; // First translate left bottom corner to origin, scale so that top right domain corner is at 2,2, and then reposition so that domain is between -1 and 1.
 
-        var rotateX = rotateXMatrix(now * 0.002); // Rotate according to time
-
-        var rotateY = rotateYMatrix(now * 0.001); // Move the model around the scene. -z = away from screen
-        // var moveInAndOut = 20 * Math.sin(now * 0.002);
-        // var moveLeftAndRight = 15 * Math.sin(now * 0.0017);
-
-        var position = translateMatrix(0, 0, -50); // Multiply together, make sure and read them in opposite order
-
-        this.transforms.model = multiplyArrayOfMatrices([position, // step 4
-        rotateY, // step 3
-        rotateX, // step 2
-        scale // step 1
-        ]); // Performance caveat: in real production code it's best not to create new arrays and objects in a loop. This example chooses code clarity over performance.
+        var k = 2 / Math.max(dom.x[1] - dom.x[0], dom.y[1] - dom.y[0]);
+        var translateToOrigin = translateMatrix(-dom.x[0], -dom.y[0], 0);
+        var scaleToClipSpace = scaleMatrix(k, k, 1);
+        var translateToScaleSpace = translateMatrix(-1, -1, 0);
+        this.transforms.model = multiplyArrayOfMatrices([translateToScaleSpace, scaleToClipSpace, translateToOrigin]); // model
+        // Performance caveat: in real production code it's best not to create new arrays and objects in a loop. This example chooses code clarity over performance.
       } // computeModelMatrix
 
     }, {
-      key: "computePerspectiveMatrix",
-      value: function computePerspectiveMatrix() {
-        var obj = this;
-        var camera = obj.camera;
-        var width = obj.viewport[2];
-        var height = obj.viewport[3];
-        camera.aspectRatio = width / height;
-        this.transforms.projection = perspectiveMatrix(camera.fieldOfViewInRadians, camera.aspectRatio, camera.nearClippingPlaneDistance, camera.farClippingPlaneDistance);
-      } // computePerspectiveMatrix
+      key: "computeOrthographicMatrix",
+      value: function computeOrthographicMatrix() {
+        // viewport: left, bottom, width, height
+        this.transforms.projection = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
+      } // computeOrthographicMatrix
 
     }, {
       key: "computeViewMatrix",
       value: function computeViewMatrix(now) {
-        var camera = this.camera; // Move the camera around
+        var camera = this.camera; // Only panning is supported. But zooming should also be!
 
-        var position = translateMatrix(camera.x, camera.y, camera.z); // The camera can also be tilted. Try tilting it up and down. Rottion angle is in radian. Pan up and down 10 degrees. 'rotate[XYZ]Matrix' specifies rotation about the [XYZ] axis. Left - right pan is therefore rotation about Y axis.
+        var position = translateMatrix(camera.x, camera.y, camera.z); // For zooming a scaling operation should be performed. And the zooming should be based on hte pointers position. So that point should stay in hte same position, while the rest of the view scales.
+        // The values need to be in coordinate units! So the pixel location needs to be changed to value location.
 
-        var yaw = rotateYMatrix(camera.theta);
-        var pitch = rotateXMatrix(camera.phi); // Multiply together, make sure and read them in opposite order
+        var x0 = camera.mouseStart[0] * this.valuePerPixel;
+        var y0 = camera.mouseStart[1] * this.valuePerPixel;
+        var k = camera.k;
+        var translateToOrigin = translateMatrix(-x0, -y0, 0);
+        var scaleToZoomSpace = scaleMatrix(k, k, 1);
+        var translateToZoomSpace = translateMatrix(x0, y0, 0); // Inverse the operation for camera movements, because we are actually moving the geometry in the scene, not the camera itself.
+        // this.transforms.view = invertMatrix( position );
 
-        var matrix = multiplyArrayOfMatrices([position, pitch, yaw]); // Inverse the operation for camera movements, because we are actually moving the geometry in the scene, not the camera itself.
+        this.transforms.view = multiplyArrayOfMatrices([translateToZoomSpace, scaleToZoomSpace, translateToOrigin, invertMatrix(position)]); // model
+      } // computeViewMatrix
 
-        this.transforms.view = invertMatrix(matrix);
-      }
     }, {
       key: "update",
       value: function update(now) {
@@ -1810,7 +1779,7 @@
 
         obj.computeModelMatrix(now);
         obj.computeViewMatrix(now);
-        obj.computePerspectiveMatrix(0.5);
+        obj.computeOrthographicMatrix();
       } // update
 
     }, {
@@ -1827,6 +1796,18 @@
       } // get viewport
 
     }, {
+      key: "valuePerPixel",
+      get: function get() {
+        // Get the value per pixel that will definitely fit the whole domain into hte viewport.
+        var obj = this;
+        var domain = obj.geometry.domain;
+        var k = obj.camera.k;
+        var arx = k * (domain.x[1] - domain.x[0]) / obj.viewport[2];
+        var ary = k * (domain.y[1] - domain.y[0]) / obj.viewport[3];
+        return Math.min(arx, ary);
+      } // get aspectRatio
+
+    }, {
       key: "cameraMoveStart",
       value: function cameraMoveStart(e) {
         var camera = this.camera;
@@ -1837,7 +1818,7 @@
       key: "cameraMove",
       value: function cameraMove(e) {
         var camera = this.camera;
-        camera.move(e.clientX, e.clientY);
+        camera.move(e.clientX, e.clientY, this.valuePerPixel);
       } // cameraMove
 
     }, {
@@ -1850,21 +1831,24 @@
     }, {
       key: "cameraChangeDist",
       value: function cameraChangeDist(d) {
-        var camera = this.camera;
-        camera.incrementNearClippingPlane(d);
+        var camera = this.camera; // The 2D camera works off of a zoom value, because the perspective does not change. There is no perspective transformation because the data only has x/y, and to make zoom work through perspective a third z value would
+
+        camera.incrementZoomValue(0.1);
       } // cameraChangeDist
 
     }]);
 
-    return ViewFrame;
-  }(); // ViewFrame
+    return ViewFrame2D;
+  }(); // ViewFrame2D
 
-  var vertshader = "\n//Each point has a position and color\nattribute vec3 position;\nattribute vec4 color;\n\n// The transformation matrices\nuniform mat4 model;\nuniform mat4 view;\nuniform mat4 projection;\n\n// Pass the color attribute down to the fragment shader\nvarying vec4 vColor;\n\nvoid main() {\n  \n  // Pass the color down to the fragment shader\n  vColor = color;\n  \n  // Read the multiplication in reverse order, the point is taken from the original model space and moved into world space. It is then projected into clip space as a homogeneous point. Generally the W value will be something other than 1 at the end of it.\n  gl_Position = projection * view * model * vec4( position, 1.0 );\n}";
-  var fragshader = "\nprecision mediump float;\nvarying vec4 vColor;\n\nvoid main() {\n  gl_FragColor = vColor;\n}";
+  var vertshader = "\n//Each point has a position and color\nattribute vec2 position;\nattribute float value;\n\n// The transformation matrices\nuniform mat4 model;\nuniform mat4 view;\nuniform mat4 projection;\n\n// Pass the color attribute down to the fragment shader\nvarying float v_colorval;\n\nvoid main() {\n  \n  // Pass the color down to the fragment shader\n  v_colorval = value;\n  \n  // Read the multiplication in reverse order, the point is taken from the original model space and moved into world space. It is then projected into clip space as a homogeneous point. Generally the W value will be something other than 1 at the end of it.\n  gl_Position = projection * view * model * vec4( position, 0.0, 1.0 );\n}";
+  var fragshader = "\nprecision mediump float;\nvarying float v_colorval;\n\nuniform sampler2D colormap;\nuniform float u_cmin, u_cmax;\n\nvoid main() {\n  gl_FragColor = texture2D(colormap, vec2( (v_colorval-u_cmin)/(u_cmax-u_cmin), 0.5));;\n}"; // A viridis colormap. Values for color channels in frag shader should be [0, 1].
 
-  var MeshRenderer = /*#__PURE__*/function () {
-    function MeshRenderer() {
-      _classCallCheck(this, MeshRenderer);
+  var cmap = new Uint8Array([68, 1, 84, 255, 71, 19, 101, 255, 72, 36, 117, 255, 70, 52, 128, 255, 65, 68, 135, 255, 59, 82, 139, 255, 53, 95, 141, 255, 47, 108, 142, 255, 42, 120, 142, 255, 37, 132, 142, 255, 33, 145, 140, 255, 30, 156, 137, 255, 34, 168, 132, 255, 47, 180, 124, 255, 68, 191, 112, 255, 94, 201, 98, 255, 122, 209, 81, 255, 155, 217, 60, 255, 189, 223, 38, 255, 223, 227, 24, 255, 253, 231, 37, 255]); // cmap
+
+  var MeshRenderer2D = /*#__PURE__*/function () {
+    function MeshRenderer2D() {
+      _classCallCheck(this, MeshRenderer2D);
 
       var obj = this;
       var domcontainer = document.getElementById("table-top");
@@ -1872,18 +1856,27 @@
       var canvas = document.getElementById("canvas");
       obj.canvas = canvas;
       obj.canvas.width = window.innerWidth;
-      obj.canvas.height = window.innerHeight; // Grab a context
+      obj.canvas.height = window.innerHeight; // Grab a context and setup a program.
 
-      obj.gl = canvas.value = canvas.getContext("webgl", {
+      var gl = canvas.value = canvas.getContext("webgl", {
         antialias: true,
         depth: false
       });
-      obj.webglProgram = setupProgram(obj.gl);
+      obj.webglProgram = setupProgram(gl);
+      obj.gl = gl; // Make a colorbar texture.
+
+      obj.colormapTexture = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, obj.colormapTexture);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 21, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, cmap);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); // Collection of plots to draw.
+
       obj.items = [];
     } // constructor
 
 
-    _createClass(MeshRenderer, [{
+    _createClass(MeshRenderer2D, [{
       key: "draw",
       value: function draw() {
         var obj = this;
@@ -1903,7 +1896,7 @@
 
             obj.updateViewport(item); // Perform the actual draw
 
-            gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, item.geometry.indicesLength, gl.UNSIGNED_SHORT, 0);
           } // if
 
         }); // forEach
@@ -1915,7 +1908,7 @@
       key: "add",
       value: function add(id) {
         var obj = this;
-        var newplayer = new ViewFrame(obj.gl);
+        var newplayer = new ViewFrame2D(obj.gl);
         obj.domcontainer.appendChild(newplayer.node);
         obj.items.push(newplayer);
       } // add
@@ -1947,13 +1940,21 @@
 
         gl.enableVertexAttribArray(locations.position);
         gl.bindBuffer(gl.ARRAY_BUFFER, item.geometry.verticesBuffer);
-        gl.vertexAttribPointer(locations.position, 3, gl.FLOAT, false, 0, 0); // Update the colors attribute
+        gl.vertexAttribPointer(locations.position, 2, gl.FLOAT, false, 0, 0); // Update the colors attribute
 
-        gl.enableVertexAttribArray(locations.color);
-        gl.bindBuffer(gl.ARRAY_BUFFER, item.geometry.colorsBuffer);
-        gl.vertexAttribPointer(locations.color, 4, gl.FLOAT, false, 0, 0); // Update the indices attribute.
+        gl.enableVertexAttribArray(locations.value);
+        gl.bindBuffer(gl.ARRAY_BUFFER, item.geometry.valuesBuffer);
+        gl.vertexAttribPointer(locations.value, 1, gl.FLOAT, false, 0, 0); // Update the indices attribute.
 
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.geometry.indicesBuffer);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.geometry.indicesBuffer); // The 'u_cmin' and 'u_cmax' are calculated so that they map from the course [0,255] uint8 values to the data values, and from the data values to the desired colormap range. The colormap range is defined by domain.c, and the data range is defined by domain.v.
+        // 255*(domain.c[0]-domain.v[0])/(domain.v[1]-domain.v[0]
+        // 255*(domain.c[1]-domain.v[0])/(domain.v[1]-domain.v[0]
+
+        gl.uniform1f(locations.cmin, 0);
+        gl.uniform1f(locations.cmax, 6);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, obj.colormapTexture);
+        gl.uniform1i(locations.colormap, 0);
       } // updateAttributesAndUniforms
 
     }, {
@@ -1969,8 +1970,8 @@
 
     }]);
 
-    return MeshRenderer;
-  }(); // MeshRenderer
+    return MeshRenderer2D;
+  }(); // MeshRenderer2D
 
   function setupProgram(gl) {
     // WHAT EXACTLY DOES TWGL DO THAT I CAN'T DO MYSELF?
@@ -1982,11 +1983,15 @@
     var loc_model = gl.getUniformLocation(program, "model");
     var loc_view = gl.getUniformLocation(program, "view");
     var loc_projection = gl.getUniformLocation(program, "projection");
+    var loc_colormap = gl.getUniformLocation(program, "colormap");
+    var loc_cmax = gl.getUniformLocation(program, "u_cmax");
+    var loc_cmin = gl.getUniformLocation(program, "u_cmin");
     var loc_position = gl.getAttribLocation(program, "position");
-    var loc_color = gl.getAttribLocation(program, "color"); // Don't draw faces with the 'wrong triangle facing' orientation. This essentially ensures that depth is respected.
-
-    gl.enable(gl.CULL_FACE);
-    gl.enable(gl.DEPTH_TEST); // Scissor defines the part of canvas to draw to.
+    var loc_value = gl.getAttribLocation(program, "value"); // let loc_color = gl.getAttribLocation(program, "color");
+    // For 2D triangl culling and depth testing is not needed.
+    // gl.enable(gl.CULL_FACE);
+    // gl.enable(gl.DEPTH_TEST);
+    // Scissor defines the part of canvas to draw to.
 
     gl.enable(gl.SCISSOR_TEST);
     return {
@@ -1994,14 +1999,35 @@
         model: loc_model,
         view: loc_view,
         projection: loc_projection,
+        colormap: loc_colormap,
+        cmax: loc_cmax,
+        cmin: loc_cmin,
         position: loc_position,
-        color: loc_color
+        value: loc_value
       },
       program: program
     };
   } // setupProgram
 
-  var renderer = new MeshRenderer(); // Add the players in. The HTML will position hte frames.
+  /* 3D
+  import MeshRenderer from "./renderers/MeshRenderer.js";
+
+  // The MeshRenderer is the engine that draws the scene.
+  let renderer = new MeshRenderer();
+
+  // Add the players in. The HTML will position hte frames.
+  for(let i=0; i<100; i++){
+  	renderer.add(i)
+  } // for
+
+
+  // In the end the renderer will have to wait for the data to be loaded. Therefore the update loop should be outside.
+  renderer.draw()
+
+  console.log(renderer)
+  */
+
+  var renderer = new MeshRenderer2D(); // Add the players in. The HTML will position hte frames.
 
   for (var i = 0; i < 100; i++) {
     renderer.add(i);
@@ -2010,8 +2036,7 @@
 
 
   renderer.draw();
-  console.log(renderer); // It works!!! 
-
+  console.log(renderer);
   /* To do: 
     DONE: - allow scrolling
     DONE: - add style to frames.
@@ -2024,7 +2049,9 @@
     DONE: (panning relaxation must be manually adjusted) - 2D and 3D cameras.
     - dragging frames around
     - pinch gestures
+    - auto set the original domain (width, height, near/far plane)
   */
+  // For 2D drawing the transformation matrices have to be different. That means that the ViewFrame needs to be changed, as that implements the matrices.
 
 }());
 //# sourceMappingURL=webgldrawing.js.map

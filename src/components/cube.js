@@ -73,11 +73,14 @@ export default class Cube{
   constructor(gl){
 	let obj = this;
 
-    obj.vertices = vertices;
-    obj.indices = indices;
-    obj.colors = colors;
+    // obj.vertices = vertices;
+    // obj.indices = indices;
+    // obj.colors = colors;
 
 	// "In case of glBufferData, the buffer object currently bound to target is used." (https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml)
+	
+	
+	// Size of the data used by each vertex is selected in 'MeshRenderer.updateAttributesAndUniforms'. However, that should really be kept with the data specification, so that MeshRenderer doesn't need to change if the data changes. Then the MeshRenderer becomes independent of the dimension of data.
     let verticesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
@@ -92,6 +95,7 @@ export default class Cube{
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 	obj.indicesBuffer = indicesBuffer;
+	obj.indicesLength = indices.length;
   } // constructor
   
   
