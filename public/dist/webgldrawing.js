@@ -1632,6 +1632,7 @@
 
       var obj = _assertThisInitialized(_this);
 
+      obj.zoomPointClip = [0, 0];
       obj.k = 1;
       return _this;
     } // constructor
@@ -1645,7 +1646,6 @@
         vpp = vpp == undefined ? 1 : vpp;
 
         if (obj.mouseDown) {
-          // Angles have to be in radians!! Division by 4 is just a relaxation parameter.
           var diffX = (x - obj.mouseStart[0]) * vpp;
           var diffY = (y - obj.mouseStart[1]) * vpp; // Limit the panning?
 
@@ -1678,7 +1678,7 @@
     return template.content.firstChild;
   } // html2element
 
-  var template = "\n<div class=\"item\">\n  <div class=\"view\" style=\"width:300px; height:300px; opacity:0;\">\n  </div>\n  \n  <div class=\"label\">\n  </div>\n</div>\n";
+  var template = "\n<div class=\"item\">\n  <div class=\"view\" style=\"width:300px; height:300px; opacity:0.001;\">\n  </div>\n  \n  <div class=\"label\">\n  </div>\n</div>\n";
 
   var ViewFrame2D = /*#__PURE__*/function () {
     function ViewFrame2D(gl) {
@@ -1699,9 +1699,7 @@
       For 3D adjusting the camera angle is better.
       */
 
-      obj.camera = new Camera2D();
-      obj.camera.nearClippingPlaneDistance = -1;
-      obj.camera.farClippingPlaneDistance = 1; // (e.clientX, e.clientY)
+      obj.camera = new Camera2D(); // (e.clientX, e.clientY)
 
       var view = obj.node.querySelector("div.view");
 
@@ -1719,14 +1717,16 @@
 
       view.onmouseleave = function (e) {
         obj.cameraMoveEnd();
-      };
+      }; // adding a zoom directly causes the passive event warning to come up in the console, and also stops the wheel event from being properly executed.
+      // If the div is empty the event does not occur!
 
-      view.onwheel = function (e) {
-        e.preventDefault(); // Store the zoom point.
 
-        obj.cameraMoveStart(e);
-        obj.cameraChangeDist(e.deltaY);
-      };
+      view.addEventListener("wheel", function (e) {
+        e.preventDefault();
+        obj.cameraZoom(e);
+      }, {
+        passive: false
+      });
     } // constructor
 
     /* The geometry moving is implemented in 'computeModelMatrix'. User interaction movement is implemented in 'computeViewMatrix'.  */
@@ -1756,20 +1756,25 @@
     }, {
       key: "computeViewMatrix",
       value: function computeViewMatrix(now) {
-        var camera = this.camera; // Only panning is supported. But zooming should also be!
+        var camera = this.camera; // PANNING
 
         var position = translateMatrix(camera.x, camera.y, camera.z); // For zooming a scaling operation should be performed. And the zooming should be based on hte pointers position. So that point should stay in hte same position, while the rest of the view scales.
-        // The values need to be in coordinate units! So the pixel location needs to be changed to value location.
+        // The values need to be in coordinate units! So the pixel location needs to be changed to value location. Mouse locations are per client window, and so must be corrected for viewport location to ensure consistent zooming behavior. Initially the zooming is not needed.
+        // THE ZOOM POINT MUST BE CONVERTED TO THE CLIP SPACE FROM PIXEL COORDINATES!!! I want to translate to 0,0. That's the middle of the viewport. y has to be calculated in terms of client window.
+        // For zooming I want the zoomed point to remain where it is at the moment, and everything around it should be scaled. So, for that to happen the mesh needs to be translated by the location of the point in clip coordinates, scaled, and translated back to the same coordinates in pixel values.
 
-        var x0 = camera.mouseStart[0] * this.valuePerPixel;
-        var y0 = camera.mouseStart[1] * this.valuePerPixel;
-        var k = camera.k;
-        var translateToOrigin = translateMatrix(-x0, -y0, 0);
+        var dx = camera.zoomPointClip[0];
+        var dy = camera.zoomPointClip[1];
+        var k = camera.k; // let x0 = camera.mouseStart[0] * this.valuePerPixel;
+        // let y0 = camera.mouseStart[1] * this.valuePerPixel;
+        // let k  = camera.k;
+
+        var translateToOrigin = translateMatrix(-dx, -dy, 0);
         var scaleToZoomSpace = scaleMatrix(k, k, 1);
-        var translateToZoomSpace = translateMatrix(x0, y0, 0); // Inverse the operation for camera movements, because we are actually moving the geometry in the scene, not the camera itself.
+        var translateToZoomSpace = translateMatrix(dx, dy, 0); // Inverse the operation for camera movements, because we are actually moving the geometry in the scene, not the camera itself.
         // this.transforms.view = invertMatrix( position );
 
-        this.transforms.view = multiplyArrayOfMatrices([translateToZoomSpace, scaleToZoomSpace, translateToOrigin, invertMatrix(position)]); // model
+        this.transforms.view = multiplyArrayOfMatrices([invertMatrix(position), translateToZoomSpace, scaleToZoomSpace, translateToOrigin]); // model
       } // computeViewMatrix
 
     }, {
@@ -1787,7 +1792,8 @@
       get: function get() {
         var obj = this;
         var gl = obj.gl;
-        var rect = obj.node.querySelector("div.view").getBoundingClientRect();
+        var rect = obj.node.querySelector("div.view").getBoundingClientRect(); // The viewport bottom is measured from the bottom of the screen.
+
         var width = rect.right - rect.left;
         var height = rect.bottom - rect.top;
         var left = rect.left;
@@ -1798,13 +1804,11 @@
     }, {
       key: "valuePerPixel",
       get: function get() {
-        // Get the value per pixel that will definitely fit the whole domain into hte viewport.
+        // The zoom transformation will work in the clip space, which is within [-1,1]. Therefore the range is 2, and independent of hte domain of the data.
         var obj = this;
-        var domain = obj.geometry.domain;
-        var k = obj.camera.k;
-        var arx = k * (domain.x[1] - domain.x[0]) / obj.viewport[2];
-        var ary = k * (domain.y[1] - domain.y[0]) / obj.viewport[3];
-        return Math.min(arx, ary);
+        var arx = obj.camera.k * 2 / obj.viewport[2];
+        var ary = obj.camera.k * 2 / obj.viewport[3];
+        return Math.max(arx, ary);
       } // get aspectRatio
 
     }, {
@@ -1829,12 +1833,31 @@
       } // cameraMoveEnd
 
     }, {
-      key: "cameraChangeDist",
-      value: function cameraChangeDist(d) {
-        var camera = this.camera; // The 2D camera works off of a zoom value, because the perspective does not change. There is no perspective transformation because the data only has x/y, and to make zoom work through perspective a third z value would
+      key: "cameraZoom",
+      value: function cameraZoom(e) {
+        var obj = this; // The 2D camera works off of a zoom value, because the perspective does not change. There is no perspective transformation because the data only has x/y, and to make zoom work through perspective a third z value would have to be spliced into the ArrayBuffer data.
+        // The first translate can be made using the clip coordinates. The translate back after scaling has to be done using pixels, because the point should stay at the same pixel location. Store both the clip coordinate, and the pixel coordinate.
 
-        camera.incrementZoomValue(0.1);
+        obj.camera.zoomPointClip = obj.pixel2clip([e.clientX, e.clientY]);
+        obj.camera.incrementZoomValue(e.deltaY < 0 ? 0.1 : -0.1);
       } // cameraChangeDist
+
+    }, {
+      key: "pixel2clip",
+      value: function pixel2clip(p) {
+        // Pixel values can be obtained from the event.
+        var obj = this;
+        var rect = obj.node.querySelector("div.view").getBoundingClientRect(); // Clicked point within the viewport, in terms of pixels.
+
+        var x_px = p[0] - rect.left;
+        var y_px = p[1] - rect.top; // Convert to clip coordinates. Camera.x is in data coordinates.
+
+        var x_clip = 2 * (x_px / (rect.right - rect.left)) - 1;
+        var y_clip = -2 * (y_px / (rect.bottom - rect.top)) + 1;
+        return [x_clip, y_clip];
+      } // pixel2clip
+      // When finding the return transformation I'm figuring out what the translation of the left lower corner should be to keep a particular point at the same pixel location.
+      // But the model matrix converts from the data domain to hte clip domain.
 
     }]);
 
@@ -1921,6 +1944,8 @@
         gl.scissor.apply(gl, _toConsumableArray(item.viewport));
         gl.clearColor.apply(gl, [0, 0, 0, 0]);
       } // updateViewport
+      // Maybe the update could be performed by the item itself. That way both 2D and 3D objects could potentially be drawn alongside. 
+      // But the programme declares the variables it expects, so the program would have to be redone also, which means another webgl instance is needed, and thus another canvas.
 
     }, {
       key: "updateAttributesAndUniforms",
@@ -2049,7 +2074,7 @@
     DONE: (panning relaxation must be manually adjusted) - 2D and 3D cameras.
     - dragging frames around
     - pinch gestures
-    - auto set the original domain (width, height, near/far plane)
+    - auto set the original domain (DONE (width, height), near/far plane)
   */
   // For 2D drawing the transformation matrices have to be different. That means that the ViewFrame needs to be changed, as that implements the matrices.
 

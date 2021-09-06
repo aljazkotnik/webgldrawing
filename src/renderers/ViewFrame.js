@@ -143,7 +143,7 @@ export default class ViewFrame{
 	// Compute our matrices
     obj.computeModelMatrix( now );
     obj.computeViewMatrix( now );
-    obj.computePerspectiveMatrix( 0.5 );
+    obj.computePerspectiveMatrix( );
   } // update
   
   get viewport(){

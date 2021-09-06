@@ -73,6 +73,7 @@ export class Camera2D extends Camera{
 	super()
 	let obj = this;
 	
+	obj.zoomPointClip = [0,0]
 	obj.k = 1;
   } // constructor
   
@@ -83,7 +84,6 @@ export class Camera2D extends Camera{
 	vpp = vpp == undefined ? 1 : vpp;
 	
 	if(obj.mouseDown){
-		// Angles have to be in radians!! Division by 4 is just a relaxation parameter.
 		let diffX = (x - obj.mouseStart[0])*vpp;
 		let diffY = (y - obj.mouseStart[1])*vpp;
 		

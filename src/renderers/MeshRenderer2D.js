@@ -161,6 +161,11 @@ export default class MeshRenderer2D{
 	gl.clearColor(...[0,0,0,0]);  
   } // updateViewport
   
+  
+  // Maybe the update could be performed by the item itself. That way both 2D and 3D objects could potentially be drawn alongside. 
+  // But the programme declares the variables it expects, so the program would have to be redone also, which means another webgl instance is needed, and thus another canvas.
+  
+  
   updateAttributesAndUniforms(item){
 	// 'item' is a 'ViewFrame' instance. This method needs to update the transformation matrices, which are owned by the 'ViewFrame' instance, as well as the geometry buffers owned by the 'ViewFrame.geometry' instance.
 	// 'transforms' should have the 'model', 'projection', and 'view' transform 4x4 matrices that will be used to draw the scene.
