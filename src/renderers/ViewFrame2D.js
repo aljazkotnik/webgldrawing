@@ -1,7 +1,22 @@
-import * as twgl from "twgl.js";
-import {mat4} from "gl-matrix";
+/*
+The MeshRenderer should be the one initiating data collection/deleting because it's the only one that can determine which ViewFrames should currently be played.
 
+Therefroe the ViewFrames should have a 'clear' method, which instructs the geometry to delete all the buffer data apart from the current. Furthermore, the ViewFrames need to have a method to tell the geometry to load additional data, and about which time step it should be anchored.
 
+When moving the ViewFrames the player should pause automatically. Maybe it will be possible to keep updating as the frame moves also. But that would then not allow ViewFrames that are behind other ViewFrames to delete their buffers, as they may become visible as the other ViewFrame moves. Maybe for them to offload there should be at least two things covering them up?
+
+The ViewFrame will also host the playbar in the end. So then the MeshRenderer can collect the time spans from the ViewFrames in view, and then time step through them.
+
+Should there just be a minimize button on the ViewFrame so the user can switch a particular small multiple off without burying it under others?
+
+How to pick the current time to play? Should the requestAnimationFrame be running continuously in the background? Yes - otherwise there are no interactions.
+
+Maybe for now just have a single play pause button? And just time step through in percentage terms?
+
+What will happen for simulations with very different time steps? Should just the closest frame be selected? Maybe the simplicity is best. Simulations with large time steps will just not change data that often.
+
+Could the mesh renderer just do the rendering all the time, and teh ViewFrames decide whether or not they need to be played? Then I would only need to figure out how to link multiple views together. Maybe like a chain button that turns on, and when clicking one play button they would all start? So the view would send a command to the scene, and then the scene would start all of the players.
+*/
 function html2element(html){
 	let template = document.createElement('template'); 
 	template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
@@ -12,7 +27,7 @@ function html2element(html){
 import {scaleMatrix, translateMatrix, rotateXMatrix, rotateYMatrix, rotateZMatrix, multiplyArrayOfMatrices, perspectiveMatrix, orthographicMatrix, invertMatrix} from "./matrices.js"
 
 
-
+//import Mesh2DTest from "../components/Mesh2DTest.js";
 import Mesh2D from "../components/Mesh2D.js";
 import { Camera2D } from "./Camera.js";
 
@@ -71,7 +86,7 @@ export default class ViewFrame2D{
   
   
   /* The geometry moving is implemented in 'computeModelMatrix'. User interaction movement is implemented in 'computeViewMatrix'.  */
-  computeModelMatrix( now ) {
+  computeModelMatrix() {
     // The model matrix incorporates the initial scaling and translation to make sure the data fits in view.
 	let dom = this.geometry.domain;
 	
@@ -103,7 +118,7 @@ export default class ViewFrame2D{
 	]
   } // computeOrthographicMatrix
   
-  computeViewMatrix( now ) {
+  computeViewMatrix() {
 	let camera = this.camera;
 	
 	// PANNING
@@ -146,13 +161,15 @@ export default class ViewFrame2D{
   } // computeViewMatrix
   
   
-  update(now){
+  update(){
 	let obj = this;
 	
+	// 
+	
 	// Compute our matrices
-    obj.computeModelMatrix( now );
-    obj.computeViewMatrix( now );
-    obj.computeOrthographicMatrix( );
+    obj.computeModelMatrix();
+    obj.computeViewMatrix();
+    obj.computeOrthographicMatrix();
   } // update
   
   get viewport(){

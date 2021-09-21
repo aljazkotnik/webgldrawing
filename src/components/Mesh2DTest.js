@@ -114,7 +114,7 @@ export default class Mesh2D{
 	
     let indicesBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(indices), gl.STATIC_DRAW);
 	obj.indicesBuffer = indicesBuffer;
 	obj.indicesLength = indices.length;
   } // constructor

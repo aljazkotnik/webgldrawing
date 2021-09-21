@@ -25,12 +25,12 @@ uniform mat4 view;
 uniform mat4 projection;
 
 // Pass the color attribute down to the fragment shader
-varying float v_colorval;
+varying float v_uint_colorval;
 
 void main() {
   
-  // Pass the color down to the fragment shader
-  v_colorval = value;
+  // Pass the color down to the fragment shader.
+  v_uint_colorval = value;
   
   // Read the multiplication in reverse order, the point is taken from the original model space and moved into world space. It is then projected into clip space as a homogeneous point. Generally the W value will be something other than 1 at the end of it.
   gl_Position = projection * view * model * vec4( position, 0.0, 1.0 );
@@ -39,13 +39,14 @@ void main() {
 
 let fragshader = `
 precision mediump float;
-varying float v_colorval;
+varying float v_uint_colorval;
 
 uniform sampler2D colormap;
 uniform float u_cmin, u_cmax;
+uniform float u_uint_cmin, u_uint_cmax;
 
 void main() {
-  gl_FragColor = texture2D(colormap, vec2( (v_colorval-u_cmin)/(u_cmax-u_cmin), 0.5));;
+  gl_FragColor = texture2D(colormap, vec2( ( (v_uint_colorval/255.0*(u_uint_cmax-u_uint_cmin)+u_uint_cmin) - u_cmin)/(u_cmax-u_cmin), 0.5));;
 }`;
 
 
@@ -91,12 +92,18 @@ export default class MeshRenderer2D{
 
 	// Grab a context and setup a program.
 	let gl = canvas.value = canvas.getContext("webgl", {antialias: true, depth: false});
+	
+	// The extension is needed to allow indices to be uint32.
+	let uints_for_indices = gl.getExtension("OES_element_index_uint");
+	console.log("can uints be used? ", uints_for_indices)
+	
 	obj.webglProgram = setupProgram(gl);
 	obj.gl = gl;
 	
 	
 	
-	// Make a colorbar texture.
+	// The texture represents a solorbar, and stores the color values. It is indexed on a range of 0 - 1. The index is computed in the colorshader.
+	// gl.texImage2D( ... , width, height, border, format, type, ArrayBuffer)
 	obj.colormapTexture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, obj.colormapTexture);
 	gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 21, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, cmap);
@@ -127,8 +134,8 @@ export default class MeshRenderer2D{
 	obj.items.forEach(item=>{
 		// Check whether the item is visible or not.
 		if( obj.isItemVisible(item) ){
-		  // Update the ViewFrame to calculate new transform matrices.
-		  item.update(now)
+		  // Update the ViewFrame to calculate new transform matrices. Nothing (camera, model, zoom) moves as a function of time.
+		  item.update()
 		
 		  // Update the data going to the GPU
 		  obj.updateAttributesAndUniforms(item);
@@ -136,8 +143,8 @@ export default class MeshRenderer2D{
 		  // Set the rectangle to draw to. Scissor clips, viewport transforms the space. The viewport seems to be doing the scissoring also...
 		  obj.updateViewport(item)
 		
-		  // Perform the actual draw
-		  gl.drawElements(gl.TRIANGLES, item.geometry.indicesLength, gl.UNSIGNED_SHORT, 0);
+		  // Perform the actual draw. gl.UNSIGNED_INT allows teh use of Uint32Array indices, but the 'OES_element_index_uint' extension had to be loaded.
+		  gl.drawElements(gl.TRIANGLES, item.geometry.indicesLength, gl.UNSIGNED_INT, 0);
 		
 		} // if
 	}) // forEach
@@ -198,11 +205,26 @@ export default class MeshRenderer2D{
 
 
 
-// The 'u_cmin' and 'u_cmax' are calculated so that they map from the course [0,255] uint8 values to the data values, and from the data values to the desired colormap range. The colormap range is defined by domain.c, and the data range is defined by domain.v.
-// 255*(domain.c[0]-domain.v[0])/(domain.v[1]-domain.v[0]
-// 255*(domain.c[1]-domain.v[0])/(domain.v[1]-domain.v[0]
-	gl.uniform1f(locations.cmin, 0)
-	gl.uniform1f(locations.cmax, 6)
+
+
+	/* 
+	vec2( (v_colorval-u_cmin)/(u_cmax-u_cmin), 0.5)
+
+	v_colorval : [0, 255]
+	u_cmin : variable min value
+	u_cmax : variable max value
+
+	First I need to map from [0, 255] to [a,b], then to [0,1]. The first [0,255] represents the frame specific uint encoding. The second encoding allows all the values to be drawn to the correct value across several files. However, the [0, 255] values are pushed to the GPU straight away, and both mappings must occur there.
+	*/
+
+	// cmin/cmax give the global (for all small multiples) colorbar range.
+	gl.uniform1f(locations.cmin, obj.globalColormapRange[0] ) // 0   880
+	gl.uniform1f(locations.cmax, obj.globalColormapRange[1] ) // 255   920
+	
+	// uint_cmin/uint_cmax give the local (particular small multiple) colorbar range,
+	gl.uniform1f(locations.uint_cmin, item.geometry.currentUintRange[0] ) // 0   880
+	gl.uniform1f(locations.uint_cmax, item.geometry.currentUintRange[1] ) // 255   920
+	
 	
 	gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, obj.colormapTexture);
@@ -213,7 +235,7 @@ export default class MeshRenderer2D{
   
  
   isItemVisible(item){
-	// Check whether the current item is visible. Extend later to check whether other items obscure the current item.
+	// Check whether the current item is visible. (!!!!) Extend later to check whether other items obscure the current item.
 	let obj = this;
 	
 	let gl = obj.gl;
@@ -225,6 +247,20 @@ export default class MeshRenderer2D{
 	
 	return !isOffScreen
   } // isItemVisible
+  
+  get globalColormapRange(){
+	let obj = this;
+	
+	return obj.items.reduce((acc,item)=>{
+		// v is the domain across all the frames of an unsteady simulation instance.
+		let v = item.geometry.domain.v;
+		acc[0] = acc[0] > v[0] ? v[0] : acc[0];
+		acc[1] = acc[1] < v[1] ? v[1] : acc[1];
+		return acc
+	}, [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])
+	
+	
+  } // globalColormapRange
 
 } // MeshRenderer2D
 
@@ -245,13 +281,15 @@ function setupProgram(gl){
 	let loc_colormap = gl.getUniformLocation(program, "colormap");
 	let loc_cmax = gl.getUniformLocation(program, "u_cmax");
 	let loc_cmin = gl.getUniformLocation(program, "u_cmin");
+	let loc_uint_cmax = gl.getUniformLocation(program, "u_uint_cmax");
+	let loc_uint_cmin = gl.getUniformLocation(program, "u_uint_cmin");
 	
     let loc_position = gl.getAttribLocation(program, "position");
 	let loc_value = gl.getAttribLocation(program, "value");
     // let loc_color = gl.getAttribLocation(program, "color");
 
 
-	// For 2D triangl culling and depth testing is not needed.
+	// For 2D triangle meshes culling and depth testing is not needed.
 	// gl.enable(gl.CULL_FACE);
     // gl.enable(gl.DEPTH_TEST);
 	
@@ -267,6 +305,8 @@ function setupProgram(gl){
 			colormap: loc_colormap,
 			cmax: loc_cmax,
 			cmin: loc_cmin,
+			uint_cmax: loc_uint_cmax,
+			uint_cmin: loc_uint_cmin,
 			position: loc_position,
 			value: loc_value
 		},

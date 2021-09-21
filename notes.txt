@@ -1,0 +1,10 @@
+array buffer has 'byteLength' property.
+
+allow the renderer to just pass in the current time. Which is the current time? Just keep all views linked for now. Maybe allow the views to be linked by percentage? Anyway, this can be left for later, along with syncing up timebars.
+
+The item then needs to serve the right data.
+
+Depending on the incoming time and the data memory used the frames should be buffered. For now keep to forward buffering only. Although for playing back and forward it's better to have backwards/forwards buffering.
+
+zooming
+actual data

@@ -1516,37 +1516,86 @@
 
   var values = [0, 0, 0, 0, 1, 2, 3, 2, 4, 6, 3, 6]; // values
 
-  var Mesh2D = function Mesh2D(gl) {
-    _classCallCheck(this, Mesh2D);
+  var Mesh2D = /*#__PURE__*/function () {
+    function Mesh2D(gl) {
+      _classCallCheck(this, Mesh2D);
 
-    this.domain = {
-      x: [0, 3],
-      y: [0, 3],
-      v: [0, 6],
-      c: [0, 6]
-    };
-    var obj = this; // obj.vertices = vertices;
-    // obj.indices = indices;
-    // obj.colors = colors;
-    // "In case of glBufferData, the buffer object currently bound to target is used." (https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml)
-    // Size of the data used by each vertex is selected in 'MeshRenderer.updateAttributesAndUniforms'. However, that should really be kept with the data specification, so that MeshRenderer doesn't need to change if the data changes. Then the MeshRenderer becomes independent of the dimension of data.
+      this.domain = {
+        x: [-0.76, 1.01],
+        y: [-0.1, 1],
+        v: [870.4389253677576, 977.0020293037556]
+      };
+      var obj = this; // obj.vertices = vertices;
+      // obj.indices = indices;
+      // obj.colors = colors;
+      // "In case of glBufferData, the buffer object currently bound to target is used." (https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml)
+      // Size of the data used by each vertex is selected in 'MeshRenderer.updateAttributesAndUniforms'. However, that should really be kept with the data specification, so that MeshRenderer doesn't need to change if the data changes. Then the MeshRenderer becomes independent of the dimension of data.
 
-    var verticesBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-    obj.verticesBuffer = verticesBuffer;
-    var valuesBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, valuesBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(values), gl.STATIC_DRAW);
-    obj.valuesBuffer = valuesBuffer;
-    var indicesBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
-    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
-    obj.indicesBuffer = indicesBuffer;
-    obj.indicesLength = indices.length;
-  } // constructor
-  ; // Mesh2D
-   // getBinData
+      var verticesBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+      obj.verticesBuffer = verticesBuffer;
+      var valuesBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, valuesBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(values), gl.STATIC_DRAW);
+      obj.valuesBuffer = valuesBuffer;
+      var indicesBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(indices), gl.STATIC_DRAW);
+      obj.indicesBuffer = indicesBuffer;
+      obj.indicesLength = indices.length; // Imagine that some metadata was loaded in.
+      // fetch("./data/coarsemetadata.json").then(res=>res.json());
+      // First start by drawing a static representation of actual data. Wait to load, and then update the buffer.
+
+      var content = {
+        indices: "./data/indices.bin",
+        vertices: "./data/vertices.bin",
+        values: "./data/coarse_entropy_t_0.bin"
+      }; // content
+      // But all three need to be available at the same time before rendering.
+
+      var verticesPromise = loadBinData(content.vertices).then(function (ab) {
+        return new Float32Array(ab);
+      });
+      var valuesPromise = loadBinData(content.values).then(function (ab) {
+        return new Uint8Array(ab);
+      }).then(function (ui8) {
+        return Float32Array.from(ui8);
+      });
+      var indicesPromise = loadBinData(content.indices).then(function (ab) {
+        return new Uint32Array(ab);
+      });
+      Promise.all([verticesPromise, valuesPromise, indicesPromise]).then(function (d) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, d[0], gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ARRAY_BUFFER, valuesBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, d[1], gl.STATIC_DRAW);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, d[2], gl.STATIC_DRAW);
+        obj.indicesLength = d[2].length;
+      }); // then
+    } // constructor
+    // The 'values' are stored as a 'scaled uint8 array' to save memory. The values are retransformed back into the original domain on the GPU by mapping them from [0,255] to 'currentUintRange', which is obtained from the metadata file of this unsteady simulation.
+    // The MeshRenderer2D looks at the domain to determine what the full value domain of this small multiple will be. It looks at the c to determine the uint compression domain.
+
+
+    _createClass(Mesh2D, [{
+      key: "currentUintRange",
+      get: function get() {
+        // This used to be in domain under 'c', but was moved here as it will change as the frames change.
+        return [871, 977];
+      } // currentUintRange
+
+    }]);
+
+    return Mesh2D;
+  }(); // Mesh2D
+
+  function loadBinData(filename) {
+    return fetch(filename).then(function (res) {
+      return res.arrayBuffer();
+    });
+  } // getBinData
 
   var Camera = /*#__PURE__*/function () {
     // A third angle could be used to encode the camera 'roll'. 'z' is not changed in the current apps, but it would be used if the camera had 'walking' controls, e.g. through the arrow keys.
@@ -1671,6 +1720,26 @@
     return Math.max(Math.min(v, b), a);
   } // constrainValue
 
+  /*
+  The MeshRenderer should be the one initiating data collection/deleting because it's the only one that can determine which ViewFrames should currently be played.
+
+  Therefroe the ViewFrames should have a 'clear' method, which instructs the geometry to delete all the buffer data apart from the current. Furthermore, the ViewFrames need to have a method to tell the geometry to load additional data, and about which time step it should be anchored.
+
+  When moving the ViewFrames the player should pause automatically. Maybe it will be possible to keep updating as the frame moves also. But that would then not allow ViewFrames that are behind other ViewFrames to delete their buffers, as they may become visible as the other ViewFrame moves. Maybe for them to offload there should be at least two things covering them up?
+
+  The ViewFrame will also host the playbar in the end. So then the MeshRenderer can collect the time spans from the ViewFrames in view, and then time step through them.
+
+  Should there just be a minimize button on the ViewFrame so the user can switch a particular small multiple off without burying it under others?
+
+  How to pick the current time to play? Should the requestAnimationFrame be running continuously in the background? Yes - otherwise there are no interactions.
+
+  Maybe for now just have a single play pause button? And just time step through in percentage terms?
+
+  What will happen for simulations with very different time steps? Should just the closest frame be selected? Maybe the simplicity is best. Simulations with large time steps will just not change data that often.
+
+  Could the mesh renderer just do the rendering all the time, and teh ViewFrames decide whether or not they need to be played? Then I would only need to figure out how to link multiple views together. Maybe like a chain button that turns on, and when clicking one play button they would all start? So the view would send a command to the scene, and then the scene would start all of the players.
+  */
+
   function html2element(html) {
     var template = document.createElement('template');
     template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
@@ -1734,7 +1803,7 @@
 
     _createClass(ViewFrame2D, [{
       key: "computeModelMatrix",
-      value: function computeModelMatrix(now) {
+      value: function computeModelMatrix() {
         // The model matrix incorporates the initial scaling and translation to make sure the data fits in view.
         var dom = this.geometry.domain; // First translate left bottom corner to origin, scale so that top right domain corner is at 2,2, and then reposition so that domain is between -1 and 1.
 
@@ -1755,7 +1824,7 @@
 
     }, {
       key: "computeViewMatrix",
-      value: function computeViewMatrix(now) {
+      value: function computeViewMatrix() {
         var camera = this.camera; // PANNING
 
         var position = translateMatrix(camera.x, camera.y, camera.z); // For zooming a scaling operation should be performed. And the zooming should be based on hte pointers position. So that point should stay in hte same position, while the rest of the view scales.
@@ -1779,11 +1848,12 @@
 
     }, {
       key: "update",
-      value: function update(now) {
-        var obj = this; // Compute our matrices
+      value: function update() {
+        var obj = this; // 
+        // Compute our matrices
 
-        obj.computeModelMatrix(now);
-        obj.computeViewMatrix(now);
+        obj.computeModelMatrix();
+        obj.computeViewMatrix();
         obj.computeOrthographicMatrix();
       } // update
 
@@ -1864,8 +1934,8 @@
     return ViewFrame2D;
   }(); // ViewFrame2D
 
-  var vertshader = "\n//Each point has a position and color\nattribute vec2 position;\nattribute float value;\n\n// The transformation matrices\nuniform mat4 model;\nuniform mat4 view;\nuniform mat4 projection;\n\n// Pass the color attribute down to the fragment shader\nvarying float v_colorval;\n\nvoid main() {\n  \n  // Pass the color down to the fragment shader\n  v_colorval = value;\n  \n  // Read the multiplication in reverse order, the point is taken from the original model space and moved into world space. It is then projected into clip space as a homogeneous point. Generally the W value will be something other than 1 at the end of it.\n  gl_Position = projection * view * model * vec4( position, 0.0, 1.0 );\n}";
-  var fragshader = "\nprecision mediump float;\nvarying float v_colorval;\n\nuniform sampler2D colormap;\nuniform float u_cmin, u_cmax;\n\nvoid main() {\n  gl_FragColor = texture2D(colormap, vec2( (v_colorval-u_cmin)/(u_cmax-u_cmin), 0.5));;\n}"; // A viridis colormap. Values for color channels in frag shader should be [0, 1].
+  var vertshader = "\n//Each point has a position and color\nattribute vec2 position;\nattribute float value;\n\n// The transformation matrices\nuniform mat4 model;\nuniform mat4 view;\nuniform mat4 projection;\n\n// Pass the color attribute down to the fragment shader\nvarying float v_uint_colorval;\n\nvoid main() {\n  \n  // Pass the color down to the fragment shader.\n  v_uint_colorval = value;\n  \n  // Read the multiplication in reverse order, the point is taken from the original model space and moved into world space. It is then projected into clip space as a homogeneous point. Generally the W value will be something other than 1 at the end of it.\n  gl_Position = projection * view * model * vec4( position, 0.0, 1.0 );\n}";
+  var fragshader = "\nprecision mediump float;\nvarying float v_uint_colorval;\n\nuniform sampler2D colormap;\nuniform float u_cmin, u_cmax;\nuniform float u_uint_cmin, u_uint_cmax;\n\nvoid main() {\n  gl_FragColor = texture2D(colormap, vec2( ( (v_uint_colorval/255.0*(u_uint_cmax-u_uint_cmin)+u_uint_cmin) - u_cmin)/(u_cmax-u_cmin), 0.5));;\n}"; // A viridis colormap. Values for color channels in frag shader should be [0, 1].
 
   var cmap = new Uint8Array([68, 1, 84, 255, 71, 19, 101, 255, 72, 36, 117, 255, 70, 52, 128, 255, 65, 68, 135, 255, 59, 82, 139, 255, 53, 95, 141, 255, 47, 108, 142, 255, 42, 120, 142, 255, 37, 132, 142, 255, 33, 145, 140, 255, 30, 156, 137, 255, 34, 168, 132, 255, 47, 180, 124, 255, 68, 191, 112, 255, 94, 201, 98, 255, 122, 209, 81, 255, 155, 217, 60, 255, 189, 223, 38, 255, 223, 227, 24, 255, 253, 231, 37, 255]); // cmap
 
@@ -1884,9 +1954,13 @@
       var gl = canvas.value = canvas.getContext("webgl", {
         antialias: true,
         depth: false
-      });
+      }); // The extension is needed to allow indices to be uint32.
+
+      var uints_for_indices = gl.getExtension("OES_element_index_uint");
+      console.log("can uints be used? ", uints_for_indices);
       obj.webglProgram = setupProgram(gl);
-      obj.gl = gl; // Make a colorbar texture.
+      obj.gl = gl; // The texture represents a solorbar, and stores the color values. It is indexed on a range of 0 - 1. The index is computed in the colorshader.
+      // gl.texImage2D( ... , width, height, border, format, type, ArrayBuffer)
 
       obj.colormapTexture = gl.createTexture();
       gl.bindTexture(gl.TEXTURE_2D, obj.colormapTexture);
@@ -1905,21 +1979,19 @@
         var obj = this;
         var gl = obj.gl; // Common current time. This should be changed so that it starts from when the user presses a play. Furthermore the views should be either linked or individual
 
-        var now = Date.now(); // Move the canvas to the right position for scrolling.
-
         gl.canvas.style.transform = "translateY(".concat(window.scrollY, "px)"); // The actual drawing loop.
 
         obj.items.forEach(function (item) {
           // Check whether the item is visible or not.
           if (obj.isItemVisible(item)) {
-            // Update the ViewFrame to calculate new transform matrices.
-            item.update(now); // Update the data going to the GPU
+            // Update the ViewFrame to calculate new transform matrices. Nothing (camera, model, zoom) moves as a function of time.
+            item.update(); // Update the data going to the GPU
 
             obj.updateAttributesAndUniforms(item); // Set the rectangle to draw to. Scissor clips, viewport transforms the space. The viewport seems to be doing the scissoring also...
 
-            obj.updateViewport(item); // Perform the actual draw
+            obj.updateViewport(item); // Perform the actual draw. gl.UNSIGNED_INT allows teh use of Uint32Array indices, but the 'OES_element_index_uint' extension had to be loaded.
 
-            gl.drawElements(gl.TRIANGLES, item.geometry.indicesLength, gl.UNSIGNED_SHORT, 0);
+            gl.drawElements(gl.TRIANGLES, item.geometry.indicesLength, gl.UNSIGNED_INT, 0);
           } // if
 
         }); // forEach
@@ -1971,12 +2043,27 @@
         gl.bindBuffer(gl.ARRAY_BUFFER, item.geometry.valuesBuffer);
         gl.vertexAttribPointer(locations.value, 1, gl.FLOAT, false, 0, 0); // Update the indices attribute.
 
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.geometry.indicesBuffer); // The 'u_cmin' and 'u_cmax' are calculated so that they map from the course [0,255] uint8 values to the data values, and from the data values to the desired colormap range. The colormap range is defined by domain.c, and the data range is defined by domain.v.
-        // 255*(domain.c[0]-domain.v[0])/(domain.v[1]-domain.v[0]
-        // 255*(domain.c[1]-domain.v[0])/(domain.v[1]-domain.v[0]
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, item.geometry.indicesBuffer);
+        /* 
+        vec2( (v_colorval-u_cmin)/(u_cmax-u_cmin), 0.5)
+        
+        v_colorval : [0, 255]
+        u_cmin : variable min value
+        u_cmax : variable max value
+        
+        First I need to map from [0, 255] to [a,b], then to [0,1]. The first [0,255] represents the frame specific uint encoding. The second encoding allows all the values to be drawn to the correct value across several files. However, the [0, 255] values are pushed to the GPU straight away, and both mappings must occur there.
+        */
+        // cmin/cmax give the global (for all small multiples) colorbar range.
 
-        gl.uniform1f(locations.cmin, 0);
-        gl.uniform1f(locations.cmax, 6);
+        gl.uniform1f(locations.cmin, obj.globalColormapRange[0]); // 0   880
+
+        gl.uniform1f(locations.cmax, obj.globalColormapRange[1]); // 255   920
+        // uint_cmin/uint_cmax give the local (particular small multiple) colorbar range,
+
+        gl.uniform1f(locations.uint_cmin, item.geometry.currentUintRange[0]); // 0   880
+
+        gl.uniform1f(locations.uint_cmax, item.geometry.currentUintRange[1]); // 255   920
+
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, obj.colormapTexture);
         gl.uniform1i(locations.colormap, 0);
@@ -1985,13 +2072,26 @@
     }, {
       key: "isItemVisible",
       value: function isItemVisible(item) {
-        // Check whether the current item is visible. Extend later to check whether other items obscure the current item.
+        // Check whether the current item is visible. (!!!!) Extend later to check whether other items obscure the current item.
         var obj = this;
         var gl = obj.gl;
         var rect = item.node.getBoundingClientRect();
         var isOffScreen = rect.bottom < 0 || rect.top > gl.canvas.clientHeight || rect.right < 0 || rect.left > gl.canvas.clientWidth;
         return !isOffScreen;
       } // isItemVisible
+
+    }, {
+      key: "globalColormapRange",
+      get: function get() {
+        var obj = this;
+        return obj.items.reduce(function (acc, item) {
+          // v is the domain across all the frames of an unsteady simulation instance.
+          var v = item.geometry.domain.v;
+          acc[0] = acc[0] > v[0] ? v[0] : acc[0];
+          acc[1] = acc[1] < v[1] ? v[1] : acc[1];
+          return acc;
+        }, [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY]);
+      } // globalColormapRange
 
     }]);
 
@@ -2011,9 +2111,11 @@
     var loc_colormap = gl.getUniformLocation(program, "colormap");
     var loc_cmax = gl.getUniformLocation(program, "u_cmax");
     var loc_cmin = gl.getUniformLocation(program, "u_cmin");
+    var loc_uint_cmax = gl.getUniformLocation(program, "u_uint_cmax");
+    var loc_uint_cmin = gl.getUniformLocation(program, "u_uint_cmin");
     var loc_position = gl.getAttribLocation(program, "position");
     var loc_value = gl.getAttribLocation(program, "value"); // let loc_color = gl.getAttribLocation(program, "color");
-    // For 2D triangl culling and depth testing is not needed.
+    // For 2D triangle meshes culling and depth testing is not needed.
     // gl.enable(gl.CULL_FACE);
     // gl.enable(gl.DEPTH_TEST);
     // Scissor defines the part of canvas to draw to.
@@ -2027,6 +2129,8 @@
         colormap: loc_colormap,
         cmax: loc_cmax,
         cmin: loc_cmin,
+        uint_cmax: loc_uint_cmax,
+        uint_cmin: loc_uint_cmin,
         position: loc_position,
         value: loc_value
       },
@@ -2054,7 +2158,7 @@
 
   var renderer = new MeshRenderer2D(); // Add the players in. The HTML will position hte frames.
 
-  for (var i = 0; i < 100; i++) {
+  for (var i = 0; i < 4; i++) {
     renderer.add(i);
   } // for
   // In the end the renderer will have to wait for the data to be loaded. Therefore the update loop should be outside.

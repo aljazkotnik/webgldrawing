@@ -27,7 +27,7 @@ import MeshRenderer2D from "./renderers/MeshRenderer2D.js";
 let renderer = new MeshRenderer2D();
 
 // Add the players in. The HTML will position hte frames.
-for(let i=0; i<100; i++){
+for(let i=0; i<4; i++){
 	renderer.add(i)
 } // for
 
