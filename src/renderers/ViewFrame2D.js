@@ -17,27 +17,20 @@ What will happen for simulations with very different time steps? Should just the
 
 Could the mesh renderer just do the rendering all the time, and teh ViewFrames decide whether or not they need to be played? Then I would only need to figure out how to link multiple views together. Maybe like a chain button that turns on, and when clicking one play button they would all start? So the view would send a command to the scene, and then the scene would start all of the players.
 */
-function html2element(html){
-	let template = document.createElement('template'); 
-	template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
-	return template.content.firstChild;
-} // html2element
 
+import { html2element } from "./helpers.js";
 
 import {scaleMatrix, translateMatrix, rotateXMatrix, rotateYMatrix, rotateZMatrix, multiplyArrayOfMatrices, perspectiveMatrix, orthographicMatrix, invertMatrix} from "./matrices.js"
 
 
-//import Mesh2DTest from "../components/Mesh2DTest.js";
-import Mesh2D from "../components/Mesh2D.js";
 import { Camera2D } from "./Camera.js";
 
 // div must have opacity to register the mouse events!!
+// Furthermore the overall wrapper is defined here so that after the class is inherited from there is space to append other modules. The class is inherited from (as opposed to plugged in as a module)
 let template = `
 <div class="item">
+  <div class="label">Label</div>
   <div class="view" style="width:300px; height:300px; opacity:0.001;">
-  </div>
-  
-  <div class="label">
   </div>
 </div>
 `;
@@ -51,8 +44,14 @@ export default class ViewFrame2D{
 	obj.gl = gl;
 	obj.node = html2element(template);
 	
-	// Actual geometry to be drawn.
-	obj.geometry = new Mesh2D(gl);
+	// obj.view is a convenience reference that points to the node. Transforms.view is the view transformation matrix.
+	obj.view = obj.node.querySelector("div.view");
+	
+	// Some initial dummy geometry to allow initialisation.
+	obj.geometry = {
+		x: [0, 1],
+		y: [0, 1]
+	} // initial dummy geometry
 	
 	// Transformation matrices.
 	obj.transforms = {};
@@ -68,15 +67,14 @@ export default class ViewFrame2D{
 	obj.camera = new Camera2D();
 	
 	// (e.clientX, e.clientY)
-	let view = obj.node.querySelector("div.view");
-	view.onmousedown  = function(e){ obj.cameraMoveStart(e) };
-	view.onmousemove  = function(e){ obj.cameraMove(e) };
-	view.onmouseup    = function(e){ obj.cameraMoveEnd() };
-	view.onmouseleave = function(e){ obj.cameraMoveEnd() };
+	obj.view.onmousedown  = function(e){ obj.cameraMoveStart(e) };
+	obj.view.onmousemove  = function(e){ obj.cameraMove(e) };
+	obj.view.onmouseup    = function(e){ obj.cameraMoveEnd() };
+	obj.view.onmouseleave = function(e){ obj.cameraMoveEnd() };
 	
 	// adding a zoom directly causes the passive event warning to come up in the console, and also stops the wheel event from being properly executed.
 	// If the div is empty the event does not occur!
-	view.addEventListener("wheel", (e)=>{
+	obj.view.addEventListener("wheel", (e)=>{
 	  e.preventDefault();
 	  obj.cameraZoom(e);
 	}, {passive: false})
@@ -164,8 +162,6 @@ export default class ViewFrame2D{
   update(){
 	let obj = this;
 	
-	// 
-	
 	// Compute our matrices
     obj.computeModelMatrix();
     obj.computeViewMatrix();
@@ -175,7 +171,7 @@ export default class ViewFrame2D{
   get viewport(){
     let obj = this;
 	let gl = obj.gl;
-	let rect = obj.node.querySelector("div.view").getBoundingClientRect();
+	let rect = obj.view.getBoundingClientRect();
     
 	// The viewport bottom is measured from the bottom of the screen.
 	let width  = rect.right - rect.left;
@@ -225,7 +221,7 @@ export default class ViewFrame2D{
 	// Pixel values can be obtained from the event.
 	let obj = this;
 	
-	let rect = obj.node.querySelector("div.view").getBoundingClientRect();
+	let rect = obj.view.getBoundingClientRect();
 	
 	// Clicked point within the viewport, in terms of pixels.
 	let x_px = p[0] - rect.left;

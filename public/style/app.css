@@ -17,20 +17,3 @@ button.btn-small {
 	border-radius: 5px;
 	cursor: pointer;
 }
-
-
-/* Styling for sprites */
-.sprite-item {
-	display: inline-block;
-	max-width: 400px;
-	padding: 1em;
-	box-shadow: 1px 2px 4px 0px rgba(0,0,0,0.25);
-	z-index: 2; /* Otherwise pieces float over boards. */
-}
-
-.sprite-item > div.description-element {
-	color: #888;
-	font-family: helvetica;
-	font-size: 10px;
-	margin-top: 0.5em;
-}

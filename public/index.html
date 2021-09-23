@@ -23,7 +23,7 @@
 	.item > div.label {
 		color: #888;
 		font-family: helvetica;
-		font-size: 10px;
+		font-size: 28px;
 		margin-top: 0.5em;
 	}
   </style>
@@ -31,10 +31,10 @@
 </head>
 
 <body>
-  
+  <!-- the canvas and table-top must both be 'position: absolute' otherwise the events on svgs appended to the tabletop later on don't work -->
   <div class="container">
 	<canvas id="canvas" style="position: absolute; top:0px; left:0px; outline: black 3px solid;"></canvas>
-	<div id="table-top"></div>
+	<div id="table-top" style="position: absolute;"></div>
   </div>  
   
   <script src='/dist/webgldrawing.js'></script>  

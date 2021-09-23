@@ -45,12 +45,12 @@ console.log(renderer)
   DONE: - don't update invisible divs
   DONE: - zooming, panning
   
-  - use the actual data
-  - value based color shader calculation
+  DONE: use the actual data
+  DONE: value based color shader calculation
   DONE: (panning relaxation must be manually adjusted) - 2D and 3D cameras.
   - dragging frames around
   - pinch gestures
-  - auto set the original domain (DONE (width, height), near/far plane)
+  DONE: auto set the original domain (DONE (width, height), near/far plane)
 */
 
 // For 2D drawing the transformation matrices have to be different. That means that the ViewFrame needs to be changed, as that implements the matrices.

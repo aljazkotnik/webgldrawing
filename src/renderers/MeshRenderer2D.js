@@ -12,7 +12,8 @@ model: unit matrix, model not moving.
 */
 
 import * as twgl from "twgl.js";
-import ViewFrame2D from "./ViewFrame2D.js";
+// import ViewFrame2D from "./ViewFrame2D.js";
+import UnsteadyPlayer2D from "./UnsteadyPlayer2D.js";
 
 let vertshader = `
 //Each point has a position and color
@@ -95,7 +96,7 @@ export default class MeshRenderer2D{
 	
 	// The extension is needed to allow indices to be uint32.
 	let uints_for_indices = gl.getExtension("OES_element_index_uint");
-	console.log("can uints be used? ", uints_for_indices)
+	// console.log("can uints be used? ", uints_for_indices)
 	
 	obj.webglProgram = setupProgram(gl);
 	obj.gl = gl;
@@ -124,7 +125,7 @@ export default class MeshRenderer2D{
 	let gl = obj.gl;
 	
 	// Common current time. This should be changed so that it starts from when the user presses a play. Furthermore the views should be either linked or individual
-	let now = Date.now();
+	let now = performance.now();
 	
 	// Move the canvas to the right position for scrolling.
 	gl.canvas.style.transform = `translateY(${window.scrollY}px)`;
@@ -134,8 +135,8 @@ export default class MeshRenderer2D{
 	obj.items.forEach(item=>{
 		// Check whether the item is visible or not.
 		if( obj.isItemVisible(item) ){
-		  // Update the ViewFrame to calculate new transform matrices. Nothing (camera, model, zoom) moves as a function of time.
-		  item.update()
+		  // Update the ViewFrame to calculate new transform matrices. Nothing (camera, model, zoom) moves as a function of time. Time is still passed in to synchronise the player updates.
+		  item.update(now)
 		
 		  // Update the data going to the GPU
 		  obj.updateAttributesAndUniforms(item);
@@ -155,7 +156,8 @@ export default class MeshRenderer2D{
   add(id){
 	let obj = this;
 	
-	let newplayer = new ViewFrame2D(obj.gl);
+	// let newplayer = new ViewFrame2D(obj.gl);
+	let newplayer = new UnsteadyPlayer2D(obj.gl);
 	obj.domcontainer.appendChild(newplayer.node);
 	obj.items.push(newplayer);
   } // add

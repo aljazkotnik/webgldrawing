@@ -1385,6 +1385,102 @@
     return createProgramInfoFromProgram(gl, program);
   }
 
+  function html2element(html) {
+    var template = document.createElement('template');
+    template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
+
+    return template.content.firstChild;
+  } // html2element
+
+  function svg2element(svg) {
+    var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.innerHTML = svg.trim();
+    return g.firstChild;
+  } // svg2element
+
+  var scaleLinear = /*#__PURE__*/function () {
+    function scaleLinear() {
+      _classCallCheck(this, scaleLinear);
+
+      this._domain = [0, 1];
+      this._range = [0, 1];
+    }
+
+    _createClass(scaleLinear, [{
+      key: "domain",
+      get: // domain
+      function get() {
+        return this._domain;
+      } // domain
+      ,
+      set: function set(d) {
+        this._domain = d;
+      }
+    }, {
+      key: "range",
+      get: // range
+      function get() {
+        return this._range;
+      } // range
+      ,
+      set: function set(r) {
+        this._range = r;
+      }
+    }, {
+      key: "dom2range",
+      value: function dom2range(v) {
+        return mapSpaceAValueToSpaceB(v, this.domain, this.range);
+      } // dom2range
+
+    }, {
+      key: "range2dom",
+      value: function range2dom(v) {
+        return mapSpaceAValueToSpaceB(v, this.range, this.domain);
+      } // range2dom
+
+    }]);
+
+    return scaleLinear;
+  }(); // scaleLinear
+
+  function mapSpaceAValueToSpaceB(v, A, B) {
+    return (v - A[0]) / (A[1] - A[0]) * (B[1] - B[0]) + B[0];
+  } // mapSpaceAValueToSpaceB
+
+
+  function joinDataToElements(data, elements, idAccessor) {
+    // Find data that has no elements, find the elements that have data, and the leftover.
+    var elementsArray = _toConsumableArray(elements);
+
+    var elementsDataIds = elementsArray.map(function (el) {
+      return idAccessor(el.__data__);
+    });
+    var g = elementsArray.reduce(function (acc, el) {
+      var d = data.filter(function (d_) {
+        return idAccessor(el.__data__) == idAccessor(d_);
+      }); // filter
+
+      if (d.length > 0) {
+        el.__data__ = d[0];
+        acc.update.push(el);
+      } else {
+        acc.exit.push(el);
+      } // if
+
+
+      return acc;
+    }, {
+      update: [],
+      exit: []
+    }); // filter
+
+    g.enter = data.filter(function (d) {
+      return !elementsDataIds.includes(idAccessor(d));
+    }); // filter
+
+    return g;
+  } // joinDataToElements
+
   function multiplyMatrices(a, b) {
     // TODO - Simplify for explanation
     // currently taken from https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/mat4.js#L306-L337
@@ -1504,98 +1600,6 @@
 
     return result;
   }
-
-  /*
-  A test mesh for use during transitioning.
-  */
-
-  var vertices = [0, 0, 1, 0, 2, 0, 0, 1, 1, 1, 2, 1, 3, 1, 1, 2, 2, 2, 3, 2, 1, 3, 2, 3]; // vertices
-  // clockwise triangles. 
-
-  var indices = [0, 3, 4, 0, 4, 1, 1, 4, 5, 1, 5, 2, 4, 7, 8, 4, 8, 5, 5, 8, 9, 5, 9, 6, 7, 10, 11, 7, 11, 8]; // indices
-
-  var values = [0, 0, 0, 0, 1, 2, 3, 2, 4, 6, 3, 6]; // values
-
-  var Mesh2D = /*#__PURE__*/function () {
-    function Mesh2D(gl) {
-      _classCallCheck(this, Mesh2D);
-
-      this.domain = {
-        x: [-0.76, 1.01],
-        y: [-0.1, 1],
-        v: [870.4389253677576, 977.0020293037556]
-      };
-      var obj = this; // obj.vertices = vertices;
-      // obj.indices = indices;
-      // obj.colors = colors;
-      // "In case of glBufferData, the buffer object currently bound to target is used." (https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml)
-      // Size of the data used by each vertex is selected in 'MeshRenderer.updateAttributesAndUniforms'. However, that should really be kept with the data specification, so that MeshRenderer doesn't need to change if the data changes. Then the MeshRenderer becomes independent of the dimension of data.
-
-      var verticesBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-      obj.verticesBuffer = verticesBuffer;
-      var valuesBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, valuesBuffer);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(values), gl.STATIC_DRAW);
-      obj.valuesBuffer = valuesBuffer;
-      var indicesBuffer = gl.createBuffer();
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(indices), gl.STATIC_DRAW);
-      obj.indicesBuffer = indicesBuffer;
-      obj.indicesLength = indices.length; // Imagine that some metadata was loaded in.
-      // fetch("./data/coarsemetadata.json").then(res=>res.json());
-      // First start by drawing a static representation of actual data. Wait to load, and then update the buffer.
-
-      var content = {
-        indices: "./data/indices.bin",
-        vertices: "./data/vertices.bin",
-        values: "./data/coarse_entropy_t_0.bin"
-      }; // content
-      // But all three need to be available at the same time before rendering.
-
-      var verticesPromise = loadBinData(content.vertices).then(function (ab) {
-        return new Float32Array(ab);
-      });
-      var valuesPromise = loadBinData(content.values).then(function (ab) {
-        return new Uint8Array(ab);
-      }).then(function (ui8) {
-        return Float32Array.from(ui8);
-      });
-      var indicesPromise = loadBinData(content.indices).then(function (ab) {
-        return new Uint32Array(ab);
-      });
-      Promise.all([verticesPromise, valuesPromise, indicesPromise]).then(function (d) {
-        gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, d[0], gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ARRAY_BUFFER, valuesBuffer);
-        gl.bufferData(gl.ARRAY_BUFFER, d[1], gl.STATIC_DRAW);
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, d[2], gl.STATIC_DRAW);
-        obj.indicesLength = d[2].length;
-      }); // then
-    } // constructor
-    // The 'values' are stored as a 'scaled uint8 array' to save memory. The values are retransformed back into the original domain on the GPU by mapping them from [0,255] to 'currentUintRange', which is obtained from the metadata file of this unsteady simulation.
-    // The MeshRenderer2D looks at the domain to determine what the full value domain of this small multiple will be. It looks at the c to determine the uint compression domain.
-
-
-    _createClass(Mesh2D, [{
-      key: "currentUintRange",
-      get: function get() {
-        // This used to be in domain under 'c', but was moved here as it will change as the frames change.
-        return [871, 977];
-      } // currentUintRange
-
-    }]);
-
-    return Mesh2D;
-  }(); // Mesh2D
-
-  function loadBinData(filename) {
-    return fetch(filename).then(function (res) {
-      return res.arrayBuffer();
-    });
-  } // getBinData
 
   var Camera = /*#__PURE__*/function () {
     // A third angle could be used to encode the camera 'roll'. 'z' is not changed in the current apps, but it would be used if the camera had 'walking' controls, e.g. through the arrow keys.
@@ -1720,34 +1724,9 @@
     return Math.max(Math.min(v, b), a);
   } // constrainValue
 
-  /*
-  The MeshRenderer should be the one initiating data collection/deleting because it's the only one that can determine which ViewFrames should currently be played.
+  // Furthermore the overall wrapper is defined here so that after the class is inherited from there is space to append other modules. The class is inherited from (as opposed to plugged in as a module)
 
-  Therefroe the ViewFrames should have a 'clear' method, which instructs the geometry to delete all the buffer data apart from the current. Furthermore, the ViewFrames need to have a method to tell the geometry to load additional data, and about which time step it should be anchored.
-
-  When moving the ViewFrames the player should pause automatically. Maybe it will be possible to keep updating as the frame moves also. But that would then not allow ViewFrames that are behind other ViewFrames to delete their buffers, as they may become visible as the other ViewFrame moves. Maybe for them to offload there should be at least two things covering them up?
-
-  The ViewFrame will also host the playbar in the end. So then the MeshRenderer can collect the time spans from the ViewFrames in view, and then time step through them.
-
-  Should there just be a minimize button on the ViewFrame so the user can switch a particular small multiple off without burying it under others?
-
-  How to pick the current time to play? Should the requestAnimationFrame be running continuously in the background? Yes - otherwise there are no interactions.
-
-  Maybe for now just have a single play pause button? And just time step through in percentage terms?
-
-  What will happen for simulations with very different time steps? Should just the closest frame be selected? Maybe the simplicity is best. Simulations with large time steps will just not change data that often.
-
-  Could the mesh renderer just do the rendering all the time, and teh ViewFrames decide whether or not they need to be played? Then I would only need to figure out how to link multiple views together. Maybe like a chain button that turns on, and when clicking one play button they would all start? So the view would send a command to the scene, and then the scene would start all of the players.
-  */
-
-  function html2element(html) {
-    var template = document.createElement('template');
-    template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
-
-    return template.content.firstChild;
-  } // html2element
-
-  var template = "\n<div class=\"item\">\n  <div class=\"view\" style=\"width:300px; height:300px; opacity:0.001;\">\n  </div>\n  \n  <div class=\"label\">\n  </div>\n</div>\n";
+  var template$1 = "\n<div class=\"item\">\n  <div class=\"label\">Label</div>\n  <div class=\"view\" style=\"width:300px; height:300px; opacity:0.001;\">\n  </div>\n</div>\n";
 
   var ViewFrame2D = /*#__PURE__*/function () {
     function ViewFrame2D(gl) {
@@ -1755,9 +1734,15 @@
 
       var obj = this;
       obj.gl = gl;
-      obj.node = html2element(template); // Actual geometry to be drawn.
+      obj.node = html2element(template$1); // obj.view is a convenience reference that points to the node. Transforms.view is the view transformation matrix.
 
-      obj.geometry = new Mesh2D(gl); // Transformation matrices.
+      obj.view = obj.node.querySelector("div.view"); // Some initial dummy geometry to allow initialisation.
+
+      obj.geometry = {
+        x: [0, 1],
+        y: [0, 1]
+      }; // initial dummy geometry
+      // Transformation matrices.
 
       obj.transforms = {};
       /*
@@ -1770,27 +1755,25 @@
 
       obj.camera = new Camera2D(); // (e.clientX, e.clientY)
 
-      var view = obj.node.querySelector("div.view");
-
-      view.onmousedown = function (e) {
+      obj.view.onmousedown = function (e) {
         obj.cameraMoveStart(e);
       };
 
-      view.onmousemove = function (e) {
+      obj.view.onmousemove = function (e) {
         obj.cameraMove(e);
       };
 
-      view.onmouseup = function (e) {
+      obj.view.onmouseup = function (e) {
         obj.cameraMoveEnd();
       };
 
-      view.onmouseleave = function (e) {
+      obj.view.onmouseleave = function (e) {
         obj.cameraMoveEnd();
       }; // adding a zoom directly causes the passive event warning to come up in the console, and also stops the wheel event from being properly executed.
       // If the div is empty the event does not occur!
 
 
-      view.addEventListener("wheel", function (e) {
+      obj.view.addEventListener("wheel", function (e) {
         e.preventDefault();
         obj.cameraZoom(e);
       }, {
@@ -1849,8 +1832,7 @@
     }, {
       key: "update",
       value: function update() {
-        var obj = this; // 
-        // Compute our matrices
+        var obj = this; // Compute our matrices
 
         obj.computeModelMatrix();
         obj.computeViewMatrix();
@@ -1862,7 +1844,7 @@
       get: function get() {
         var obj = this;
         var gl = obj.gl;
-        var rect = obj.node.querySelector("div.view").getBoundingClientRect(); // The viewport bottom is measured from the bottom of the screen.
+        var rect = obj.view.getBoundingClientRect(); // The viewport bottom is measured from the bottom of the screen.
 
         var width = rect.right - rect.left;
         var height = rect.bottom - rect.top;
@@ -1917,7 +1899,7 @@
       value: function pixel2clip(p) {
         // Pixel values can be obtained from the event.
         var obj = this;
-        var rect = obj.node.querySelector("div.view").getBoundingClientRect(); // Clicked point within the viewport, in terms of pixels.
+        var rect = obj.view.getBoundingClientRect(); // Clicked point within the viewport, in terms of pixels.
 
         var x_px = p[0] - rect.left;
         var y_px = p[1] - rect.top; // Convert to clip coordinates. Camera.x is in data coordinates.
@@ -1933,6 +1915,542 @@
 
     return ViewFrame2D;
   }(); // ViewFrame2D
+
+  /*
+  Should these be split up into a Mesh2D superclass and an UnsteadyMesh2D childclass?
+  */
+  // Some geometry to initialise the buffers.
+
+  var vertices = [1, -0.99, 1, -1, 0.99, -1]; // vertices
+  // clockwise triangles. 
+
+  var indices = [0, 1, 2]; // indices
+  // values per vertex
+
+  var values = [0, 0, 0]; // values
+  // Initial domain.
+
+  var initdomain = {
+    x: [-1, 1],
+    y: [-1, 1],
+    v: [0, 1],
+    t: [0, 1]
+  };
+
+  var Mesh2D = /*#__PURE__*/function () {
+    function Mesh2D(gl) {
+      _classCallCheck(this, Mesh2D);
+
+      this.domain = initdomain;
+      this.timesteps = [];
+      var obj = this;
+      obj.gl = gl; // obj.vertices = vertices;
+      // obj.indices = indices;
+      // obj.colors = colors;
+      // "In case of glBufferData, the buffer object currently bound to target is used." (https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/glBufferData.xhtml)
+      // Size of the data used by each vertex is selected in 'MeshRenderer.updateAttributesAndUniforms'. However, that should really be kept with the data specification, so that MeshRenderer doesn't need to change if the data changes. Then the MeshRenderer becomes independent of the dimension of data.
+
+      var verticesBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+      obj.verticesBuffer = verticesBuffer;
+      var valuesBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, valuesBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(values), gl.STATIC_DRAW);
+      obj.valuesBuffer = valuesBuffer;
+      var indicesBuffer = gl.createBuffer();
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
+      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint32Array(indices), gl.STATIC_DRAW);
+      obj.indicesBuffer = indicesBuffer;
+      obj.indicesLength = indices.length; // If teh index defines which frame to play next, then the timesteps need to be ordered. Maybe it's best to just enforce this by sorting the timesteps when they are loaded.
+
+      obj.currentFrameInd = 0; // Imagine that some metadata was loaded in.
+
+      fetch("./data/testmetadata.json").then(function (res) {
+        return res.json();
+      }).then(function (content) {
+        // But all three need to be available at the same time before rendering.
+        var indicesPromise = loadBinData(content.indices).then(function (ab) {
+          return new Uint32Array(ab);
+        });
+        var verticesPromise = loadBinData(content.vertices).then(function (ab) {
+          return new Float32Array(ab);
+        });
+        /* The values should be loaded in separately from the vertices and indices.
+        
+        Do we just loop through some timesteps and make the promises. However, the data size restrictions should be maintained at all times! The data loading function should keep that in mind.
+        */
+
+        var valuesPromise = loadBinData(content.timesteps[obj.currentFrameInd].filename).then(function (ab) {
+          return new Uint8Array(ab);
+        }).then(function (ui8) {
+          return Float32Array.from(ui8);
+        });
+        Promise.all([indicesPromise, verticesPromise, valuesPromise]).then(function (d) {
+          // Domain has to be overwritten when the actual data is loaded. Afterwards, only the 'c' property should change with the timesteps. By changing the global color value ranges the colorbar can be adjusted by the user.]
+          obj.domain = content.domain;
+          obj.timesteps = content.timesteps;
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesBuffer);
+          gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, d[0], gl.STATIC_DRAW);
+          obj.indicesLength = d[0].length;
+          gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, d[1], gl.STATIC_DRAW);
+          gl.bindBuffer(gl.ARRAY_BUFFER, valuesBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, d[2], gl.STATIC_DRAW);
+        }); // then
+      }); // fetch
+    } // constructor
+    // The 'values' are stored as a 'scaled uint8 array' to save memory. The values are retransformed back into the original domain on the GPU by mapping them from [0,255] to 'currentUintRange', which is obtained from the metadata file of this unsteady simulation.
+    // The MeshRenderer2D looks at the domain to determine what the full value domain of this small multiple will be. It looks at the c to determine the uint compression domain.
+
+
+    _createClass(Mesh2D, [{
+      key: "currentUintRange",
+      get: function get() {
+        // This used to be in domain under 'c', but was moved here as it will change as the frames change.
+        var obj = this;
+        return obj.timesteps.length > 0 ? obj.timesteps[obj.currentFrameInd].c_uint : [0, 1]; // return [871, 977]
+      } // currentUintRange
+
+    }, {
+      key: "currentTime",
+      get: function get() {
+        // Get the time of the current frame as a fraction of the total time span available.
+        var obj = this;
+        return obj.timesteps[obj.currentFrameInd].t;
+      } // currentTimestep
+      // There should be two separate methods to pick the current frame. One is by incrementing, and the other is by setting the appropriate time.
+
+    }, {
+      key: "incrementCurrentFrame",
+      value: function incrementCurrentFrame() {
+        // When incrementing past the end of the available time range we loop to the start.
+        var obj = this;
+        obj.currentFrameInd += 1;
+        obj.currentFrameInd = obj.currentFrameInd % obj.timesteps.length;
+      } // incrementCurrentFrame
+
+    }, {
+      key: "timestepCurrentFrame",
+      value: function timestepCurrentFrame(t) {
+        // Different players can start at different times. However, if a dt is passed in to increment the current frame the incrementing can truncate a part of the dt, leading to different players to be at different times. Therefore the actual time is expected. If t is outside of the time range available, the min or max frame indices are returned as appropriate.
+        var obj = this;
+        var i = 0;
+        var dist = Number.POSITIVE_INFINITY;
+        obj.timesteps.forEach(function (timestep, j) {
+          var d = Math.abs(timestep.t - t);
+
+          if (d < dist) {
+            dist = d;
+            i = j;
+          } // if
+
+        }); // forEach
+
+        obj.currentFrameInd = i;
+      } // timestepCurrentFrame
+
+    }, {
+      key: "updateCurrentFrame",
+      value: function updateCurrentFrame() {
+        // The UnsteadyPlayer will input an actual timestep, as opposed to just increment the frame. This allows simulations with different temporal resolutions to be compared directly. Comparable time frames are selected based on available data.
+        // What will be passed in? Just an icrement I guess, and it's up to the user to provide time variables with the same dt and in the same domain.
+        var obj = this;
+        var gl = obj.gl; // The index is used to find and load teh appropriate file.
+
+        loadBinData(obj.timesteps[obj.currentFrameInd].filename).then(function (ab) {
+          return new Uint8Array(ab);
+        }).then(function (ui8) {
+          return Float32Array.from(ui8);
+        }).then(function (f32) {
+          gl.bindBuffer(gl.ARRAY_BUFFER, obj.valuesBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, f32, gl.STATIC_DRAW);
+        });
+      } // updateCurrentFrame
+
+    }]);
+
+    return Mesh2D;
+  }(); // Mesh2D
+
+  function loadBinData(filename) {
+    return fetch(filename).then(function (res) {
+      return res.arrayBuffer();
+    });
+  } // getBinData
+
+  /*
+  {
+  	x: [-0.76, 1.01],
+  	y: [-0.1, 1],
+  	v: [870.4389253677576, 977.0020293037556]
+  }
+  */
+
+  var template = "\n<div class=\"player-controls\">\n  <svg id=\"playbar\" width=\"100%\" height=\"32px\">\n    <g class=\"playbutton\" style=\"cursor: pointer;\">\n\t  <path fill=\"tomato\" d=\"\"></path>\n    </g>\n    <g class=\"playbar\" style=\"cursor: pointer;\"></g>\n  </svg>\n</div>\n"; // template
+  // Some dimensions.
+
+  var playButtonWidth = 20;
+  var playButtonMargin = 6;
+  var textHeight = 12;
+  var textBottomMargin = 2;
+  var textSpace = textHeight + textBottomMargin;
+  var rectHighlightHeightDelta = 3; // use getAttribute/setAttribute
+
+  function playPath() {
+    // 'width' and 'height' prescribe the size allocated for the play button. The button should take up 80% of the space available.
+    // Calculate the size of the triangle, and where the drawing should begin.
+    // let L = 0.9 * Math.min( height / 1, width / (Math.sqrt(3)/2) )
+    var r_max = L * Math.sqrt(3) / 6;
+    var r = 3 > r_max ? r_max : 3;
+    var dL = r * Math.sqrt(3); // Length of side cut by 1 rounding.
+
+    var L = playButtonWidth * 2 * Math.sqrt(3) / 3; // let Mx = (width - L)/2;
+    // let My = (height - L)/2;
+
+    var Mx = 0;
+    var My = textSpace + rectHighlightHeightDelta + 5 - L / 2;
+    var p0 = [Mx, My];
+    var p1 = [Mx + L * Math.sqrt(3) / 2, My + L / 2];
+    var p2 = [Mx, My + L];
+    return "M".concat(p0[0], " ").concat(p0[1] + dL, "\n      a ").concat(r, ",").concat(r, ", 0,0,1  ").concat(r * 3 / 2, ", ").concat(-dL / 2, "\n      L ").concat(p1[0] - r * 3 / 2, " ").concat(p1[1] - dL / 2, "\n      a ").concat(r, ",").concat(r, ", 0,0,1  0, ").concat(dL, "\n      L ").concat(p2[0] + r * 3 / 2, " ").concat(p2[1] - dL / 2, "\n      a ").concat(r, ",").concat(r, ", 0,0,1  ").concat(-r * 3 / 2, ", ").concat(-dL / 2, "\n      Z\n      ");
+  } // playPath
+
+
+  function pausePath() {
+    var width = playButtonWidth;
+    var height = playButtonWidth * 2 * Math.sqrt(3) / 3 - 2 * (3 * Math.sqrt(3) - 3);
+    var dx = width / 5;
+    var r = 3;
+    var Mx = 0;
+    var My = textSpace + rectHighlightHeightDelta + 5 - height / 2;
+    return "\n      M ".concat(Mx + r, " ").concat(My, " \n      L ").concat(Mx + 2 * dx - r, " ").concat(My, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(r, ",").concat(r, "\n      L ").concat(Mx + 2 * dx, " ").concat(My + height - r, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(-r, ",").concat(r, "\n      L ").concat(Mx + r, " ").concat(My + height, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(-r, ",").concat(-r, "\n      L ").concat(Mx, " ").concat(My + r, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(r, ",").concat(-r, "\n\t  M ").concat(Mx + 3 * dx + r, " ").concat(My, "\n      L ").concat(Mx + 5 * dx - r, " ").concat(My, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(r, ",").concat(r, "\n      L ").concat(Mx + 5 * dx, " ").concat(My + height - r, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(-r, ",").concat(r, "\n      L ").concat(Mx + 3 * dx + r, " ").concat(My + height, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(-r, ",").concat(-r, "\n      L ").concat(Mx + 3 * dx, " ").concat(My + r, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(r, ",").concat(-r, "\n    ");
+  } // pausePath
+
+
+  function chapterRect(className, color) {
+    var y = textSpace + rectHighlightHeightDelta;
+    return "<rect class=\"".concat(className, "\" x=\"0\" y=\"").concat(y, "\" width=\"0\" height=\"10\" fill=\"").concat(color, "\" stroke=\"white\" stroke-width=\"2px\"></rect>");
+  } // chapterRectTemplate
+
+
+  var PlayBar = /*#__PURE__*/function () {
+    function PlayBar() {
+      _classCallCheck(this, PlayBar);
+
+      var obj = this;
+      obj.node = html2element(template);
+      obj.button = obj.node.querySelector("g.playbutton");
+      obj.bar = obj.node.querySelector("g.playbar");
+      obj._tscale = new scaleLinear();
+      obj.button.addEventListener("click", function (event) {
+        // Get the action required based on the button icon.
+        if (obj.t_play == obj.t_max) {
+          obj.t_play = obj.t_min;
+        } // if
+
+
+        obj.playStatus = !obj.playStatus;
+      }); // addEventListener
+
+      obj.bar.addEventListener("click", function (event) {
+        // On click the playbar should register the correct time.
+        // The tscale takes inputs in the svg coordinates, and the event returns them in the client coordinates. Therefore the client coordinates must be adjusted for the position of the SVG.
+        var x1 = event.clientX;
+        var x0 = obj.node.getBoundingClientRect().x;
+        var t = obj.tscale.range2dom(x1 - x0); // Now just set the t to the right value, and update the view.
+
+        obj.t_play = t; // The playtime changed, therefore pause the video.
+
+        obj.playStatus = false;
+        obj.userNavigated = true;
+      }); // addEventListener
+
+      obj.t_min = 0;
+      obj.t_max = 1;
+      obj.t_buffer = 0;
+      obj.t_play = 0;
+      obj.playStatus = false;
+      obj.userNavigated = false; // Annotations. Comments should be based on the chapter tags I think. The discussion is intended to be based on observed events. The logical progress is that events need to first be identified, and then discussed in a separate step. There should be a single dialogue box, and in that one tags can be added. This allows a single comment to be seen in multiple threads. Replies will have to be handled separately. Eventually the user should also be able to pin comments.
+
+      obj.chapters = [];
+    } // constructor
+
+
+    _createClass(PlayBar, [{
+      key: "tscale",
+      get: function get() {
+        // The tscale is relative to the whole svg element, and takes in whole svg coordinates.
+        var obj = this;
+        var playBarStart = playButtonWidth + playButtonMargin;
+        var playBarEnd = obj.node.getBoundingClientRect().width;
+        obj._tscale.domain = [obj.t_min, obj.t_max];
+        obj._tscale.range = [playBarStart, playBarEnd];
+        return obj._tscale;
+      } // get tscale
+      // How should the chapter getting be done? Annotations can be pushed to individual small multiples, but also to many at the same time.
+
+    }, {
+      key: "chapters",
+      get: // set chapters
+      function get() {
+        var obj = this;
+        return [{
+          label: "",
+          starttime: obj.t_min,
+          endtime: obj.t_max
+        }]; //  return this._chapters
+      } // get chapters
+      // CONSTRUCTION	 
+      ,
+      set: function set(annotations) {
+        var obj = this; // Sort them in peparation for chapter creation.
+
+        annotations.sort(function (a, b) {
+          return a.time - b.time;
+        }); // The start and end values should be remaped or? The scale takes into account the different start and end points.
+
+        var chapters = annotations.reduce(function (acc, current) {
+          var previous = acc[acc.length - 1];
+          previous.endtime = previous.endtime > current.starttime ? current.starttime : previous.endtime; // The first one needs to start at zero, and the last one needs to stop at the end.
+
+          acc.push({
+            label: current.label,
+            starttime: current.starttime,
+            endtime: current.endtime > obj.t_max ? obj.t_max : current.endtime
+          });
+          return acc;
+        }, [{
+          label: "",
+          starttime: obj.t_min,
+          endtime: obj.t_max
+        }]);
+        obj._chapters = chapters;
+      }
+    }, {
+      key: "chapterRectangleWidth",
+      value: function chapterRectangleWidth(chapter) {
+        var x0 = this.tscale.dom2range(chapter.starttime);
+        var x1 = this.tscale.dom2range(chapter.endtime);
+        return x1 - x0;
+      } // chapterRectangleWidth
+
+    }, {
+      key: "chapterTimeFraction",
+      value: function chapterTimeFraction(ch, t) {
+        var tf = (t - ch.starttime) / (ch.endtime - ch.starttime);
+        return Math.abs(tf - 0.5) <= 0.5 ? tf : tf > 0;
+      } // chapterTimeFraction
+      // FUNCTIONALITY
+
+    }, {
+      key: "update",
+      value: function update() {
+        var obj = this;
+        obj.updateChapterGroups();
+        obj.updatePlayPauseButton();
+        obj.updatePlayBar();
+      } // update
+
+    }, {
+      key: "updateChapterGroups",
+      value: function updateChapterGroups() {
+        var obj = this;
+        var parent = obj.bar;
+        var groups = joinDataToElements(obj.chapters, parent.querySelectorAll("g.chapter"), function (d) {
+          return d.label;
+        });
+        groups.enter.forEach(function (d) {
+          var chapternode = svg2element("<g class=\"chapter\">\n\t\t".concat(chapterRect("chapter-background", "gainsboro"), "\n\t\t").concat(chapterRect("chapter-buffering", "gray"), "\n\t\t").concat(chapterRect("chapter-foreground", "tomato"), "\n\t\t<text y=\"").concat(textHeight, "\" style=\"display: none;\">").concat(d.label, "</text>\n        </g>"));
+          chapternode.__data__ = d;
+          parent.appendChild(chapternode); // Add all the highlighting
+
+          addChapterHighlighting(chapternode);
+        }); // forEach enter
+        // The updating is not required, because annotations cannot change their name on the go. The positions of rectangles are all updated later on anyway.
+
+        groups.exit.forEach(function (el) {
+          el.remove();
+        }); // forEach exit
+        // Chapter highlighting.
+        // iterateOverHtmlList(newChapters.nodes(), addChapterHighlighting);
+      } // updateChapterGroups
+
+    }, {
+      key: "updatePlayBar",
+      value: function updatePlayBar() {
+        var obj = this;
+        obj.bar.querySelectorAll("g.chapter").forEach(function (el) {
+          var x = obj.tscale.dom2range(el.__data__.starttime);
+          var width = obj.chapterRectangleWidth(el.__data__);
+          var frac_buffer = obj.chapterTimeFraction(el.__data__, obj.t_buffer);
+          var frac_played = obj.chapterTimeFraction(el.__data__, obj.t_play);
+          el.querySelector("rect.chapter-background").setAttribute("x", x);
+          el.querySelector("rect.chapter-buffering").setAttribute("x", x);
+          el.querySelector("rect.chapter-foreground").setAttribute("x", x);
+          el.querySelector("text").setAttribute("x", x);
+          el.querySelector("rect.chapter-background").setAttribute("width", width);
+          el.querySelector("rect.chapter-buffering").setAttribute("width", width * frac_buffer);
+          el.querySelector("rect.chapter-foreground").setAttribute("width", width * frac_played);
+        }); // forEach chapter
+      } // updatePlayBar
+
+    }, {
+      key: "updatePlayPauseButton",
+      value: function updatePlayPauseButton() {
+        var obj = this; // Get teh dimensions available
+
+        var d = obj.playStatus ? pausePath() : playPath();
+        obj.button.querySelector("path").setAttribute("d", d);
+      } // updatePlayPauseButton
+
+    }]);
+
+    return PlayBar;
+  }(); // player
+
+  function iterateOverHtmlList(htmlList, callback) {
+    for (var j = 0; j < htmlList.length; j++) {
+      var tg = htmlList[j];
+      callback(tg);
+    } // for
+
+  } // iterateOverHtmlList
+
+
+  function highlightRectangle(r) {
+    r.height.baseVal.value = 10 + 2 * rectHighlightHeightDelta;
+    r.y.baseVal.value = textSpace;
+  } // highlightRectangle
+
+
+  function unhighlightRectangle(r) {
+    r.height.baseVal.value = 10;
+    r.y.baseVal.value = textSpace + rectHighlightHeightDelta;
+  } // unhighlightRectangle	
+
+
+  function highlightChapter(chapter) {
+    var rectangles = chapter.getElementsByTagName("rect");
+    iterateOverHtmlList(rectangles, highlightRectangle);
+    var chapterNames = chapter.getElementsByTagName("text");
+    iterateOverHtmlList(chapterNames, function (t) {
+      return t.style.display = "";
+    });
+  } // highlightChapter
+
+
+  function unhighlightChapter(chapter) {
+    var rectangles = chapter.getElementsByTagName("rect");
+    iterateOverHtmlList(rectangles, unhighlightRectangle);
+    var chapterNames = chapter.getElementsByTagName("text");
+    iterateOverHtmlList(chapterNames, function (t) {
+      return t.style.display = "none";
+    });
+  } // unhighlightChapter
+
+
+  function addChapterHighlighting(chapter) {
+    chapter.addEventListener("mouseenter", function () {
+      highlightChapter(chapter);
+    }); // addEventListener
+
+    chapter.addEventListener("mouseover", function () {
+      highlightChapter(chapter);
+    }); // addEventListener
+
+    chapter.addEventListener("mouseout", function () {
+      unhighlightChapter(chapter);
+    }); // addEventListener
+  } // addChapterHighlighting
+
+  // It's advantageous to inherit from ViewFrame2D because the geometry changes on the go - first some dummy geometry is specified, and after the actual geometry is loaded in that just gets automatically used on next FrameAnimationRate step. If the ViewFrame is a module then the UnsteadyPlayer has to monitor when the geometry changes, and update the ViewFrame accordingly.
+  // Because it's advantageous to inherit from ViewFrame2D it is also advantageous to create the outside html player wrapper in it. Then the unsteady player only needs to add other modules into it.
+
+  var UnsteadyPlayer2D = /*#__PURE__*/function (_ViewFrame2D) {
+    _inherits(UnsteadyPlayer2D, _ViewFrame2D);
+
+    var _super = _createSuper(UnsteadyPlayer2D);
+
+    function UnsteadyPlayer2D(gl) {
+      var _this;
+
+      _classCallCheck(this, UnsteadyPlayer2D);
+
+      _this = _super.call(this, gl);
+
+      var obj = _assertThisInitialized(_this); // Actual geometry to be drawn.
+
+
+      obj.geometry = new Mesh2D(gl); // Add in a playbar
+
+      obj.playbar = new PlayBar();
+      obj.node.appendChild(obj.playbar.node); // The FPS at which to swap out data.
+
+      obj.fps = 24;
+      obj.dt = 1000 / obj.fps;
+      obj.timelastdraw = 0;
+      return _this;
+    } // constructor
+
+
+    _createClass(UnsteadyPlayer2D, [{
+      key: "update",
+      value: function update(now) {
+        var obj = this; // Compute the view matrices
+
+        obj.computeModelMatrix();
+        obj.computeViewMatrix();
+        obj.computeOrthographicMatrix();
+
+        if (now > obj.timelastdraw + obj.dt) {
+          if (obj.playbar.playStatus) {
+            obj.timelastdraw = now;
+            obj.incrementTimeStep();
+          } else if (obj.playbar.userNavigated) {
+            obj.timelastdraw = now;
+            obj.incrementTimeStep(0);
+            obj.playbar.userNavigated = false;
+          } // if
+
+        } // if
+        // Update the playbar
+
+
+        obj.playbar.t_min = obj.geometry.domain.t[0];
+        obj.playbar.t_max = obj.geometry.domain.t[1];
+        obj.playbar.update();
+      } // update
+
+    }, {
+      key: "incrementTimeStep",
+      value: function incrementTimeStep(dt) {
+        /*
+        The small multiple should be able to play on its own. In that case it should just update the data 24 times per second.
+        
+        It should of course support playing several small multiples at once. If the 'dt' for all the simulations are the same then playing several at once just requires an input that will toggle several small multiples on at the same time. If the 'dt' are not the same, then it becomes more difficult because the data can't be loaded by incrementing, and instead a desired time must be passed to the player. Furthermore, the player should support several small multiples to be played at once, but starting from different times. In those cases the player must keep track of the time increment total to ensure all small multiples move by the same amount.
+        
+        For now the playbar can just play forward correctly, and the t_play can be used to keep track of the actual playing time. The dt is just added on to that time them.
+        */
+        var obj = this;
+
+        if (dt >= 0) {
+          var t_new = obj.playbar.t_play + dt;
+          obj.geometry.timestepCurrentFrame(t_new);
+          obj.playbar.t_play = t_new;
+        } else {
+          obj.geometry.incrementCurrentFrame();
+          obj.playbar.t_play = obj.geometry.currentTime;
+        } // if
+
+
+        obj.geometry.updateCurrentFrame();
+      } // incrementTimeStep
+
+    }]);
+
+    return UnsteadyPlayer2D;
+  }(ViewFrame2D); // UnsteadyPlayer2D
 
   var vertshader = "\n//Each point has a position and color\nattribute vec2 position;\nattribute float value;\n\n// The transformation matrices\nuniform mat4 model;\nuniform mat4 view;\nuniform mat4 projection;\n\n// Pass the color attribute down to the fragment shader\nvarying float v_uint_colorval;\n\nvoid main() {\n  \n  // Pass the color down to the fragment shader.\n  v_uint_colorval = value;\n  \n  // Read the multiplication in reverse order, the point is taken from the original model space and moved into world space. It is then projected into clip space as a homogeneous point. Generally the W value will be something other than 1 at the end of it.\n  gl_Position = projection * view * model * vec4( position, 0.0, 1.0 );\n}";
   var fragshader = "\nprecision mediump float;\nvarying float v_uint_colorval;\n\nuniform sampler2D colormap;\nuniform float u_cmin, u_cmax;\nuniform float u_uint_cmin, u_uint_cmax;\n\nvoid main() {\n  gl_FragColor = texture2D(colormap, vec2( ( (v_uint_colorval/255.0*(u_uint_cmax-u_uint_cmin)+u_uint_cmin) - u_cmin)/(u_cmax-u_cmin), 0.5));;\n}"; // A viridis colormap. Values for color channels in frag shader should be [0, 1].
@@ -1956,8 +2474,8 @@
         depth: false
       }); // The extension is needed to allow indices to be uint32.
 
-      var uints_for_indices = gl.getExtension("OES_element_index_uint");
-      console.log("can uints be used? ", uints_for_indices);
+      gl.getExtension("OES_element_index_uint"); // console.log("can uints be used? ", uints_for_indices)
+
       obj.webglProgram = setupProgram(gl);
       obj.gl = gl; // The texture represents a solorbar, and stores the color values. It is indexed on a range of 0 - 1. The index is computed in the colorshader.
       // gl.texImage2D( ... , width, height, border, format, type, ArrayBuffer)
@@ -1979,13 +2497,15 @@
         var obj = this;
         var gl = obj.gl; // Common current time. This should be changed so that it starts from when the user presses a play. Furthermore the views should be either linked or individual
 
+        var now = performance.now(); // Move the canvas to the right position for scrolling.
+
         gl.canvas.style.transform = "translateY(".concat(window.scrollY, "px)"); // The actual drawing loop.
 
         obj.items.forEach(function (item) {
           // Check whether the item is visible or not.
           if (obj.isItemVisible(item)) {
-            // Update the ViewFrame to calculate new transform matrices. Nothing (camera, model, zoom) moves as a function of time.
-            item.update(); // Update the data going to the GPU
+            // Update the ViewFrame to calculate new transform matrices. Nothing (camera, model, zoom) moves as a function of time. Time is still passed in to synchronise the player updates.
+            item.update(now); // Update the data going to the GPU
 
             obj.updateAttributesAndUniforms(item); // Set the rectangle to draw to. Scissor clips, viewport transforms the space. The viewport seems to be doing the scissoring also...
 
@@ -2002,8 +2522,9 @@
     }, {
       key: "add",
       value: function add(id) {
-        var obj = this;
-        var newplayer = new ViewFrame2D(obj.gl);
+        var obj = this; // let newplayer = new ViewFrame2D(obj.gl);
+
+        var newplayer = new UnsteadyPlayer2D(obj.gl);
         obj.domcontainer.appendChild(newplayer.node);
         obj.items.push(newplayer);
       } // add
@@ -2173,12 +2694,12 @@
     DONE: - don't update invisible divs
     DONE: - zooming, panning
     
-    - use the actual data
-    - value based color shader calculation
+    DONE: use the actual data
+    DONE: value based color shader calculation
     DONE: (panning relaxation must be manually adjusted) - 2D and 3D cameras.
     - dragging frames around
     - pinch gestures
-    - auto set the original domain (DONE (width, height), near/far plane)
+    DONE: auto set the original domain (DONE (width, height), near/far plane)
   */
   // For 2D drawing the transformation matrices have to be different. That means that the ViewFrame needs to be changed, as that implements the matrices.
 
