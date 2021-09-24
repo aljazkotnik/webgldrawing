@@ -1597,7 +1597,6 @@ renderer.items.forEach((item,i)=>{
 	}; // dragging
 
 	item.node.onmousedown = function(e){
-		console.log(e);
 		if(e.target == item.node){
 			let rect = item.node.getBoundingClientRect();
 			
@@ -1606,6 +1605,10 @@ renderer.items.forEach((item,i)=>{
 				e.clientX - rect.x,
 				e.clientY - rect.y
 			];
+			
+			// Move this item to the end of the drawing queue to ensure it's drawn on top.
+			renderer.items.splice(renderer.items.indexOf(item), 1);
+			renderer.items.push(item);
 		} // if
 	}; // onmousedown
 	item.node.onmousemove = function(e){
