@@ -1726,7 +1726,7 @@
 
   // Furthermore the overall wrapper is defined here so that after the class is inherited from there is space to append other modules. The class is inherited from (as opposed to plugged in as a module)
 
-  var template$1 = "\n<div class=\"item\">\n  <div class=\"label\">Label</div>\n  <div class=\"view\" style=\"width:300px; height:300px; opacity:0.001;\">\n  </div>\n</div>\n";
+  var template$1 = "\n<div class=\"item\">\n  <div class=\"label\">Label</div>\n  <div class=\"view\" style=\"width:300px; height:200px; opacity:0.001;\">\n  </div>\n</div>\n";
 
   var ViewFrame2D = /*#__PURE__*/function () {
     function ViewFrame2D(gl) {
@@ -1739,8 +1739,10 @@
       obj.view = obj.node.querySelector("div.view"); // Some initial dummy geometry to allow initialisation.
 
       obj.geometry = {
-        x: [0, 1],
-        y: [0, 1]
+        domain: {
+          x: [0, 1],
+          y: [0, 1]
+        }
       }; // initial dummy geometry
       // Transformation matrices.
 
@@ -1790,9 +1792,11 @@
         // The model matrix incorporates the initial scaling and translation to make sure the data fits in view.
         var dom = this.geometry.domain; // First translate left bottom corner to origin, scale so that top right domain corner is at 2,2, and then reposition so that domain is between -1 and 1.
 
-        var k = 2 / Math.max(dom.x[1] - dom.x[0], dom.y[1] - dom.y[0]);
+        var k = 2 / Math.max(dom.x[1] - dom.x[0], dom.y[1] - dom.y[0]); // Correct for the aspect ratio of the view element. For now the y domain is rescaled because the example data featured a larger x domain, and the width was kep constant. This can be made adjustable later.
+
+        var kar = (dom.x[1] - dom.x[0]) / (dom.y[1] - dom.y[0]);
         var translateToOrigin = translateMatrix(-dom.x[0], -dom.y[0], 0);
-        var scaleToClipSpace = scaleMatrix(k, k, 1);
+        var scaleToClipSpace = scaleMatrix(k, k * kar, 1);
         var translateToScaleSpace = translateMatrix(-1, -1, 0);
         this.transforms.model = multiplyArrayOfMatrices([translateToScaleSpace, scaleToClipSpace, translateToOrigin]); // model
         // Performance caveat: in real production code it's best not to create new arrays and objects in a loop. This example chooses code clarity over performance.
@@ -1964,7 +1968,7 @@
       obj.indicesBuffer = indicesBuffer;
       obj.indicesLength = indices.length; // If teh index defines which frame to play next, then the timesteps need to be ordered. Maybe it's best to just enforce this by sorting the timesteps when they are loaded.
 
-      obj.currentFrameInd = 0; // Imagine that some metadata was loaded in.
+      obj._currentFrameInd = 0; // Imagine that some metadata was loaded in.
 
       fetch("./data/testmetadata.json").then(function (res) {
         return res.json();
@@ -2019,6 +2023,20 @@
         var obj = this;
         return obj.timesteps[obj.currentFrameInd].t;
       } // currentTimestep
+
+    }, {
+      key: "memoryUsed",
+      get: function get() {
+        var obj = this;
+        var memory = 0;
+        obj.timesteps.forEach(function (t) {
+          if (t.byteLength) {
+            memory += t.byteLength;
+          } // if
+
+        });
+        return memory;
+      } // memoryUsed
       // There should be two separate methods to pick the current frame. One is by incrementing, and the other is by setting the appropriate time.
 
     }, {
@@ -2026,8 +2044,7 @@
       value: function incrementCurrentFrame() {
         // When incrementing past the end of the available time range we loop to the start.
         var obj = this;
-        obj.currentFrameInd += 1;
-        obj.currentFrameInd = obj.currentFrameInd % obj.timesteps.length;
+        obj.currentFrameInd = (obj.currentFrameInd + 1) % obj.timesteps.length;
       } // incrementCurrentFrame
 
     }, {
@@ -2049,24 +2066,47 @@
 
         obj.currentFrameInd = i;
       } // timestepCurrentFrame
+      // This should be reworked into an outside call, because eventually it would be beneficial if the files can be loaded by a library system, and the mesh is only responsible to declare what it would like?
 
     }, {
-      key: "updateCurrentFrame",
-      value: function updateCurrentFrame() {
+      key: "currentFrameInd",
+      get: // set currentFrameInd
+      function get() {
+        return this._currentFrameInd;
+      } // get currentFrameInd
+      ,
+      set: function set(i) {
+        // When the index is set automatically manage the data. This will allow the data to be loaded once and kept in memory.
+        var obj = this;
+        obj._currentFrameInd = i; // For now just load the current frame here, and save it to the timestep.
+
+        var timestep = obj.timesteps[obj._currentFrameInd];
+
+        if (timestep.valuesPromise == undefined) {
+          timestep.valuesPromise = loadBinData(timestep.filename).then(function (ab) {
+            return new Uint8Array(ab);
+          });
+          timestep.valuesPromise.then(function (ui8) {
+            timestep.byteLength = ui8.byteLength;
+          });
+        } // if
+
+      }
+    }, {
+      key: "updateCurrentFrameBuffer",
+      value: function updateCurrentFrameBuffer() {
         // The UnsteadyPlayer will input an actual timestep, as opposed to just increment the frame. This allows simulations with different temporal resolutions to be compared directly. Comparable time frames are selected based on available data.
         // What will be passed in? Just an icrement I guess, and it's up to the user to provide time variables with the same dt and in the same domain.
         var obj = this;
-        var gl = obj.gl; // The index is used to find and load teh appropriate file.
+        var gl = obj.gl; // The values from the files were stored as uint8, but the GPU requires them to be float32. The data is converted just before passing it to the buffer.	
 
-        loadBinData(obj.timesteps[obj.currentFrameInd].filename).then(function (ab) {
-          return new Uint8Array(ab);
-        }).then(function (ui8) {
+        obj.timesteps[obj.currentFrameInd].valuesPromise.then(function (ui8) {
           return Float32Array.from(ui8);
         }).then(function (f32) {
           gl.bindBuffer(gl.ARRAY_BUFFER, obj.valuesBuffer);
           gl.bufferData(gl.ARRAY_BUFFER, f32, gl.STATIC_DRAW);
         });
-      } // updateCurrentFrame
+      } // updateCurrentFrameBuffer
 
     }]);
 
@@ -2401,7 +2441,7 @@
 
         obj.computeModelMatrix();
         obj.computeViewMatrix();
-        obj.computeOrthographicMatrix();
+        obj.computeOrthographicMatrix(); // Will the rendering loop have to be redone in order to allow promises to be returned to ensure that the player is ready for the next step?
 
         if (now > obj.timelastdraw + obj.dt) {
           if (obj.playbar.playStatus) {
@@ -2444,7 +2484,7 @@
         } // if
 
 
-        obj.geometry.updateCurrentFrame();
+        obj.geometry.updateCurrentFrameBuffer();
       } // incrementTimeStep
 
     }]);
@@ -2659,24 +2699,6 @@
     };
   } // setupProgram
 
-  /* 3D
-  import MeshRenderer from "./renderers/MeshRenderer.js";
-
-  // The MeshRenderer is the engine that draws the scene.
-  let renderer = new MeshRenderer();
-
-  // Add the players in. The HTML will position hte frames.
-  for(let i=0; i<100; i++){
-  	renderer.add(i)
-  } // for
-
-
-  // In the end the renderer will have to wait for the data to be loaded. Therefore the update loop should be outside.
-  renderer.draw()
-
-  console.log(renderer)
-  */
-
   var renderer = new MeshRenderer2D(); // Add the players in. The HTML will position hte frames.
 
   for (var i = 0; i < 4; i++) {
@@ -2694,14 +2716,68 @@
     DONE: - don't update invisible divs
     DONE: - zooming, panning
     
-    DONE: use the actual data
-    DONE: value based color shader calculation
-    DONE: (panning relaxation must be manually adjusted) - 2D and 3D cameras.
+    DONE: - use the actual data
+    DONE: - value based color shader calculation
+    DONE: - (panning relaxation must be manually adjusted) - 2D and 3D cameras.
+    DONE: - auto set the original domain (DONE (width, height), near/far plane)
+
     - dragging frames around
     - pinch gestures
-    DONE: auto set the original domain (DONE (width, height), near/far plane)
+
+    - play multiple views at once.
+    - loading buffering
+    
+    - chapter annotations
+    - comments, reintroduce tags as threads
+    - spatial arranging and metadata connection
+    - tree hierarchy
+    - grouping (hierarchy operates on tags, and is thus independent of grouping)
   */
-  // For 2D drawing the transformation matrices have to be different. That means that the ViewFrame needs to be changed, as that implements the matrices.
+  // Padding can be clicked on, margin cannot.
+  // Add the dragging of the frames here. For that first loop over all the view divs, readjust their positions to position absolute, and then add the dragging.
+  // The dragging is done outside because I wish the rest of the interactivity - spatial arrangement, grouping to be added on top of this. That should make those aspects more general.
+  // Maybe it didn't work because after one item is adjusted the others change position? In that case let's try to first collect all the positions, and then change the positioning style.
+
+  var positions = renderer.items.reduce(function (acc, item) {
+    acc.push([item.node.offsetLeft, item.node.offsetTop]);
+    return acc;
+  }, []);
+  renderer.items.forEach(function (item, i) {
+    item.node.style.position = "absolute";
+    item.node.style.left = positions[i][0] + "px";
+    item.node.style.top = positions[i][1] + "px"; // Add an object to facilitate the dragging.
+
+    item.dragging = {
+      active: false,
+      itemRelativePosition: [0, 0]
+    }; // dragging
+
+    item.node.onmousedown = function (e) {
+      if (e.target == item.node) {
+        var rect = item.node.getBoundingClientRect();
+        item.dragging.active = true;
+        item.dragging.itemRelativePosition = [e.clientX - rect.x, e.clientY - rect.y];
+      } // if
+
+    }; // onmousedown
+
+
+    item.node.onmousemove = function (e) {
+      if (item.dragging.active) {
+        var x = e.clientX - item.dragging.itemRelativePosition[0];
+        var y = e.clientY - item.dragging.itemRelativePosition[1];
+        item.node.style.left = x + "px";
+        item.node.style.top = y + "px";
+      } // if
+
+    }; // mousemove
+
+
+    item.node.onmouseup = function () {
+      item.dragging.active = false;
+    }; // onmouseup
+
+  }); // forEach
 
 }());
 //# sourceMappingURL=webgldrawing.js.map

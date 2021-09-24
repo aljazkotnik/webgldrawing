@@ -311,7 +311,7 @@ Could the mesh renderer just do the rendering all the time, and teh ViewFrames d
 let template$1 = `
 <div class="item">
   <div class="label">Label</div>
-  <div class="view" style="width:300px; height:300px; opacity:0.001;">
+  <div class="view" style="width:300px; height:200px; opacity:0.001;">
   </div>
 </div>
 `;
@@ -329,9 +329,11 @@ class ViewFrame2D{
 	obj.view = obj.node.querySelector("div.view");
 	
 	// Some initial dummy geometry to allow initialisation.
-	obj.geometry = {
+	obj.geometry = { 
+	  domain: {
 		x: [0, 1],
 		y: [0, 1]
+	  }
 	}; // initial dummy geometry
 	
 	// Transformation matrices.
@@ -372,8 +374,11 @@ class ViewFrame2D{
 	// First translate left bottom corner to origin, scale so that top right domain corner is at 2,2, and then reposition so that domain is between -1 and 1.
 	let k = 2 / Math.max(dom.x[1]-dom.x[0], dom.y[1]-dom.y[0]);
 	
+	// Correct for the aspect ratio of the view element. For now the y domain is rescaled because the example data featured a larger x domain, and the width was kep constant. This can be made adjustable later.
+	let kar = ( dom.x[1]-dom.x[0] ) / ( dom.y[1]-dom.y[0] );
+	
 	let translateToOrigin = translateMatrix(-dom.x[0], -dom.y[0], 0);
-	let scaleToClipSpace = scaleMatrix(k,k,1);
+	let scaleToClipSpace = scaleMatrix(k,k*kar,1);
 	let translateToScaleSpace = translateMatrix(-1,-1,0);
 	
 	
@@ -586,7 +591,7 @@ class Mesh2D{
 	
 	
 	// If teh index defines which frame to play next, then the timesteps need to be ordered. Maybe it's best to just enforce this by sorting the timesteps when they are loaded.
-	obj.currentFrameInd = 0;
+	obj._currentFrameInd = 0;
 	
 	
 	
@@ -666,13 +671,24 @@ class Mesh2D{
 	return obj.timesteps[obj.currentFrameInd].t;
   } // currentTimestep
   
+  get memoryUsed(){
+	let obj = this;
+	
+	let memory = 0;
+	obj.timesteps.forEach(t=>{
+	  if(t.byteLength){
+		memory += t.byteLength;
+	  } // if
+	});
+	
+	return memory
+  } // memoryUsed
   
   // There should be two separate methods to pick the current frame. One is by incrementing, and the other is by setting the appropriate time.
   incrementCurrentFrame(){
 	// When incrementing past the end of the available time range we loop to the start.
-	let obj = this;		
-	obj.currentFrameInd += 1;
-	obj.currentFrameInd = obj.currentFrameInd % obj.timesteps.length;
+	let obj = this;
+	obj.currentFrameInd = (obj.currentFrameInd + 1) % obj.timesteps.length;
   } // incrementCurrentFrame
   
   timestepCurrentFrame(t){
@@ -695,26 +711,47 @@ class Mesh2D{
   } // timestepCurrentFrame
   
   
-  updateCurrentFrame(){
+  // This should be reworked into an outside call, because eventually it would be beneficial if the files can be loaded by a library system, and the mesh is only responsible to declare what it would like?
+  set currentFrameInd(i){
+	// When the index is set automatically manage the data. This will allow the data to be loaded once and kept in memory.
+	let obj = this;
+	
+	obj._currentFrameInd = i;
+	
+	// For now just load the current frame here, and save it to the timestep.
+	let timestep = obj.timesteps[obj._currentFrameInd];
+	if(timestep.valuesPromise == undefined){
+		timestep.valuesPromise = loadBinData(timestep.filename)
+		  .then(ab=>{ return new Uint8Array(ab) });
+		timestep.valuesPromise.then(ui8=>{
+			timestep.byteLength = ui8.byteLength;
+		});
+	} // if
+	
+  } // set currentFrameInd
+  
+  get currentFrameInd(){
+	return this._currentFrameInd;
+  } // get currentFrameInd
+  
+  
+  updateCurrentFrameBuffer(){
 	// The UnsteadyPlayer will input an actual timestep, as opposed to just increment the frame. This allows simulations with different temporal resolutions to be compared directly. Comparable time frames are selected based on available data.
 	
 	// What will be passed in? Just an icrement I guess, and it's up to the user to provide time variables with the same dt and in the same domain.
 	let obj = this;
 	let gl = obj.gl;
 	
-	// The index is used to find and load teh appropriate file.
+	// The values from the files were stored as uint8, but the GPU requires them to be float32. The data is converted just before passing it to the buffer.	
+	obj.timesteps[obj.currentFrameInd].valuesPromise
+	  .then(ui8=>{ return Float32Array.from(ui8) })
+	  .then(f32=>{
+		  gl.bindBuffer(gl.ARRAY_BUFFER, obj.valuesBuffer);
+		  gl.bufferData(gl.ARRAY_BUFFER, f32, gl.STATIC_DRAW);
 	
+	  });
 	
-	loadBinData(obj.timesteps[obj.currentFrameInd].filename)
-		  .then(ab=>{ return new Uint8Array(ab) })
-		  .then(ui8=>{ return Float32Array.from(ui8) })
-		  .then(f32=>{
-			  gl.bindBuffer(gl.ARRAY_BUFFER, obj.valuesBuffer);
-		      gl.bufferData(gl.ARRAY_BUFFER, f32, gl.STATIC_DRAW);
-		
-		  });
-	
-  } // updateCurrentFrame
+  } // updateCurrentFrameBuffer
   
   
 } // Mesh2D
@@ -1134,7 +1171,7 @@ class UnsteadyPlayer2D extends ViewFrame2D {
     obj.computeViewMatrix();
     obj.computeOrthographicMatrix();
 	
-	
+	// Will the rendering loop have to be redone in order to allow promises to be returned to ensure that the player is ready for the next step?
 	if(now > obj.timelastdraw + obj.dt){
 	  if( obj.playbar.playStatus ){
 		obj.timelastdraw = now;
@@ -1174,7 +1211,7 @@ class UnsteadyPlayer2D extends ViewFrame2D {
 	  obj.playbar.t_play = obj.geometry.currentTime;
 	} // if
 	
-	obj.geometry.updateCurrentFrame();
+	obj.geometry.updateCurrentFrameBuffer();
   } // incrementTimeStep
   
 } // UnsteadyPlayer2D
@@ -1493,6 +1530,8 @@ function setupProgram(gl){
 	};
 } // setupProgram
 
+// The mesh renderer implements the frag and color shaders, and runs the main drawing loop.
+
 // The MeshRenderer is the engine that draws the scene.
 let renderer = new MeshRenderer2D();
 
@@ -1515,12 +1554,70 @@ console.log(renderer);
   DONE: - don't update invisible divs
   DONE: - zooming, panning
   
-  DONE: use the actual data
-  DONE: value based color shader calculation
-  DONE: (panning relaxation must be manually adjusted) - 2D and 3D cameras.
+  DONE: - use the actual data
+  DONE: - value based color shader calculation
+  DONE: - (panning relaxation must be manually adjusted) - 2D and 3D cameras.
+  DONE: - auto set the original domain (DONE (width, height), near/far plane)
+
   - dragging frames around
   - pinch gestures
-  DONE: auto set the original domain (DONE (width, height), near/far plane)
+
+  - play multiple views at once.
+  - loading buffering
+  
+  - chapter annotations
+  - comments, reintroduce tags as threads
+  - spatial arranging and metadata connection
+  - tree hierarchy
+  - grouping (hierarchy operates on tags, and is thus independent of grouping)
 */
 
-// For 2D drawing the transformation matrices have to be different. That means that the ViewFrame needs to be changed, as that implements the matrices.
+// Padding can be clicked on, margin cannot.
+
+
+// Add the dragging of the frames here. For that first loop over all the view divs, readjust their positions to position absolute, and then add the dragging.
+// The dragging is done outside because I wish the rest of the interactivity - spatial arrangement, grouping to be added on top of this. That should make those aspects more general.
+
+// Maybe it didn't work because after one item is adjusted the others change position? In that case let's try to first collect all the positions, and then change the positioning style.
+let positions = renderer.items.reduce((acc,item)=>{
+	acc.push([item.node.offsetLeft, item.node.offsetTop]);
+	return acc
+},[]);
+
+renderer.items.forEach((item,i)=>{
+		
+	item.node.style.position = "absolute";
+	item.node.style.left = positions[i][0] + "px";
+	item.node.style.top = positions[i][1] + "px";
+	
+	// Add an object to facilitate the dragging.
+	item.dragging = {
+		active: false,
+		itemRelativePosition: [0, 0]
+	}; // dragging
+
+	item.node.onmousedown = function(e){
+		if(e.target == item.node){
+			let rect = item.node.getBoundingClientRect();
+			
+			item.dragging.active = true;
+			item.dragging.itemRelativePosition = [
+				e.clientX - rect.x,
+				e.clientY - rect.y
+			];
+		} // if
+	}; // onmousedown
+	item.node.onmousemove = function(e){
+		if(item.dragging.active){
+			let x = e.clientX - item.dragging.itemRelativePosition[0];
+			let y = e.clientY - item.dragging.itemRelativePosition[1];
+			
+			item.node.style.left = x + "px";
+			item.node.style.top  = y + "px";
+		} // if
+	}; // mousemove
+	item.node.onmouseup   = function(){
+		item.dragging.active = false;
+	}; // onmouseup
+
+}); // forEach

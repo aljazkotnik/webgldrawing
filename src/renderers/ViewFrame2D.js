@@ -30,7 +30,7 @@ import { Camera2D } from "./Camera.js";
 let template = `
 <div class="item">
   <div class="label">Label</div>
-  <div class="view" style="width:300px; height:300px; opacity:0.001;">
+  <div class="view" style="width:300px; height:200px; opacity:0.001;">
   </div>
 </div>
 `;
@@ -48,9 +48,11 @@ export default class ViewFrame2D{
 	obj.view = obj.node.querySelector("div.view");
 	
 	// Some initial dummy geometry to allow initialisation.
-	obj.geometry = {
+	obj.geometry = { 
+	  domain: {
 		x: [0, 1],
 		y: [0, 1]
+	  }
 	} // initial dummy geometry
 	
 	// Transformation matrices.
@@ -91,8 +93,11 @@ export default class ViewFrame2D{
 	// First translate left bottom corner to origin, scale so that top right domain corner is at 2,2, and then reposition so that domain is between -1 and 1.
 	let k = 2 / Math.max(dom.x[1]-dom.x[0], dom.y[1]-dom.y[0]);
 	
+	// Correct for the aspect ratio of the view element. For now the y domain is rescaled because the example data featured a larger x domain, and the width was kep constant. This can be made adjustable later.
+	let kar = ( dom.x[1]-dom.x[0] ) / ( dom.y[1]-dom.y[0] );
+	
 	let translateToOrigin = translateMatrix(-dom.x[0], -dom.y[0], 0)
-	let scaleToClipSpace = scaleMatrix(k,k,1);
+	let scaleToClipSpace = scaleMatrix(k,k*kar,1);
 	let translateToScaleSpace = translateMatrix(-1,-1,0);
 	
 	

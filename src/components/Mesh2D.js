@@ -63,7 +63,7 @@ export default class Mesh2D{
 	
 	
 	// If teh index defines which frame to play next, then the timesteps need to be ordered. Maybe it's best to just enforce this by sorting the timesteps when they are loaded.
-	obj.currentFrameInd = 0;
+	obj._currentFrameInd = 0;
 	
 	
 	
@@ -143,13 +143,24 @@ export default class Mesh2D{
 	return obj.timesteps[obj.currentFrameInd].t;
   } // currentTimestep
   
+  get memoryUsed(){
+	let obj = this;
+	
+	let memory = 0;
+	obj.timesteps.forEach(t=>{
+	  if(t.byteLength){
+		memory += t.byteLength
+	  } // if
+	})
+	
+	return memory
+  } // memoryUsed
   
   // There should be two separate methods to pick the current frame. One is by incrementing, and the other is by setting the appropriate time.
   incrementCurrentFrame(){
 	// When incrementing past the end of the available time range we loop to the start.
-	let obj = this;		
-	obj.currentFrameInd += 1;
-	obj.currentFrameInd = obj.currentFrameInd % obj.timesteps.length
+	let obj = this;
+	obj.currentFrameInd = (obj.currentFrameInd + 1) % obj.timesteps.length
   } // incrementCurrentFrame
   
   timestepCurrentFrame(t){
@@ -172,26 +183,47 @@ export default class Mesh2D{
   } // timestepCurrentFrame
   
   
-  updateCurrentFrame(){
+  // This should be reworked into an outside call, because eventually it would be beneficial if the files can be loaded by a library system, and the mesh is only responsible to declare what it would like?
+  set currentFrameInd(i){
+	// When the index is set automatically manage the data. This will allow the data to be loaded once and kept in memory.
+	let obj = this;
+	
+	obj._currentFrameInd = i;
+	
+	// For now just load the current frame here, and save it to the timestep.
+	let timestep = obj.timesteps[obj._currentFrameInd];
+	if(timestep.valuesPromise == undefined){
+		timestep.valuesPromise = loadBinData(timestep.filename)
+		  .then(ab=>{ return new Uint8Array(ab) })
+		timestep.valuesPromise.then(ui8=>{
+			timestep.byteLength = ui8.byteLength
+		})
+	} // if
+	
+  } // set currentFrameInd
+  
+  get currentFrameInd(){
+	return this._currentFrameInd;
+  } // get currentFrameInd
+  
+  
+  updateCurrentFrameBuffer(){
 	// The UnsteadyPlayer will input an actual timestep, as opposed to just increment the frame. This allows simulations with different temporal resolutions to be compared directly. Comparable time frames are selected based on available data.
 	
 	// What will be passed in? Just an icrement I guess, and it's up to the user to provide time variables with the same dt and in the same domain.
 	let obj = this;
 	let gl = obj.gl;
 	
-	// The index is used to find and load teh appropriate file.
+	// The values from the files were stored as uint8, but the GPU requires them to be float32. The data is converted just before passing it to the buffer.	
+	obj.timesteps[obj.currentFrameInd].valuesPromise
+	  .then(ui8=>{ return Float32Array.from(ui8) })
+	  .then(f32=>{
+		  gl.bindBuffer(gl.ARRAY_BUFFER, obj.valuesBuffer);
+		  gl.bufferData(gl.ARRAY_BUFFER, f32, gl.STATIC_DRAW);
 	
+	  })
 	
-	let valuesPromise = loadBinData(obj.timesteps[obj.currentFrameInd].filename)
-		  .then(ab=>{ return new Uint8Array(ab) })
-		  .then(ui8=>{ return Float32Array.from(ui8) })
-		  .then(f32=>{
-			  gl.bindBuffer(gl.ARRAY_BUFFER, obj.valuesBuffer);
-		      gl.bufferData(gl.ARRAY_BUFFER, f32, gl.STATIC_DRAW);
-		
-		  })
-	
-  } // updateCurrentFrame
+  } // updateCurrentFrameBuffer
   
   
 } // Mesh2D

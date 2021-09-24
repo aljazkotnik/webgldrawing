@@ -49,7 +49,7 @@ export default class UnsteadyPlayer2D extends ViewFrame2D {
     obj.computeViewMatrix();
     obj.computeOrthographicMatrix();
 	
-	
+	// Will the rendering loop have to be redone in order to allow promises to be returned to ensure that the player is ready for the next step?
 	if(now > obj.timelastdraw + obj.dt){
 	  if( obj.playbar.playStatus ){
 		obj.timelastdraw = now;
@@ -89,7 +89,7 @@ export default class UnsteadyPlayer2D extends ViewFrame2D {
 	  obj.playbar.t_play = obj.geometry.currentTime;
 	} // if
 	
-	obj.geometry.updateCurrentFrame();
+	obj.geometry.updateCurrentFrameBuffer();
   } // incrementTimeStep
   
 } // UnsteadyPlayer2D
