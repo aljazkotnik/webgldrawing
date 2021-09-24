@@ -1623,6 +1623,7 @@ void main() {
   	}; // dragging
 
   	item.node.onmousedown = function(e){
+  		console.log(e);
   		if(e.target == item.node){
   			let rect = item.node.getBoundingClientRect();
   			
@@ -1635,8 +1636,8 @@ void main() {
   	}; // onmousedown
   	item.node.onmousemove = function(e){
   		if(item.dragging.active){
-  			let x = e.clientX - item.dragging.itemRelativePosition[0];
-  			let y = e.clientY - item.dragging.itemRelativePosition[1];
+  			let x = e.pageX - item.dragging.itemRelativePosition[0];
+  			let y = e.pageY - item.dragging.itemRelativePosition[1];
   			
   			item.node.style.left = x + "px";
   			item.node.style.top  = y + "px";

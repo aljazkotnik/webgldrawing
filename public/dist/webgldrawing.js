@@ -2753,6 +2753,8 @@
     }; // dragging
 
     item.node.onmousedown = function (e) {
+      console.log(e);
+
       if (e.target == item.node) {
         var rect = item.node.getBoundingClientRect();
         item.dragging.active = true;
@@ -2764,8 +2766,8 @@
 
     item.node.onmousemove = function (e) {
       if (item.dragging.active) {
-        var x = e.clientX - item.dragging.itemRelativePosition[0];
-        var y = e.clientY - item.dragging.itemRelativePosition[1];
+        var x = e.pageX - item.dragging.itemRelativePosition[0];
+        var y = e.pageY - item.dragging.itemRelativePosition[1];
         item.node.style.left = x + "px";
         item.node.style.top = y + "px";
       } // if
