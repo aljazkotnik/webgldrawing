@@ -1461,6 +1461,17 @@ class MeshRenderer2D{
 	  (rect.bottom < 0 || rect.top > gl.canvas.clientHeight) || 
 	  (rect.right < 0 || rect.left > gl.canvas.clientWidth);
 	
+	// The idea is to collect all the boundingClientRects, and check if any of the following items overlap it, in which case skip the drawing.
+	// The limit is 16 items drawn at once. There can be more items in analysis at the same time, but only 16 drawn at once. This means that if the items overlap, there can be any number of them, as long as they are in maximum 15 piles.
+	// It all really depends on the connection speed and the size of the files...
+	let isCovered = false;
+	for(let i=obj.items.indexOf(item); i<obj.items.length; i++){
+		// Check if the i-th viewFrame covers this one. This is a simple version that skirts the problem of figuring out if a bunch of viewFrames collectively cover this viewFrame.
+		// Maybe later on there can just be group interfaces added as a separate attribute, and those can be made to hide the other frames,
+		let higherRect = obj.items[i].node.getBoundingClientRect();
+		isCovered = isCovered ? true : isRectInHigherRect(rect, higherRect);
+	} // for
+	
 	return !isOffScreen
   } // isItemVisible
   
@@ -1479,6 +1490,14 @@ class MeshRenderer2D{
   } // globalColormapRange
 
 } // MeshRenderer2D
+
+
+function isRectInHigherRect(rect, higherRect){
+	// For it to be in hte rect it must be in the x and y range of the rect.
+	return ( (higherRect.left <= rect.left) && (rect.right <= higherRect.right) ) &&
+	       ( (higherRect.top <= rect.top)   && (rect.bottom <= higherRect.bottom) )
+} // isPointInRect
+
 
 function setupProgram(gl){
  
@@ -1559,13 +1578,13 @@ console.log(renderer);
   DONE: - (panning relaxation must be manually adjusted) - 2D and 3D cameras.
   DONE: - auto set the original domain (DONE (width, height), near/far plane)
 
-  - dragging frames around
+  DONE: - dragging frames around
   - pinch gestures
 
   - play multiple views at once.
   - loading buffering
   
-  - chapter annotations
+  - adding chapter annotations
   - comments, reintroduce tags as threads
   - spatial arranging and metadata connection
   - tree hierarchy
@@ -1609,6 +1628,9 @@ renderer.items.forEach((item,i)=>{
 			// Move this item to the end of the drawing queue to ensure it's drawn on top.
 			renderer.items.splice(renderer.items.indexOf(item), 1);
 			renderer.items.push(item);
+			
+			// Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
+			item.node.parentNode.insertBefore(item.node, null);
 		} // if
 	}; // onmousedown
 	item.node.onmousemove = function(e){
@@ -1625,3 +1647,11 @@ renderer.items.forEach((item,i)=>{
 	}; // onmouseup
 
 }); // forEach
+
+
+
+/*
+Chapter are actually added as ordinal variables - they have a name, and a timestep value. So they are not simple tags. But the metadata ordinal variables definitely should not appear as chapters. But the correlation between both should be available.
+*/
+
+// Currently working on checking if a multiple is visible when overlapped.

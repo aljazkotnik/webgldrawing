@@ -247,6 +247,17 @@ export default class MeshRenderer2D{
 	  (rect.bottom < 0 || rect.top > gl.canvas.clientHeight) || 
 	  (rect.right < 0 || rect.left > gl.canvas.clientWidth)
 	
+	// The idea is to collect all the boundingClientRects, and check if any of the following items overlap it, in which case skip the drawing.
+	// The limit is 16 items drawn at once. There can be more items in analysis at the same time, but only 16 drawn at once. This means that if the items overlap, there can be any number of them, as long as they are in maximum 15 piles.
+	// It all really depends on the connection speed and the size of the files...
+	let isCovered = false;
+	for(let i=obj.items.indexOf(item); i<obj.items.length; i++){
+		// Check if the i-th viewFrame covers this one. This is a simple version that skirts the problem of figuring out if a bunch of viewFrames collectively cover this viewFrame.
+		// Maybe later on there can just be group interfaces added as a separate attribute, and those can be made to hide the other frames,
+		let higherRect = obj.items[i].node.getBoundingClientRect();
+		isCovered = isCovered ? true : isRectInHigherRect(rect, higherRect);
+	} // for
+	
 	return !isOffScreen
   } // isItemVisible
   
@@ -265,6 +276,14 @@ export default class MeshRenderer2D{
   } // globalColormapRange
 
 } // MeshRenderer2D
+
+
+function isRectInHigherRect(rect, higherRect){
+	// For it to be in hte rect it must be in the x and y range of the rect.
+	return ( (higherRect.left <= rect.left) && (rect.right <= higherRect.right) ) &&
+	       ( (higherRect.top <= rect.top)   && (rect.bottom <= higherRect.bottom) )
+} // isPointInRect
+
 
 function setupProgram(gl){
  

@@ -28,13 +28,13 @@ console.log(renderer)
   DONE: - (panning relaxation must be manually adjusted) - 2D and 3D cameras.
   DONE: - auto set the original domain (DONE (width, height), near/far plane)
 
-  - dragging frames around
+  DONE: - dragging frames around
   - pinch gestures
 
   - play multiple views at once.
   - loading buffering
   
-  - chapter annotations
+  - adding chapter annotations
   - comments, reintroduce tags as threads
   - spatial arranging and metadata connection
   - tree hierarchy
@@ -78,6 +78,9 @@ renderer.items.forEach((item,i)=>{
 			// Move this item to the end of the drawing queue to ensure it's drawn on top.
 			renderer.items.splice(renderer.items.indexOf(item), 1);
 			renderer.items.push(item)
+			
+			// Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
+			item.node.parentNode.insertBefore(item.node, null);
 		} // if
 	} // onmousedown
 	item.node.onmousemove = function(e){
@@ -95,4 +98,11 @@ renderer.items.forEach((item,i)=>{
 
 }) // forEach
 
+
+
+/*
+Chapter are actually added as ordinal variables - they have a name, and a timestep value. So they are not simple tags. But the metadata ordinal variables definitely should not appear as chapters. But the correlation between both should be available.
+*/
+
+// Currently working on checking if a multiple is visible when overlapped.
 
