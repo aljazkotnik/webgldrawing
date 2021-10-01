@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang=en>
+<!--
+  This application demonstrates using Pointer Events for simple 2-pointer
+  pinch/zoom gesture recognition.
+-->
+<head>
+<title>Comments system templating</title>
+
+
+<link rel="shortcut icon" href="image/favicon.png"/>
+	
+<!-- STYLING -->  
+<link rel="stylesheet" href="/style/fonts/roboto-condensed/roboto-condensed.css">
+<link rel="stylesheet" href="/style/fonts/fontawesome/font-awesome_4.7.0.min.css">
+ 
+<style>
+
+  h1, div {
+    font-family: helvetica;
+  }
+
+  .item {
+	display: inline-block;
+	padding: 1em;
+	box-shadow: 1px 2px 4px 0px rgba(0,0,0,0.25);
+	font-family: helvetica;
+  }
+
+  .item > div.label {
+	color: #888;
+	font-size: 28px;
+	margin-top: 0.5em;
+  }
+  
+  
+  // Comments
+  div.commenting {
+    font-size: 16px;
+  }
+  
+  input {
+    border: none;
+  }
+  
+  button {
+    border: none;
+	background-color: white;
+	cursor: pointer;
+  }
+  
+  button.reply {
+    color: gray;
+	padding: 0 0 0 0;
+  }
+  
+  button.submit {
+    color: white;
+	background-color: black;
+	border-radius: 4px;
+  }
+  
+  i.vote-number {
+    margin-left: 4px;
+  }
+  
+  span.timestamp {
+    color: gray;
+	font-size: 14px;
+	margin-left: 12px;
+  }
+  
+  
+  
+  
+  
+</style>
+
+
+
+</head>
+
+
+<body>
+
+
+<!-- 
+Maybe the title should be in the description? That way it can be fully separated from the viewer. Furthermore, it will provide some content for a minimised view of the description.
+For comments the information should be the number of comments, number of contributors, overall likes/dislikes.
+
+
+<input class="author" type="text" placeholder="I wish to be known as...">
+-->
+
+<div class="header">
+  <h1 style="display: inline-block;">Commenting System</h1>
+  <div class="login" style="display: inline-block; float: right; color: gray;">
+    Login as:
+    <input type="text" placeholder="alias" style="width: 50px"></input>
+  </div>
+</div>
+
+<div class="item item0">
+  <div class="label">Label 0</div>
+  <div class="view" style="width:300px; height:200px; opacity:0.001;"></div>
+  <div class="description"></div>
+</div>
+
+<div class="item item1">
+  <div class="label">Label 1</div>
+  <div class="view" style="width:300px; height:200px; opacity:0.001;"></div>
+  <div class="description"></div>
+</div>
+
+<script type="module" src="main.js"></script>
+
+</body>
+</html>

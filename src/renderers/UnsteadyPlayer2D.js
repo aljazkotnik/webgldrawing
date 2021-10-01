@@ -15,6 +15,16 @@ import Mesh2D from "../geometry/Mesh2D.js";
 import PlayBar from "./PlayBar.js";
 
 
+// Load in the commenting module.
+import CommentingManager from "../components/commenting/src/CommentingManager.js";
+
+
+
+
+
+
+
+
 // How to actually perform the playing? First, just allow a small multiple to play itself. When the button is pressed the player becomes 'active'. The UnsteadyPlayer must be given the fps at which the data should change. Then when the internal document timestamp passes another full timestep from the beginning of the document it changes the data. The data must be ready beforehand though.
 
 
@@ -28,15 +38,21 @@ export default class UnsteadyPlayer2D extends ViewFrame2D {
 	// Actual geometry to be drawn.
 	obj.geometry = new Mesh2D(gl, unsteadyMetadataFilename);
 	
+	// The FPS at which to swap out data.
+	obj.fps = 24;
+	obj.dt = 1000 / obj.fps;
+	obj.timelastdraw = 0;
+	
+	
 	
 	// Add in a playbar
 	obj.playbar = new PlayBar();
 	obj.node.appendChild( obj.playbar.node );
 	
-	// The FPS at which to swap out data.
-	obj.fps = 24;
-	obj.dt = 1000 / obj.fps;
-	obj.timelastdraw = 0;
+	
+	// Add in the commenting system. The metadata filename is used as the id of this 'video', and thus this player. The node needs to be added also.
+	obj.commenting = new CommentingManager(unsteadyMetadataFilename);
+	obj.node.appendChild( obj.commenting.node );
 	
   } // constructor
   

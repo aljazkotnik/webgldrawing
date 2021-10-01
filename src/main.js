@@ -19,12 +19,14 @@
   
   - expandable description and tools section?
   - adding chapter annotations
-  - comments, reintroduce tags as threads
+      The annotations are not really chapters. They can be, but they should also support having a start AND end points, and be allowed to overlap. The playbar san still show them in order of appearance, but a more general view of the tag annotations should be available.
+  DONE comments, reintroduce tags as threads
   - spatial arranging and metadata connection
   - tree hierarchy
   - grouping (hierarchy operates on tags, and is thus independent of grouping)
   
   - put it all on a github webpage??
+  
 */
 
 // The mesh renderer implements the frag and color shaders, and runs the main drawing loop.
@@ -47,6 +49,7 @@ var metadata = [
 // Add the players in. The HTML will position hte frames.
 for(let i=0; i<4; i++){
 	let m = metadata[i];
+	// Player is added within the MeshRenderer because it needs the 'gl'.
 	let p = renderer.add(m.slice);
 	p.title(m.label);
 	p.metadata = m;
@@ -55,12 +58,23 @@ for(let i=0; i<4; i++){
 
 // The renderer starts updating straight away. It's the responsibility of the geometries to provide something to draw. In the end some initial geometry is provided as default, as the buffers are initialised straight away.
 renderer.draw()
-
 console.log(renderer)
 
 
-// Add the dragging externally.
-addDraggingToSiblingItems(renderer.items)
+// Add the dragging externally. The tabletop was positioned absolutely, with top: 0px. If this is not so the dragging will move the items on the initial drag start by the offset amount.
+addDraggingToSiblingItems(renderer.items, 80);
+
+
+
+
+// COMMENTING: Add the login info.
+let login = document.querySelector("div.login").querySelector("input");
+login.oninput = function(){
+  renderer.items.forEach(item=>{
+	item.commenting.user = login.value;
+  }) // forEach
+} // oninput
+
 
 
 /*

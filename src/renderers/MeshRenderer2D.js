@@ -83,8 +83,7 @@ export default class MeshRenderer2D{
   constructor(){
 	let obj = this;  
 	
-	let domcontainer = document.getElementById("table-top");
-	obj.domcontainer = domcontainer;
+	obj.domcontainer = document.getElementById("table-top");
 	
 	let canvas = document.getElementById("canvas");	
 	obj.canvas = canvas;

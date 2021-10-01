@@ -4,11 +4,11 @@
 
 // The initial positions must be collected all at the same time, as otherwise the rest of the "position: relative;" divs will get repositioned to where the previous div was.
 
-export function addDraggingToSiblingItems(items){
+export function addDraggingToSiblingItems(items, headeroffset){
 	// To add the dragging an additional "dragging" attribute is introduced to the items. The items are ViewFrame objects that all have their nodes inside the same parent node. The parent node must be the same as the initial positions of the frames are calculated based on their current positions within hte parent div.
 
 	let positions = items.reduce((acc,item)=>{
-		acc.push([item.node.offsetLeft, item.node.offsetTop])
+		acc.push([item.node.offsetLeft, item.node.offsetTop + headeroffset])
 		return acc
 	},[])
 

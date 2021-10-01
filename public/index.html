@@ -26,20 +26,43 @@
 		font-size: 28px;
 		margin-top: 0.5em;
 	}
+	
+	h1, div {
+      font-family: helvetica;
+    }
+  
+    input {
+      border: none;
+    }
   </style>
 	
 </head>
 
 <body>
+
+  <div class="header">
+    <h1 style="display: inline-block;">Unsteady player</h1>
+    
+  </div>
+
+
+
+
   <!-- the canvas and table-top must both be 'position: absolute' otherwise the events on svgs appended to the tabletop later on don't work -->
   <div class="container">
 	<canvas id="canvas" style="position: absolute; top:0px; left:0px; outline: black 3px solid;"></canvas>
-	<div id="table-top" style="position: absolute;"></div>
-  </div>  
+	<div id="table-top" style="position: absolute; top:0px;"></div>
+	
+	<!-- Head up display -->
+	<div id="hud" style="position: fixed; width: 100%; top: 0px;">
+	  <div class="login" style="display: inline-block; float: right; color: gray; margin-top: 10px;">
+        Login as:
+        <input type="text" placeholder="alias" style="width: 50px"></input>
+      </div>
+    </div>  
   
   <script src='/dist/webgldrawing.js'></script>  
   
-  <!--script src= "https://d3js.org/d3.v4.min.js"></script--> 
 </body>
 
 </html>
