@@ -10,7 +10,7 @@ MeshRenderer2D actually does the GPU drawing
 
 
 import ViewFrame2D from "./ViewFrame2D.js";
-import Mesh2D from "../components/Mesh2D.js";
+import Mesh2D from "../geometry/Mesh2D.js";
 
 import PlayBar from "./PlayBar.js";
 
@@ -21,13 +21,12 @@ import PlayBar from "./PlayBar.js";
 // It's advantageous to inherit from ViewFrame2D because the geometry changes on the go - first some dummy geometry is specified, and after the actual geometry is loaded in that just gets automatically used on next FrameAnimationRate step. If the ViewFrame is a module then the UnsteadyPlayer has to monitor when the geometry changes, and update the ViewFrame accordingly.
 // Because it's advantageous to inherit from ViewFrame2D it is also advantageous to create the outside html player wrapper in it. Then the unsteady player only needs to add other modules into it.
 export default class UnsteadyPlayer2D extends ViewFrame2D {
-  constructor(gl){
+  constructor(gl, unsteadyMetadataFilename){
     super(gl)
 	let obj = this;
 	
-	
 	// Actual geometry to be drawn.
-	obj.geometry = new Mesh2D(gl);
+	obj.geometry = new Mesh2D(gl, unsteadyMetadataFilename);
 	
 	
 	// Add in a playbar

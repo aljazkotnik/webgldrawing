@@ -33,7 +33,7 @@ let initdomain = {
 
 
 export default class Mesh2D{
-  constructor(gl){
+  constructor(gl, unsteadyMetadataFilename){
 	let obj = this;
 
 	obj.gl = gl;
@@ -68,7 +68,8 @@ export default class Mesh2D{
 	
 	
 	// Imagine that some metadata was loaded in.
-    fetch("./data/testmetadata.json")
+	// "./data/testmetadata.json"
+    fetch(unsteadyMetadataFilename)
 	  .then(res=>res.json())
 	  .then(content=>{
 		

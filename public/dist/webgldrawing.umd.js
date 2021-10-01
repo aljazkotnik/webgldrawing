@@ -360,7 +360,7 @@
   		x: [0, 1],
   		y: [0, 1]
   	  }
-  	}; // initial dummy geometry
+  	}; // initial dummy values
   	
   	// Transformation matrices.
   	obj.transforms = {};
@@ -471,6 +471,7 @@
     } // computeViewMatrix
     
     
+    // On the go updates.
     update(){
   	let obj = this;
   	
@@ -502,7 +503,25 @@
   	return Math.max(arx, ary)
     } // get aspectRatio
     
+    get isOnScreen(){
+  	// Check whether the viewframe is still on hte canvas screen. If it's display has been set to "none" then just return a false. "display: none" will be required when introducing the grouping interfaces.
+  	let obj = this;
+  	
+  	let isOnScreen = false;
+  	if(obj.node.style.display != "none"){
+  		let rect = obj.node.getBoundingClientRect();
+      
+  		let isOffScreen = 
+  		  (rect.bottom < 0 || rect.top > obj.gl.canvas.clientHeight) || 
+  		  (rect.right < 0 || rect.left > obj.gl.canvas.clientWidth);
+  		  
+  		isOnScreen = !isOffScreen;
+  	} // if
+  	
+  	return isOnScreen;
+    } // isOnScreen
     
+    // Camera
     cameraMoveStart(e){
   	let camera = this.camera;
   	camera.moveStart(e.clientX, e.clientY);
@@ -512,7 +531,6 @@
   	let camera = this.camera;
   	camera.move(e.clientX, e.clientY, this.valuePerPixel); 
     } // cameraMove
-    
     
     cameraMoveEnd(){
   	let camera = this.camera;
@@ -530,7 +548,7 @@
     
     
     pixel2clip(p){
-  	// Pixel values can be obtained from the event.
+  	// Pixel values can be obtained from the event. Convert the pixel value to the clip space values.
   	let obj = this;
   	
   	let rect = obj.view.getBoundingClientRect();
@@ -550,6 +568,11 @@
     
     // But the model matrix converts from the data domain to hte clip domain.
     
+    
+    title(label){
+  	// Change the title of the player.
+  	this.node.querySelector("div.label").textContent = label;
+    } // title
   } // ViewFrame2D
 
   /*
@@ -587,7 +610,7 @@
 
 
   class Mesh2D{
-    constructor(gl){
+    constructor(gl, unsteadyMetadataFilename){
   	let obj = this;
 
   	obj.gl = gl;
@@ -622,7 +645,8 @@
   	
   	
   	// Imagine that some metadata was loaded in.
-      fetch("./data/testmetadata.json")
+  	// "./data/testmetadata.json"
+      fetch(unsteadyMetadataFilename)
   	  .then(res=>res.json())
   	  .then(content=>{
   		
@@ -1169,13 +1193,12 @@
   // It's advantageous to inherit from ViewFrame2D because the geometry changes on the go - first some dummy geometry is specified, and after the actual geometry is loaded in that just gets automatically used on next FrameAnimationRate step. If the ViewFrame is a module then the UnsteadyPlayer has to monitor when the geometry changes, and update the ViewFrame accordingly.
   // Because it's advantageous to inherit from ViewFrame2D it is also advantageous to create the outside html player wrapper in it. Then the unsteady player only needs to add other modules into it.
   class UnsteadyPlayer2D extends ViewFrame2D {
-    constructor(gl){
+    constructor(gl, unsteadyMetadataFilename){
       super(gl);
   	let obj = this;
   	
-  	
   	// Actual geometry to be drawn.
-  	obj.geometry = new Mesh2D(gl);
+  	obj.geometry = new Mesh2D(gl, unsteadyMetadataFilename);
   	
   	
   	// Add in a playbar
@@ -1393,13 +1416,16 @@ void main() {
   	requestAnimationFrame( obj.draw.bind(obj) );
     } // draw
     
-    add(id){
+    add(meshMetadataFilename){
   	let obj = this;
   	
   	// let newplayer = new ViewFrame2D(obj.gl);
-  	let newplayer = new UnsteadyPlayer2D(obj.gl);
+  	let newplayer = new UnsteadyPlayer2D(obj.gl, meshMetadataFilename);
   	obj.domcontainer.appendChild(newplayer.node);
   	obj.items.push(newplayer);
+  	
+  	// Return the newplayer if metadata has to be added to it.
+  	return newplayer
     } // add
     
     updateViewport(item){
@@ -1479,26 +1505,20 @@ void main() {
     isItemVisible(item){
   	// Check whether the current item is visible. (!!!!) Extend later to check whether other items obscure the current item.
   	let obj = this;
-  	
-  	let gl = obj.gl;
-  	let rect = item.node.getBoundingClientRect();
-      
-  	let isOffScreen = 
-  	  (rect.bottom < 0 || rect.top > gl.canvas.clientHeight) || 
-  	  (rect.right < 0 || rect.left > gl.canvas.clientWidth);
-  	
+  		
   	// The idea is to collect all the boundingClientRects, and check if any of the following items overlap it, in which case skip the drawing.
   	// The limit is 16 items drawn at once. There can be more items in analysis at the same time, but only 16 drawn at once. This means that if the items overlap, there can be any number of them, as long as they are in maximum 15 piles.
   	// It all really depends on the connection speed and the size of the files...
+  	let rect = item.node.getBoundingClientRect();
   	let isCovered = false;
-  	for(let i=obj.items.indexOf(item); i<obj.items.length; i++){
+  	for(let i=obj.items.indexOf(item)+1; i<obj.items.length; i++){
   		// Check if the i-th viewFrame covers this one. This is a simple version that skirts the problem of figuring out if a bunch of viewFrames collectively cover this viewFrame.
   		// Maybe later on there can just be group interfaces added as a separate attribute, and those can be made to hide the other frames,
   		let higherRect = obj.items[i].node.getBoundingClientRect();
   		isCovered = isCovered ? true : isRectInHigherRect(rect, higherRect);
   	} // for
   	
-  	return !isOffScreen
+  	return item.isOnScreen && !isCovered
     } // isItemVisible
     
     get globalColormapRange(){
@@ -1575,22 +1595,66 @@ void main() {
   	};
   } // setupProgram
 
-  // The mesh renderer implements the frag and color shaders, and runs the main drawing loop.
+  // Padding can be clicked on, margin cannot. The click event is limited to the padding of the view object. A check is done on mousedown to make sure that interactions with the data don't trigger the div to move. When moving the item needs to be placed at the end of the rendering que, as well as the html order to ensure that it stays on top - so that other items don't draw over it, and that the dragging continues even when mousing over a div that was made after it.
 
-  // The MeshRenderer is the engine that draws the scene.
-  let renderer = new MeshRenderer2D();
+  // The dragging is done outside because I wish the rest of the interactivity - spatial arrangement, grouping to be added on top of this. That should make those aspects more general.
 
-  // Add the players in. The HTML will position hte frames.
-  for(let i=0; i<4; i++){
-  	renderer.add(i);
-  } // for
+  // The initial positions must be collected all at the same time, as otherwise the rest of the "position: relative;" divs will get repositioned to where the previous div was.
 
+  function addDraggingToSiblingItems(items){
+  	// To add the dragging an additional "dragging" attribute is introduced to the items. The items are ViewFrame objects that all have their nodes inside the same parent node. The parent node must be the same as the initial positions of the frames are calculated based on their current positions within hte parent div.
 
-  // In the end the renderer will have to wait for the data to be loaded. Therefore the update loop should be outside.
-  renderer.draw();
+  	let positions = items.reduce((acc,item)=>{
+  		acc.push([item.node.offsetLeft, item.node.offsetTop]);
+  		return acc
+  	},[]);
 
-  console.log(renderer);
+  	items.forEach((item,i)=>{
+  			
+  		item.node.style.position = "absolute";
+  		item.node.style.left = positions[i][0] + "px";
+  		item.node.style.top = positions[i][1] + "px";
+  		
+  		// Add an object to facilitate the dragging.
+  		item.dragging = {
+  			active: false,
+  			itemRelativePosition: [0, 0]
+  		}; // dragging
 
+  		item.node.onmousedown = function(e){
+  			if(e.target == item.node){
+  				let rect = item.node.getBoundingClientRect();
+  				
+  				item.dragging.active = true;
+  				item.dragging.itemRelativePosition = [
+  					e.clientX - rect.x,
+  					e.clientY - rect.y
+  				];
+  				
+  				// Move this item to the end of the drawing queue to ensure it's drawn on top.
+  				items.splice(items.indexOf(item), 1);
+  				items.push(item);
+  				
+  				// Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
+  				item.node.parentNode.insertBefore(item.node, null);
+  			} // if
+  		}; // onmousedown
+  		item.node.onmousemove = function(e){
+  			if(item.dragging.active){
+  				let x = e.pageX - item.dragging.itemRelativePosition[0];
+  				let y = e.pageY - item.dragging.itemRelativePosition[1];
+  				
+  				item.node.style.left = x + "px";
+  				item.node.style.top  = y + "px";
+  			} // if
+  		}; // mousemove
+  		item.node.onmouseup   = function(){
+  			item.dragging.active = false;
+  		}; // onmouseup
+
+  	}); // forEach
+  	
+  } // addDraggingToSiblingItems
 
   /* To do: 
     DONE: - allow scrolling
@@ -1605,81 +1669,56 @@ void main() {
     DONE: - auto set the original domain (DONE (width, height), near/far plane)
 
     DONE: - dragging frames around
+    - auto selecting the height of the viewport in pixels
     - pinch gestures
 
     - play multiple views at once.
-    - loading buffering
+    - loading buffering && data limitation, and subsequent viewframe number limitation.
     
+    - expandable description and tools section?
     - adding chapter annotations
     - comments, reintroduce tags as threads
     - spatial arranging and metadata connection
     - tree hierarchy
     - grouping (hierarchy operates on tags, and is thus independent of grouping)
+    
+    - put it all on a github webpage??
   */
 
-  // Padding can be clicked on, margin cannot.
+  // The MeshRenderer is the engine that draws the scene.
+  let renderer = new MeshRenderer2D();
 
 
-  // Add the dragging of the frames here. For that first loop over all the view divs, readjust their positions to position absolute, and then add the dragging.
-  // The dragging is done outside because I wish the rest of the interactivity - spatial arrangement, grouping to be added on top of this. That should make those aspects more general.
+  // Make some makeshift metadata here. From here it should flow down to hte geometry etc.
+  // In this case the metadata holds the reference to the unsteady simulation metadata, which then holds the references to the actual files required for rendering.
+  var metadata = [
+  {label: "Maybe we", slice: "./data/testmetadata.json"},
+  {label: "should add", slice: "./data/testmetadata.json"},
+  {label: "some more", slice: "./data/testmetadata.json"},
+  {label: "tasks.", slice: "./data/testmetadata.json"},
+  ]; // metadata
 
-  // Maybe it didn't work because after one item is adjusted the others change position? In that case let's try to first collect all the positions, and then change the positioning style.
-  let positions = renderer.items.reduce((acc,item)=>{
-  	acc.push([item.node.offsetLeft, item.node.offsetTop]);
-  	return acc
-  },[]);
+  // Add the players in. The HTML will position hte frames.
+  for(let i=0; i<4; i++){
+  	let m = metadata[i];
+  	let p = renderer.add(m.slice);
+  	p.title(m.label);
+  	p.metadata = m;
+  } // for
 
-  renderer.items.forEach((item,i)=>{
-  		
-  	item.node.style.position = "absolute";
-  	item.node.style.left = positions[i][0] + "px";
-  	item.node.style.top = positions[i][1] + "px";
-  	
-  	// Add an object to facilitate the dragging.
-  	item.dragging = {
-  		active: false,
-  		itemRelativePosition: [0, 0]
-  	}; // dragging
 
-  	item.node.onmousedown = function(e){
-  		if(e.target == item.node){
-  			let rect = item.node.getBoundingClientRect();
-  			
-  			item.dragging.active = true;
-  			item.dragging.itemRelativePosition = [
-  				e.clientX - rect.x,
-  				e.clientY - rect.y
-  			];
-  			
-  			// Move this item to the end of the drawing queue to ensure it's drawn on top.
-  			renderer.items.splice(renderer.items.indexOf(item), 1);
-  			renderer.items.push(item);
-  			
-  			// Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
-  			item.node.parentNode.insertBefore(item.node, null);
-  		} // if
-  	}; // onmousedown
-  	item.node.onmousemove = function(e){
-  		if(item.dragging.active){
-  			let x = e.pageX - item.dragging.itemRelativePosition[0];
-  			let y = e.pageY - item.dragging.itemRelativePosition[1];
-  			
-  			item.node.style.left = x + "px";
-  			item.node.style.top  = y + "px";
-  		} // if
-  	}; // mousemove
-  	item.node.onmouseup   = function(){
-  		item.dragging.active = false;
-  	}; // onmouseup
+  // The renderer starts updating straight away. It's the responsibility of the geometries to provide something to draw. In the end some initial geometry is provided as default, as the buffers are initialised straight away.
+  renderer.draw();
 
-  }); // forEach
+  console.log(renderer);
 
+
+  // Add the dragging externally.
+  addDraggingToSiblingItems(renderer.items);
 
 
   /*
   Chapter are actually added as ordinal variables - they have a name, and a timestep value. So they are not simple tags. But the metadata ordinal variables definitely should not appear as chapters. But the correlation between both should be available.
   */
-
-  // Currently working on checking if a multiple is visible when overlapped.
 
 })));

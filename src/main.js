@@ -1,21 +1,3 @@
-// The mesh renderer implements the frag and color shaders, and runs the main drawing loop.
-import MeshRenderer2D from "./renderers/MeshRenderer2D.js";
-
-// The MeshRenderer is the engine that draws the scene.
-let renderer = new MeshRenderer2D();
-
-// Add the players in. The HTML will position hte frames.
-for(let i=0; i<4; i++){
-	renderer.add(i)
-} // for
-
-
-// In the end the renderer will have to wait for the data to be loaded. Therefore the update loop should be outside.
-renderer.draw()
-
-console.log(renderer)
-
-
 /* To do: 
   DONE: - allow scrolling
   DONE: - add style to frames.
@@ -29,80 +11,60 @@ console.log(renderer)
   DONE: - auto set the original domain (DONE (width, height), near/far plane)
 
   DONE: - dragging frames around
+  - auto selecting the height of the viewport in pixels
   - pinch gestures
 
   - play multiple views at once.
-  - loading buffering
+  - loading buffering && data limitation, and subsequent viewframe number limitation.
   
+  - expandable description and tools section?
   - adding chapter annotations
   - comments, reintroduce tags as threads
   - spatial arranging and metadata connection
   - tree hierarchy
   - grouping (hierarchy operates on tags, and is thus independent of grouping)
+  
+  - put it all on a github webpage??
 */
 
-// Padding can be clicked on, margin cannot.
+// The mesh renderer implements the frag and color shaders, and runs the main drawing loop.
+import MeshRenderer2D from "./renderers/MeshRenderer2D.js";
+import { addDraggingToSiblingItems } from "./renderers/dragging.js";
+
+// The MeshRenderer is the engine that draws the scene.
+let renderer = new MeshRenderer2D();
 
 
-// Add the dragging of the frames here. For that first loop over all the view divs, readjust their positions to position absolute, and then add the dragging.
-// The dragging is done outside because I wish the rest of the interactivity - spatial arrangement, grouping to be added on top of this. That should make those aspects more general.
+// Make some makeshift metadata here. From here it should flow down to hte geometry etc.
+// In this case the metadata holds the reference to the unsteady simulation metadata, which then holds the references to the actual files required for rendering.
+var metadata = [
+{label: "Maybe we", slice: "./data/testmetadata.json"},
+{label: "should add", slice: "./data/testmetadata.json"},
+{label: "some more", slice: "./data/testmetadata.json"},
+{label: "tasks.", slice: "./data/testmetadata.json"},
+] // metadata
 
-// Maybe it didn't work because after one item is adjusted the others change position? In that case let's try to first collect all the positions, and then change the positioning style.
-let positions = renderer.items.reduce((acc,item)=>{
-	acc.push([item.node.offsetLeft, item.node.offsetTop])
-	return acc
-},[])
+// Add the players in. The HTML will position hte frames.
+for(let i=0; i<4; i++){
+	let m = metadata[i];
+	let p = renderer.add(m.slice);
+	p.title(m.label);
+	p.metadata = m;
+} // for
 
-renderer.items.forEach((item,i)=>{
-		
-	item.node.style.position = "absolute";
-	item.node.style.left = positions[i][0] + "px"
-	item.node.style.top = positions[i][1] + "px"
-	
-	// Add an object to facilitate the dragging.
-	item.dragging = {
-		active: false,
-		itemRelativePosition: [0, 0]
-	} // dragging
 
-	item.node.onmousedown = function(e){
-		if(e.target == item.node){
-			let rect = item.node.getBoundingClientRect();
-			
-			item.dragging.active = true;
-			item.dragging.itemRelativePosition = [
-				e.clientX - rect.x,
-				e.clientY - rect.y
-			];
-			
-			// Move this item to the end of the drawing queue to ensure it's drawn on top.
-			renderer.items.splice(renderer.items.indexOf(item), 1);
-			renderer.items.push(item)
-			
-			// Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
-			item.node.parentNode.insertBefore(item.node, null);
-		} // if
-	} // onmousedown
-	item.node.onmousemove = function(e){
-		if(item.dragging.active){
-			let x = e.pageX - item.dragging.itemRelativePosition[0];
-			let y = e.pageY - item.dragging.itemRelativePosition[1];
-			
-			item.node.style.left = x + "px"
-			item.node.style.top  = y + "px"
-		} // if
-	} // mousemove
-	item.node.onmouseup   = function(){
-		item.dragging.active = false;
-	} // onmouseup
+// The renderer starts updating straight away. It's the responsibility of the geometries to provide something to draw. In the end some initial geometry is provided as default, as the buffers are initialised straight away.
+renderer.draw()
 
-}) // forEach
+console.log(renderer)
 
+
+// Add the dragging externally.
+addDraggingToSiblingItems(renderer.items)
 
 
 /*
 Chapter are actually added as ordinal variables - they have a name, and a timestep value. So they are not simple tags. But the metadata ordinal variables definitely should not appear as chapters. But the correlation between both should be available.
 */
 
-// Currently working on checking if a multiple is visible when overlapped.
 

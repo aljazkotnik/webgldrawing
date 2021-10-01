@@ -1743,7 +1743,7 @@
           x: [0, 1],
           y: [0, 1]
         }
-      }; // initial dummy geometry
+      }; // initial dummy values
       // Transformation matrices.
 
       obj.transforms = {};
@@ -1832,6 +1832,7 @@
 
         this.transforms.view = multiplyArrayOfMatrices([invertMatrix(position), translateToZoomSpace, scaleToZoomSpace, translateToOrigin]); // model
       } // computeViewMatrix
+      // On the go updates.
 
     }, {
       key: "update",
@@ -1868,6 +1869,24 @@
       } // get aspectRatio
 
     }, {
+      key: "isOnScreen",
+      get: function get() {
+        // Check whether the viewframe is still on hte canvas screen. If it's display has been set to "none" then just return a false. "display: none" will be required when introducing the grouping interfaces.
+        var obj = this;
+        var isOnScreen = false;
+
+        if (obj.node.style.display != "none") {
+          var rect = obj.node.getBoundingClientRect();
+          var isOffScreen = rect.bottom < 0 || rect.top > obj.gl.canvas.clientHeight || rect.right < 0 || rect.left > obj.gl.canvas.clientWidth;
+          isOnScreen = !isOffScreen;
+        } // if
+
+
+        return isOnScreen;
+      } // isOnScreen
+      // Camera
+
+    }, {
       key: "cameraMoveStart",
       value: function cameraMoveStart(e) {
         var camera = this.camera;
@@ -1901,7 +1920,7 @@
     }, {
       key: "pixel2clip",
       value: function pixel2clip(p) {
-        // Pixel values can be obtained from the event.
+        // Pixel values can be obtained from the event. Convert the pixel value to the clip space values.
         var obj = this;
         var rect = obj.view.getBoundingClientRect(); // Clicked point within the viewport, in terms of pixels.
 
@@ -1914,6 +1933,13 @@
       } // pixel2clip
       // When finding the return transformation I'm figuring out what the translation of the left lower corner should be to keep a particular point at the same pixel location.
       // But the model matrix converts from the data domain to hte clip domain.
+
+    }, {
+      key: "title",
+      value: function title(label) {
+        // Change the title of the player.
+        this.node.querySelector("div.label").textContent = label;
+      } // title
 
     }]);
 
@@ -1942,7 +1968,7 @@
   };
 
   var Mesh2D = /*#__PURE__*/function () {
-    function Mesh2D(gl) {
+    function Mesh2D(gl, unsteadyMetadataFilename) {
       _classCallCheck(this, Mesh2D);
 
       this.domain = initdomain;
@@ -1969,8 +1995,9 @@
       obj.indicesLength = indices.length; // If teh index defines which frame to play next, then the timesteps need to be ordered. Maybe it's best to just enforce this by sorting the timesteps when they are loaded.
 
       obj._currentFrameInd = 0; // Imagine that some metadata was loaded in.
+      // "./data/testmetadata.json"
 
-      fetch("./data/testmetadata.json").then(function (res) {
+      fetch(unsteadyMetadataFilename).then(function (res) {
         return res.json();
       }).then(function (content) {
         // But all three need to be available at the same time before rendering.
@@ -2412,7 +2439,7 @@
 
     var _super = _createSuper(UnsteadyPlayer2D);
 
-    function UnsteadyPlayer2D(gl) {
+    function UnsteadyPlayer2D(gl, unsteadyMetadataFilename) {
       var _this;
 
       _classCallCheck(this, UnsteadyPlayer2D);
@@ -2422,7 +2449,7 @@
       var obj = _assertThisInitialized(_this); // Actual geometry to be drawn.
 
 
-      obj.geometry = new Mesh2D(gl); // Add in a playbar
+      obj.geometry = new Mesh2D(gl, unsteadyMetadataFilename); // Add in a playbar
 
       obj.playbar = new PlayBar();
       obj.node.appendChild(obj.playbar.node); // The FPS at which to swap out data.
@@ -2561,12 +2588,14 @@
 
     }, {
       key: "add",
-      value: function add(id) {
+      value: function add(meshMetadataFilename) {
         var obj = this; // let newplayer = new ViewFrame2D(obj.gl);
 
-        var newplayer = new UnsteadyPlayer2D(obj.gl);
+        var newplayer = new UnsteadyPlayer2D(obj.gl, meshMetadataFilename);
         obj.domcontainer.appendChild(newplayer.node);
-        obj.items.push(newplayer);
+        obj.items.push(newplayer); // Return the newplayer if metadata has to be added to it.
+
+        return newplayer;
       } // add
 
     }, {
@@ -2634,16 +2663,14 @@
       key: "isItemVisible",
       value: function isItemVisible(item) {
         // Check whether the current item is visible. (!!!!) Extend later to check whether other items obscure the current item.
-        var obj = this;
-        var gl = obj.gl;
-        var rect = item.node.getBoundingClientRect();
-        var isOffScreen = rect.bottom < 0 || rect.top > gl.canvas.clientHeight || rect.right < 0 || rect.left > gl.canvas.clientWidth; // The idea is to collect all the boundingClientRects, and check if any of the following items overlap it, in which case skip the drawing.
+        var obj = this; // The idea is to collect all the boundingClientRects, and check if any of the following items overlap it, in which case skip the drawing.
         // The limit is 16 items drawn at once. There can be more items in analysis at the same time, but only 16 drawn at once. This means that if the items overlap, there can be any number of them, as long as they are in maximum 15 piles.
         // It all really depends on the connection speed and the size of the files...
 
+        var rect = item.node.getBoundingClientRect();
         var isCovered = false;
 
-        for (var i = obj.items.indexOf(item); i < obj.items.length; i++) {
+        for (var i = obj.items.indexOf(item) + 1; i < obj.items.length; i++) {
           // Check if the i-th viewFrame covers this one. This is a simple version that skirts the problem of figuring out if a bunch of viewFrames collectively cover this viewFrame.
           // Maybe later on there can just be group interfaces added as a separate attribute, and those can be made to hide the other frames,
           var higherRect = obj.items[i].node.getBoundingClientRect();
@@ -2651,7 +2678,7 @@
         } // for
 
 
-        return !isOffScreen;
+        return item.isOnScreen && !isCovered;
       } // isItemVisible
 
     }, {
@@ -2718,95 +2745,92 @@
     };
   } // setupProgram
 
-  var renderer = new MeshRenderer2D(); // Add the players in. The HTML will position hte frames.
+  // The dragging is done outside because I wish the rest of the interactivity - spatial arrangement, grouping to be added on top of this. That should make those aspects more general.
+  // The initial positions must be collected all at the same time, as otherwise the rest of the "position: relative;" divs will get repositioned to where the previous div was.
+
+  function addDraggingToSiblingItems(items) {
+    // To add the dragging an additional "dragging" attribute is introduced to the items. The items are ViewFrame objects that all have their nodes inside the same parent node. The parent node must be the same as the initial positions of the frames are calculated based on their current positions within hte parent div.
+    var positions = items.reduce(function (acc, item) {
+      acc.push([item.node.offsetLeft, item.node.offsetTop]);
+      return acc;
+    }, []);
+    items.forEach(function (item, i) {
+      item.node.style.position = "absolute";
+      item.node.style.left = positions[i][0] + "px";
+      item.node.style.top = positions[i][1] + "px"; // Add an object to facilitate the dragging.
+
+      item.dragging = {
+        active: false,
+        itemRelativePosition: [0, 0]
+      }; // dragging
+
+      item.node.onmousedown = function (e) {
+        if (e.target == item.node) {
+          var rect = item.node.getBoundingClientRect();
+          item.dragging.active = true;
+          item.dragging.itemRelativePosition = [e.clientX - rect.x, e.clientY - rect.y]; // Move this item to the end of the drawing queue to ensure it's drawn on top.
+
+          items.splice(items.indexOf(item), 1);
+          items.push(item); // Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
+
+          item.node.parentNode.insertBefore(item.node, null);
+        } // if
+
+      }; // onmousedown
+
+
+      item.node.onmousemove = function (e) {
+        if (item.dragging.active) {
+          var x = e.pageX - item.dragging.itemRelativePosition[0];
+          var y = e.pageY - item.dragging.itemRelativePosition[1];
+          item.node.style.left = x + "px";
+          item.node.style.top = y + "px";
+        } // if
+
+      }; // mousemove
+
+
+      item.node.onmouseup = function () {
+        item.dragging.active = false;
+      }; // onmouseup
+
+    }); // forEach
+  } // addDraggingToSiblingItems
+
+  var renderer = new MeshRenderer2D(); // Make some makeshift metadata here. From here it should flow down to hte geometry etc.
+  // In this case the metadata holds the reference to the unsteady simulation metadata, which then holds the references to the actual files required for rendering.
+
+  var metadata = [{
+    label: "Maybe we",
+    slice: "./data/testmetadata.json"
+  }, {
+    label: "should add",
+    slice: "./data/testmetadata.json"
+  }, {
+    label: "some more",
+    slice: "./data/testmetadata.json"
+  }, {
+    label: "tasks.",
+    slice: "./data/testmetadata.json"
+  }]; // metadata
+  // Add the players in. The HTML will position hte frames.
 
   for (var i = 0; i < 4; i++) {
-    renderer.add(i);
+    var m = metadata[i];
+    var p = renderer.add(m.slice);
+    p.title(m.label);
+    p.metadata = m;
   } // for
-  // In the end the renderer will have to wait for the data to be loaded. Therefore the update loop should be outside.
+  // The renderer starts updating straight away. It's the responsibility of the geometries to provide something to draw. In the end some initial geometry is provided as default, as the buffers are initialised straight away.
 
 
   renderer.draw();
-  console.log(renderer);
-  /* To do: 
-    DONE: - allow scrolling
-    DONE: - add style to frames.
-    DONE: - make divs appear side by side also
-    DONE: - don't update invisible divs
-    DONE: - zooming, panning
-    
-    DONE: - use the actual data
-    DONE: - value based color shader calculation
-    DONE: - (panning relaxation must be manually adjusted) - 2D and 3D cameras.
-    DONE: - auto set the original domain (DONE (width, height), near/far plane)
+  console.log(renderer); // Add the dragging externally.
 
-    DONE: - dragging frames around
-    - pinch gestures
-
-    - play multiple views at once.
-    - loading buffering
-    
-    - adding chapter annotations
-    - comments, reintroduce tags as threads
-    - spatial arranging and metadata connection
-    - tree hierarchy
-    - grouping (hierarchy operates on tags, and is thus independent of grouping)
-  */
-  // Padding can be clicked on, margin cannot.
-  // Add the dragging of the frames here. For that first loop over all the view divs, readjust their positions to position absolute, and then add the dragging.
-  // The dragging is done outside because I wish the rest of the interactivity - spatial arrangement, grouping to be added on top of this. That should make those aspects more general.
-  // Maybe it didn't work because after one item is adjusted the others change position? In that case let's try to first collect all the positions, and then change the positioning style.
-
-  var positions = renderer.items.reduce(function (acc, item) {
-    acc.push([item.node.offsetLeft, item.node.offsetTop]);
-    return acc;
-  }, []);
-  renderer.items.forEach(function (item, i) {
-    item.node.style.position = "absolute";
-    item.node.style.left = positions[i][0] + "px";
-    item.node.style.top = positions[i][1] + "px"; // Add an object to facilitate the dragging.
-
-    item.dragging = {
-      active: false,
-      itemRelativePosition: [0, 0]
-    }; // dragging
-
-    item.node.onmousedown = function (e) {
-      if (e.target == item.node) {
-        var rect = item.node.getBoundingClientRect();
-        item.dragging.active = true;
-        item.dragging.itemRelativePosition = [e.clientX - rect.x, e.clientY - rect.y]; // Move this item to the end of the drawing queue to ensure it's drawn on top.
-
-        renderer.items.splice(renderer.items.indexOf(item), 1);
-        renderer.items.push(item); // Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
-
-        item.node.parentNode.insertBefore(item.node, null);
-      } // if
-
-    }; // onmousedown
-
-
-    item.node.onmousemove = function (e) {
-      if (item.dragging.active) {
-        var x = e.pageX - item.dragging.itemRelativePosition[0];
-        var y = e.pageY - item.dragging.itemRelativePosition[1];
-        item.node.style.left = x + "px";
-        item.node.style.top = y + "px";
-      } // if
-
-    }; // mousemove
-
-
-    item.node.onmouseup = function () {
-      item.dragging.active = false;
-    }; // onmouseup
-
-  }); // forEach
-
+  addDraggingToSiblingItems(renderer.items);
   /*
   Chapter are actually added as ordinal variables - they have a name, and a timestep value. So they are not simple tags. But the metadata ordinal variables definitely should not appear as chapters. But the correlation between both should be available.
   */
-  // Currently working on checking if a multiple is visible when overlapped.
 
 }());
 //# sourceMappingURL=webgldrawing.js.map

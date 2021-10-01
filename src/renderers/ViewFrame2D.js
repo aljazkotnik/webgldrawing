@@ -53,7 +53,7 @@ export default class ViewFrame2D{
 		x: [0, 1],
 		y: [0, 1]
 	  }
-	} // initial dummy geometry
+	} // initial dummy values
 	
 	// Transformation matrices.
 	obj.transforms = {};
@@ -164,6 +164,7 @@ export default class ViewFrame2D{
   } // computeViewMatrix
   
   
+  // On the go updates.
   update(){
 	let obj = this;
 	
@@ -195,7 +196,25 @@ export default class ViewFrame2D{
 	return Math.max(arx, ary)
   } // get aspectRatio
   
+  get isOnScreen(){
+	// Check whether the viewframe is still on hte canvas screen. If it's display has been set to "none" then just return a false. "display: none" will be required when introducing the grouping interfaces.
+	let obj = this;
+	
+	let isOnScreen = false;
+	if(obj.node.style.display != "none"){
+		let rect = obj.node.getBoundingClientRect();
+    
+		let isOffScreen = 
+		  (rect.bottom < 0 || rect.top > obj.gl.canvas.clientHeight) || 
+		  (rect.right < 0 || rect.left > obj.gl.canvas.clientWidth)
+		  
+		isOnScreen = !isOffScreen;
+	} // if
+	
+	return isOnScreen;
+  } // isOnScreen
   
+  // Camera
   cameraMoveStart(e){
 	let camera = this.camera;
 	camera.moveStart(e.clientX, e.clientY);
@@ -205,7 +224,6 @@ export default class ViewFrame2D{
 	let camera = this.camera;
 	camera.move(e.clientX, e.clientY, this.valuePerPixel) 
   } // cameraMove
-  
   
   cameraMoveEnd(){
 	let camera = this.camera;
@@ -223,7 +241,7 @@ export default class ViewFrame2D{
   
   
   pixel2clip(p){
-	// Pixel values can be obtained from the event.
+	// Pixel values can be obtained from the event. Convert the pixel value to the clip space values.
 	let obj = this;
 	
 	let rect = obj.view.getBoundingClientRect();
@@ -243,4 +261,9 @@ export default class ViewFrame2D{
   
   // But the model matrix converts from the data domain to hte clip domain.
   
+  
+  title(label){
+	// Change the title of the player.
+	this.node.querySelector("div.label").textContent = label;
+  } // title
 } // ViewFrame2D
