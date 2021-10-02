@@ -1385,101 +1385,13 @@
     return createProgramInfoFromProgram(gl, program);
   }
 
-  function html2element$1(html) {
+  function html2element$2(html) {
     var template = document.createElement('template');
     template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
 
     return template.content.firstChild;
   } // html2element
-
-  function svg2element(svg) {
-    var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    g.innerHTML = svg.trim();
-    return g.firstChild;
-  } // svg2element
-
-  var scaleLinear = /*#__PURE__*/function () {
-    function scaleLinear() {
-      _classCallCheck(this, scaleLinear);
-
-      this._domain = [0, 1];
-      this._range = [0, 1];
-    }
-
-    _createClass(scaleLinear, [{
-      key: "domain",
-      get: // domain
-      function get() {
-        return this._domain;
-      } // domain
-      ,
-      set: function set(d) {
-        this._domain = d;
-      }
-    }, {
-      key: "range",
-      get: // range
-      function get() {
-        return this._range;
-      } // range
-      ,
-      set: function set(r) {
-        this._range = r;
-      }
-    }, {
-      key: "dom2range",
-      value: function dom2range(v) {
-        return mapSpaceAValueToSpaceB(v, this.domain, this.range);
-      } // dom2range
-
-    }, {
-      key: "range2dom",
-      value: function range2dom(v) {
-        return mapSpaceAValueToSpaceB(v, this.range, this.domain);
-      } // range2dom
-
-    }]);
-
-    return scaleLinear;
-  }(); // scaleLinear
-
-  function mapSpaceAValueToSpaceB(v, A, B) {
-    return (v - A[0]) / (A[1] - A[0]) * (B[1] - B[0]) + B[0];
-  } // mapSpaceAValueToSpaceB
-
-
-  function joinDataToElements$1(data, elements, idAccessor) {
-    // Find data that has no elements, find the elements that have data, and the leftover.
-    var elementsArray = _toConsumableArray(elements);
-
-    var elementsDataIds = elementsArray.map(function (el) {
-      return idAccessor(el.__data__);
-    });
-    var g = elementsArray.reduce(function (acc, el) {
-      var d = data.filter(function (d_) {
-        return idAccessor(el.__data__) == idAccessor(d_);
-      }); // filter
-
-      if (d.length > 0) {
-        el.__data__ = d[0];
-        acc.update.push(el);
-      } else {
-        acc.exit.push(el);
-      } // if
-
-
-      return acc;
-    }, {
-      update: [],
-      exit: []
-    }); // filter
-
-    g.enter = data.filter(function (d) {
-      return !elementsDataIds.includes(idAccessor(d));
-    }); // filter
-
-    return g;
-  } // joinDataToElements
+   // joinDataToElements
 
   function multiplyMatrices(a, b) {
     // TODO - Simplify for explanation
@@ -1726,7 +1638,7 @@
 
   // Furthermore the overall wrapper is defined here so that after the class is inherited from there is space to append other modules. The class is inherited from (as opposed to plugged in as a module)
 
-  var template$6 = "\n<div class=\"item\">\n  <div class=\"label\">Label</div>\n  <div class=\"view\" style=\"width:300px; height:200px; opacity:0.001;\">\n  </div>\n</div>\n";
+  var template$a = "\n<div class=\"item\">\n  <div class=\"label\">Label</div>\n  <div class=\"view\" style=\"width:300px; height:200px; opacity:0.001;\">\n  </div>\n</div>\n";
 
   var ViewFrame2D = /*#__PURE__*/function () {
     function ViewFrame2D(gl) {
@@ -1734,7 +1646,7 @@
 
       var obj = this;
       obj.gl = gl;
-      obj.node = html2element$1(template$6); // obj.view is a convenience reference that points to the node. Transforms.view is the view transformation matrix.
+      obj.node = html2element$2(template$a); // obj.view is a convenience reference that points to the node. Transforms.view is the view transformation matrix.
 
       obj.view = obj.node.querySelector("div.view"); // Some initial dummy geometry to allow initialisation.
 
@@ -2154,93 +2066,250 @@
   }
   */
 
-  var template$5 = "\n<div class=\"player-controls\">\n  <svg id=\"playbar\" width=\"100%\" height=\"32px\">\n    <g class=\"playbutton\" style=\"cursor: pointer;\">\n\t  <path fill=\"tomato\" d=\"\"></path>\n    </g>\n    <g class=\"playbar\" style=\"cursor: pointer;\"></g>\n  </svg>\n</div>\n"; // template
-  // Some dimensions.
+  function html2element$1(html) {
+    var template = document.createElement('template');
+    template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
 
-  var playButtonWidth = 20;
-  var playButtonMargin = 6;
-  var textHeight = 12;
-  var textBottomMargin = 2;
-  var textSpace = textHeight + textBottomMargin;
-  var rectHighlightHeightDelta = 3; // use getAttribute/setAttribute
+    return template.content.firstChild;
+  } // html2element
 
-  function playPath() {
-    // 'width' and 'height' prescribe the size allocated for the play button. The button should take up 80% of the space available.
+  function svg2element(svg) {
+    var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.innerHTML = svg.trim();
+    return g.firstChild;
+  } // svg2element
+
+  var scaleLinear = /*#__PURE__*/function () {
+    function scaleLinear() {
+      _classCallCheck(this, scaleLinear);
+
+      this._domain = [0, 1];
+      this._range = [0, 1];
+    }
+
+    _createClass(scaleLinear, [{
+      key: "domain",
+      get: // domain
+      function get() {
+        return this._domain;
+      } // domain
+      ,
+      set: function set(d) {
+        this._domain = d;
+      }
+    }, {
+      key: "range",
+      get: // range
+      function get() {
+        return this._range;
+      } // range
+      ,
+      set: function set(r) {
+        this._range = r;
+      }
+    }, {
+      key: "dom2range",
+      value: function dom2range(v) {
+        return mapSpaceAValueToSpaceB(v, this.domain, this.range);
+      } // dom2range
+
+    }, {
+      key: "range2dom",
+      value: function range2dom(v) {
+        return mapSpaceAValueToSpaceB(v, this.range, this.domain);
+      } // range2dom
+
+    }]);
+
+    return scaleLinear;
+  }(); // scaleLinear
+
+  function mapSpaceAValueToSpaceB(v, A, B) {
+    return (v - A[0]) / (A[1] - A[0]) * (B[1] - B[0]) + B[0];
+  } // mapSpaceAValueToSpaceB
+   // joinDataToElements
+
+  function play(width, y) {
     // Calculate the size of the triangle, and where the drawing should begin.
-    // let L = 0.9 * Math.min( height / 1, width / (Math.sqrt(3)/2) )
-    var r_max = L * Math.sqrt(3) / 6;
+    var height = width * 2 * Math.sqrt(3) / 3;
+    var r_max = height * Math.sqrt(3) / 6;
     var r = 3 > r_max ? r_max : 3;
-    var dL = r * Math.sqrt(3); // Length of side cut by 1 rounding.
-
-    var L = playButtonWidth * 2 * Math.sqrt(3) / 3; // let Mx = (width - L)/2;
-    // let My = (height - L)/2;
+    var dH = r * Math.sqrt(3); // Length of side cut by 1 rounding.
 
     var Mx = 0;
-    var My = textSpace + rectHighlightHeightDelta + 5 - L / 2;
+    var My = y + 5 - height / 2;
     var p0 = [Mx, My];
-    var p1 = [Mx + L * Math.sqrt(3) / 2, My + L / 2];
-    var p2 = [Mx, My + L];
-    return "M".concat(p0[0], " ").concat(p0[1] + dL, "\n      a ").concat(r, ",").concat(r, ", 0,0,1  ").concat(r * 3 / 2, ", ").concat(-dL / 2, "\n      L ").concat(p1[0] - r * 3 / 2, " ").concat(p1[1] - dL / 2, "\n      a ").concat(r, ",").concat(r, ", 0,0,1  0, ").concat(dL, "\n      L ").concat(p2[0] + r * 3 / 2, " ").concat(p2[1] - dL / 2, "\n      a ").concat(r, ",").concat(r, ", 0,0,1  ").concat(-r * 3 / 2, ", ").concat(-dL / 2, "\n      Z\n      ");
+    var p1 = [Mx + height * Math.sqrt(3) / 2, My + height / 2];
+    var p2 = [Mx, My + height];
+    return "M".concat(p0[0], " ").concat(p0[1] + dH, "\n      a ").concat(r, ",").concat(r, ", 0,0,1  ").concat(r * 3 / 2, ", ").concat(-dH / 2, "\n      L ").concat(p1[0] - r * 3 / 2, " ").concat(p1[1] - dH / 2, "\n      a ").concat(r, ",").concat(r, ", 0,0,1  0, ").concat(dH, "\n      L ").concat(p2[0] + r * 3 / 2, " ").concat(p2[1] - dH / 2, "\n      a ").concat(r, ",").concat(r, ", 0,0,1  ").concat(-r * 3 / 2, ", ").concat(-dH / 2, "\n      Z\n      ");
   } // playPath
 
 
-  function pausePath() {
-    var width = playButtonWidth;
-    var height = playButtonWidth * 2 * Math.sqrt(3) / 3 - 2 * (3 * Math.sqrt(3) - 3);
+  function pause(width, y) {
+    var height = width * 2 * Math.sqrt(3) / 3 - 2 * (3 * Math.sqrt(3) - 3);
     var dx = width / 5;
     var r = 3;
     var Mx = 0;
-    var My = textSpace + rectHighlightHeightDelta + 5 - height / 2;
+    var My = y + 5 - height / 2;
     return "\n      M ".concat(Mx + r, " ").concat(My, " \n      L ").concat(Mx + 2 * dx - r, " ").concat(My, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(r, ",").concat(r, "\n      L ").concat(Mx + 2 * dx, " ").concat(My + height - r, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(-r, ",").concat(r, "\n      L ").concat(Mx + r, " ").concat(My + height, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(-r, ",").concat(-r, "\n      L ").concat(Mx, " ").concat(My + r, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(r, ",").concat(-r, "\n\t  M ").concat(Mx + 3 * dx + r, " ").concat(My, "\n      L ").concat(Mx + 5 * dx - r, " ").concat(My, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(r, ",").concat(r, "\n      L ").concat(Mx + 5 * dx, " ").concat(My + height - r, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(-r, ",").concat(r, "\n      L ").concat(Mx + 3 * dx + r, " ").concat(My + height, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(-r, ",").concat(-r, "\n      L ").concat(Mx + 3 * dx, " ").concat(My + r, "\n      a ").concat(r, ",").concat(r, " 0,0,1 ").concat(r, ",").concat(-r, "\n    ");
   } // pausePath
 
 
-  function chapterRect(className, color) {
-    var y = textSpace + rectHighlightHeightDelta;
-    return "<rect class=\"".concat(className, "\" x=\"0\" y=\"").concat(y, "\" width=\"0\" height=\"10\" fill=\"").concat(color, "\" stroke=\"white\" stroke-width=\"2px\"></rect>");
-  } // chapterRectTemplate
+  var template$9 = "\n<g style=\"cursor: pointer;\">\n  <path fill=\"tomato\" d=\"\"></path>\n</g>\n"; // Maybe the y should just be set outside? And the same for the chapter?? Maybe give it the y it should center itself about?
+  // textHeight + textBottomMargin + rectHighlightHeightDelta + rectHeight/2 - H/2
 
+  var PlayButton = /*#__PURE__*/function () {
+    // The y is given as the centerline about which to position the button. Half above, and half below. The initial y is therefore half the height, and should draw the button completely on hte svg.
+    function PlayButton() {
+      _classCallCheck(this, PlayButton);
+
+      this.y = 20 * 2 * Math.sqrt(3) / 3 / 2;
+      this.width = 20;
+      var obj = this;
+      obj.node = svg2element(template$9);
+    } // constructor
+
+
+    _createClass(PlayButton, [{
+      key: "update",
+      value: function update(playing) {
+        var obj = this;
+        var d = playing ? pause(obj.width, obj.y) : play(obj.width, obj.y);
+        obj.node.querySelector("path").setAttribute("d", d);
+      } // update
+
+    }]);
+
+    return PlayButton;
+  }(); // PlayButton
+
+  var defaultRectAttributes = "stroke=\"white\" stroke-width=\"2px\"";
+  var template$8 = "<g class=\"chapter\">\n  <rect class=\"background\" fill=\"gainsboro\" ".concat(defaultRectAttributes, "\"></rect>\n  <rect class=\"buffering\" fill=\"gray\" ").concat(defaultRectAttributes, "\"></rect>\n  <rect class=\"foreground\" fill=\"tomato\" ").concat(defaultRectAttributes, "\"></rect>\n  <text style=\"display: none;\"></text>\n</g>");
+
+  var PlayBarAnnotation = /*#__PURE__*/function () {
+    // y = textHeight + textBottomMargin + highlightHeightDelta
+    function PlayBarAnnotation(config, tscale) {
+      _classCallCheck(this, PlayBarAnnotation);
+
+      this.y = 12 + 2 + 3;
+      this.height = 10;
+      this.dh = 4;
+      var obj = this;
+      obj.node = svg2element(template$8);
+      obj.background = obj.node.querySelector("rect.background");
+      obj.buffering = obj.node.querySelector("rect.buffering");
+      obj.foreground = obj.node.querySelector("rect.foreground");
+      obj.label = obj.node.querySelector("text");
+      obj.config = config;
+      obj.tscale = tscale;
+      obj.node.addEventListener("mouseenter", function () {
+        obj.highlight();
+      }); // addEventListener
+
+      obj.node.addEventListener("mouseover", function () {
+        obj.highlight();
+      }); // addEventListener
+
+      obj.node.addEventListener("mouseout", function () {
+        obj.unhighlight();
+      }); // addEventListener
+    } // constructor
+
+
+    _createClass(PlayBarAnnotation, [{
+      key: "update",
+      value: function update(t_play, t_buffer) {
+        var obj = this;
+        var y = obj.y;
+        var x = obj.tscale.dom2range(obj.config.starttime);
+        obj.background.setAttribute("y", y);
+        obj.background.setAttribute("x", x);
+        obj.background.setAttribute("width", obj.width);
+        obj.background.setAttribute("height", obj.height);
+        obj.buffering.setAttribute("y", y);
+        obj.buffering.setAttribute("x", x);
+        obj.buffering.setAttribute("width", obj.width * obj.timeFraction(t_buffer));
+        obj.buffering.setAttribute("height", obj.height);
+        obj.foreground.setAttribute("y", y);
+        obj.foreground.setAttribute("x", x);
+        obj.foreground.setAttribute("width", obj.width * obj.timeFraction(t_play));
+        obj.foreground.setAttribute("height", obj.height);
+        obj.label.setAttribute("y", 12);
+        obj.label.setAttribute("x", x);
+        obj.label.innerHTML = obj.config.label;
+      } // update
+
+    }, {
+      key: "width",
+      get: function get() {
+        var obj = this;
+        var x0 = obj.tscale.dom2range(obj.config.starttime);
+        var x1 = obj.tscale.dom2range(obj.config.endtime);
+        return x1 - x0;
+      } // width
+
+    }, {
+      key: "timeFraction",
+      value: function timeFraction(t) {
+        var obj = this;
+        var tf = (t - obj.config.starttime) / (obj.config.endtime - obj.config.starttime);
+        return Math.abs(tf - 0.5) <= 0.5 ? tf : tf > 0;
+      } // timeFraction
+
+    }, {
+      key: "highlight",
+      value: function highlight() {
+        var obj = this;
+        highlightRectangle(obj.background, obj.y, obj.height, obj.dh);
+        highlightRectangle(obj.buffering, obj.y, obj.height, obj.dh);
+        highlightRectangle(obj.foreground, obj.y, obj.height, obj.dh);
+        obj.label.style.display = "";
+      } // highlight
+
+    }, {
+      key: "unhighlight",
+      value: function unhighlight() {
+        var obj = this;
+        unhighlightRectangle(obj.background, obj.y, obj.height);
+        unhighlightRectangle(obj.buffering, obj.y, obj.height);
+        unhighlightRectangle(obj.foreground, obj.y, obj.height);
+        obj.label.style.display = "none";
+      } // highlight
+
+    }]);
+
+    return PlayBarAnnotation;
+  }(); // PlayBarAnnotation
+
+  function highlightRectangle(r, y, h, dh) {
+    r.height.baseVal.value = h + 2 * dh;
+    r.y.baseVal.value = y - dh;
+  } // highlightRectangle
+
+
+  function unhighlightRectangle(r, y, h) {
+    r.height.baseVal.value = h;
+    r.y.baseVal.value = y;
+  } // unhighlightRectangle
+
+  var template$7 = "<g style=\"cursor: pointer;\"></g>"; // template
 
   var PlayBar = /*#__PURE__*/function () {
+    // Coordinates in whole svg frame.
     function PlayBar() {
       _classCallCheck(this, PlayBar);
 
+      this.y = 12 + 2 + 3;
+      this.x0 = 20 + 6;
+      this.x1 = 300;
+      this.annotations = [];
+      this.t_min = 0;
+      this.t_max = 1;
+      this.t_buffer = 0;
+      this.t_play = 0;
       var obj = this;
-      obj.node = html2element$1(template$5);
-      obj.button = obj.node.querySelector("g.playbutton");
-      obj.bar = obj.node.querySelector("g.playbar");
+      obj.node = svg2element(template$7);
       obj._tscale = new scaleLinear();
-      obj.button.addEventListener("click", function (event) {
-        // Get the action required based on the button icon.
-        if (obj.t_play == obj.t_max) {
-          obj.t_play = obj.t_min;
-        } // if
-
-
-        obj.playStatus = !obj.playStatus;
-      }); // addEventListener
-
-      obj.bar.addEventListener("click", function (event) {
-        // On click the playbar should register the correct time.
-        // The tscale takes inputs in the svg coordinates, and the event returns them in the client coordinates. Therefore the client coordinates must be adjusted for the position of the SVG.
-        var x1 = event.clientX;
-        var x0 = obj.node.getBoundingClientRect().x;
-        var t = obj.tscale.range2dom(x1 - x0); // Now just set the t to the right value, and update the view.
-
-        obj.t_play = t; // The playtime changed, therefore pause the video.
-
-        obj.playStatus = false;
-        obj.userNavigated = true;
-      }); // addEventListener
-
-      obj.t_min = 0;
-      obj.t_max = 1;
-      obj.t_buffer = 0;
-      obj.t_play = 0;
-      obj.playStatus = false;
-      obj.userNavigated = false; // Annotations. Comments should be based on the chapter tags I think. The discussion is intended to be based on observed events. The logical progress is that events need to first be identified, and then discussed in a separate step. There should be a single dialogue box, and in that one tags can be added. This allows a single comment to be seen in multiple threads. Replies will have to be handled separately. Eventually the user should also be able to pin comments.
-
-      obj.chapters = [];
     } // constructor
 
 
@@ -2249,187 +2318,174 @@
       get: function get() {
         // The tscale is relative to the whole svg element, and takes in whole svg coordinates.
         var obj = this;
-        var playBarStart = playButtonWidth + playButtonMargin;
-        var playBarEnd = obj.node.getBoundingClientRect().width;
         obj._tscale.domain = [obj.t_min, obj.t_max];
-        obj._tscale.range = [playBarStart, playBarEnd];
+        obj._tscale.range = [obj.x0, obj.x1];
         return obj._tscale;
       } // get tscale
-      // How should the chapter getting be done? Annotations can be pushed to individual small multiples, but also to many at the same time.
 
     }, {
-      key: "chapters",
-      get: // set chapters
-      function get() {
+      key: "rebuild",
+      value: function rebuild() {
+        // I need to do the join, but on objects instead of elements... Or just throw them all out and create new ones? Simpler I guess
         var obj = this;
-        return [{
-          label: "",
-          starttime: obj.t_min,
-          endtime: obj.t_max
-        }]; //  return this._chapters
-      } // get chapters
-      // CONSTRUCTION	 
-      ,
-      set: function set(annotations) {
-        var obj = this; // Sort them in peparation for chapter creation.
+        var exiting = obj.node.querySelectorAll("g.chapter");
 
-        annotations.sort(function (a, b) {
-          return a.time - b.time;
-        }); // The start and end values should be remaped or? The scale takes into account the different start and end points.
+        for (var i = 0; i < exiting.length; i++) {
+          exiting[i].remove();
+        } // for
+        // The creation of the chapters to show after somme annotations have been pushed still needs to be implemented.
 
-        var chapters = annotations.reduce(function (acc, current) {
+
+        function makeChapterObj(label, starttime, endtime) {
+          return {
+            label: label,
+            starttime: starttime,
+            endtime: endtime == undefined ? obj.t_max : endtime
+          };
+        } // makeChapterObj
+        // The ultimate way of doing it would be for the annotations to persist below other smaller annotations.
+
+
+        var chapters = obj.annotations.reduce(function (acc, a, i) {
           var previous = acc[acc.length - 1];
-          previous.endtime = previous.endtime > current.starttime ? current.starttime : previous.endtime; // The first one needs to start at zero, and the last one needs to stop at the end.
+          var current = makeChapterObj(a.label, a.starttime, a.endtime);
 
-          acc.push({
-            label: current.label,
-            starttime: current.starttime,
-            endtime: current.endtime > obj.t_max ? obj.t_max : current.endtime
-          });
+          if (previous.endtime < current.starttime) {
+            // Don't curtail hte previous one but instead allow it to draw completely. This allows the chapters to be 'stacked'. Ordering them by start time ensures they all have a handle available.
+            // Push in the needed padding, and then the annotation.
+            acc.push(makeChapterObj("", previous.endtime, current.starttime));
+          } // if
+
+
+          acc.push(current);
+
+          if (i == obj.annotations.length - 1 && current.endtime < obj.t_max) {
+            acc.push(makeChapterObj("", current.endtime, obj.t_max));
+          } // if
+
+
           return acc;
-        }, [{
-          label: "",
-          starttime: obj.t_min,
-          endtime: obj.t_max
-        }]);
-        obj._chapters = chapters;
-      }
-    }, {
-      key: "chapterRectangleWidth",
-      value: function chapterRectangleWidth(chapter) {
-        var x0 = this.tscale.dom2range(chapter.starttime);
-        var x1 = this.tscale.dom2range(chapter.endtime);
-        return x1 - x0;
-      } // chapterRectangleWidth
+        }, [makeChapterObj("", obj.t_min, obj.t_max)]);
+        obj.chapters = chapters.map(function (c) {
+          var a = new PlayBarAnnotation(c, obj.tscale);
+          a.y = obj.y;
+          return a;
+        }); // map
 
-    }, {
-      key: "chapterTimeFraction",
-      value: function chapterTimeFraction(ch, t) {
-        var tf = (t - ch.starttime) / (ch.endtime - ch.starttime);
-        return Math.abs(tf - 0.5) <= 0.5 ? tf : tf > 0;
-      } // chapterTimeFraction
-      // FUNCTIONALITY
+        obj.chapters.forEach(function (chapter) {
+          obj.node.appendChild(chapter.node);
+        }); // forEach
+      } // rebuild
 
     }, {
       key: "update",
       value: function update() {
         var obj = this;
-        obj.updateChapterGroups();
-        obj.updatePlayPauseButton();
-        obj.updatePlayBar();
-      } // update
-
-    }, {
-      key: "updateChapterGroups",
-      value: function updateChapterGroups() {
-        var obj = this;
-        var parent = obj.bar;
-        var groups = joinDataToElements$1(obj.chapters, parent.querySelectorAll("g.chapter"), function (d) {
-          return d.label;
+        obj.chapters.forEach(function (chapter) {
+          chapter.update(obj.t_play, obj.t_buffer);
         });
-        groups.enter.forEach(function (d) {
-          var chapternode = svg2element("<g class=\"chapter\">\n\t\t".concat(chapterRect("chapter-background", "gainsboro"), "\n\t\t").concat(chapterRect("chapter-buffering", "gray"), "\n\t\t").concat(chapterRect("chapter-foreground", "tomato"), "\n\t\t<text y=\"").concat(textHeight, "\" style=\"display: none;\">").concat(d.label, "</text>\n        </g>"));
-          chapternode.__data__ = d;
-          parent.appendChild(chapternode); // Add all the highlighting
-
-          addChapterHighlighting(chapternode);
-        }); // forEach enter
-        // The updating is not required, because annotations cannot change their name on the go. The positions of rectangles are all updated later on anyway.
-
-        groups.exit.forEach(function (el) {
-          el.remove();
-        }); // forEach exit
-        // Chapter highlighting.
-        // iterateOverHtmlList(newChapters.nodes(), addChapterHighlighting);
-      } // updateChapterGroups
-
-    }, {
-      key: "updatePlayBar",
-      value: function updatePlayBar() {
-        var obj = this;
-        obj.bar.querySelectorAll("g.chapter").forEach(function (el) {
-          var x = obj.tscale.dom2range(el.__data__.starttime);
-          var width = obj.chapterRectangleWidth(el.__data__);
-          var frac_buffer = obj.chapterTimeFraction(el.__data__, obj.t_buffer);
-          var frac_played = obj.chapterTimeFraction(el.__data__, obj.t_play);
-          el.querySelector("rect.chapter-background").setAttribute("x", x);
-          el.querySelector("rect.chapter-buffering").setAttribute("x", x);
-          el.querySelector("rect.chapter-foreground").setAttribute("x", x);
-          el.querySelector("text").setAttribute("x", x);
-          el.querySelector("rect.chapter-background").setAttribute("width", width);
-          el.querySelector("rect.chapter-buffering").setAttribute("width", width * frac_buffer);
-          el.querySelector("rect.chapter-foreground").setAttribute("width", width * frac_played);
-        }); // forEach chapter
-      } // updatePlayBar
-
-    }, {
-      key: "updatePlayPauseButton",
-      value: function updatePlayPauseButton() {
-        var obj = this; // Get teh dimensions available
-
-        var d = obj.playStatus ? pausePath() : playPath();
-        obj.button.querySelector("path").setAttribute("d", d);
-      } // updatePlayPauseButton
+      } // update
 
     }]);
 
     return PlayBar;
-  }(); // player
+  }(); // PlayBar
 
-  function iterateOverHtmlList(htmlList, callback) {
-    for (var j = 0; j < htmlList.length; j++) {
-      var tg = htmlList[j];
-      callback(tg);
-    } // for
+  var template$6 = "\n<div class=\"player-controls\">\n  <svg id=\"playbar\" width=\"100%\" height=\"32px\">\n    <g class=\"playbutton\"></g>\n    <g class=\"playbar\"></g>\n  </svg>\n</div>\n"; // template
 
-  } // iterateOverHtmlList
+  var PlayControls = /*#__PURE__*/function () {
+    function PlayControls() {
+      _classCallCheck(this, PlayControls);
 
+      this.textHeight = 12;
+      this.textBottomMargin = 2;
+      this.highlightHeightDelta = 3;
+      var obj = this;
+      obj.node = html2element$1(template$6);
+      var y = obj.textHeight + obj.textBottomMargin + obj.highlightHeightDelta; // Make a play button.
 
-  function highlightRectangle(r) {
-    r.height.baseVal.value = 10 + 2 * rectHighlightHeightDelta;
-    r.y.baseVal.value = textSpace;
-  } // highlightRectangle
-
-
-  function unhighlightRectangle(r) {
-    r.height.baseVal.value = 10;
-    r.y.baseVal.value = textSpace + rectHighlightHeightDelta;
-  } // unhighlightRectangle	
-
-
-  function highlightChapter(chapter) {
-    var rectangles = chapter.getElementsByTagName("rect");
-    iterateOverHtmlList(rectangles, highlightRectangle);
-    var chapterNames = chapter.getElementsByTagName("text");
-    iterateOverHtmlList(chapterNames, function (t) {
-      return t.style.display = "";
-    });
-  } // highlightChapter
+      obj.button = new PlayButton();
+      obj.button.y = y;
+      obj.node.querySelector("g.playbutton").appendChild(obj.button.node);
+      obj.button.node.addEventListener("click", function (event) {
+        // Get the action required based on the button icon.
+        if (obj.t_play == obj.t_max) {
+          obj.t_play = obj.t_min;
+        } // if
 
 
-  function unhighlightChapter(chapter) {
-    var rectangles = chapter.getElementsByTagName("rect");
-    iterateOverHtmlList(rectangles, unhighlightRectangle);
-    var chapterNames = chapter.getElementsByTagName("text");
-    iterateOverHtmlList(chapterNames, function (t) {
-      return t.style.display = "none";
-    });
-  } // unhighlightChapter
+        obj.playing = !obj.playing;
+      }); // addEventListener
+      // The bar is just a node at this point
+
+      obj.bar = new PlayBar();
+      obj.bar.y = y;
+      obj.node.querySelector("g.playbar").appendChild(obj.bar.node);
+      obj.bar.node.addEventListener("click", function (event) {
+        // On click the playbar should register the correct time.
+        // The tscale takes inputs in the svg coordinates, and the event returns them in the client coordinates. Therefore the client coordinates must be adjusted for the position of the SVG.
+        var x1 = event.clientX;
+        var x0 = obj.node.getBoundingClientRect().x;
+        var t = obj.bar.tscale.range2dom(x1 - x0); // Now just set the t to the right value, and update the view.
+
+        obj.bar.t_play = t;
+        obj.bar.update(); // The playtime changed, therefore pause the video.
+
+        obj.playing = false;
+        obj.skipped = true;
+      }); // addEventListener
+
+      obj.bar.rebuild();
+      obj.bar.update();
+      obj.playing = false;
+      obj.skipped = false; // Annotations. Comments should be based on the chapter tags I think. The discussion is intended to be based on observed events. The logical progress is that events need to first be identified, and then discussed in a separate step. There should be a single dialogue box, and in that one tags can be added. This allows a single comment to be seen in multiple threads. Replies will have to be handled separately. Eventually the user should also be able to pin comments.
+    } // constructor
 
 
-  function addChapterHighlighting(chapter) {
-    chapter.addEventListener("mouseenter", function () {
-      highlightChapter(chapter);
-    }); // addEventListener
+    _createClass(PlayControls, [{
+      key: "t_domain",
+      get: // set t_domain
+      function get() {
+        return [this.bar.t_min, this.bar.t_max];
+      } // get t_domain
+      ,
+      set: function set(t) {
+        // Since t is coming from a specific location, it should be the same reference always. Therefore == comparison is valid.
+        var obj = this;
 
-    chapter.addEventListener("mouseover", function () {
-      highlightChapter(chapter);
-    }); // addEventListener
+        if (t[0] != obj.bar.t_min || t[1] != obj.bar.t_max) {
+          obj.bar.t_min = t[0];
+          obj.bar.t_max = t[1];
+          obj.bar.rebuild();
+          obj.bar.update();
+        } // if
 
-    chapter.addEventListener("mouseout", function () {
-      unhighlightChapter(chapter);
-    }); // addEventListener
-  } // addChapterHighlighting
+      }
+    }, {
+      key: "playing",
+      get: // set playing
+      function get() {
+        return this._playing;
+      } // get playing
+      // FUNCTIONALITY
+      ,
+      set: function set(v) {
+        var obj = this;
+        obj._playing = v;
+        obj.update(v);
+      }
+    }, {
+      key: "update",
+      value: function update() {
+        var obj = this;
+        obj.button.update(obj.playing);
+        obj.bar.update();
+      } // update
+
+    }]);
+
+    return PlayControls;
+  }(); // PlayControls
 
   function html2element(html) {
     var template = document.createElement('template');
@@ -2475,12 +2531,12 @@
   Maybe this one should be remade into a manager so it can keep add comments to itself. Otherwise they have to be routed outside.
   */
 
-  var css$2 = {
+  var css$3 = {
     textarea: "\n    width: 100%;\n    border: none;\n    resize: none;\n    overflow: hidden;\n    max-height: 100px;\n  ",
     submitbutton: "\n    color: white;\n\tbackground-color: black;\n\tborder-radius: 4px;\n\tcursor: pointer;\n  "
   }; // css
 
-  var template$4 = "\n<div>\n  <textarea class=\"comment\" type=\"text\" rows=\"1\" placeholder=\"What do you think?\" style=\"".concat(css$2.textarea, "\"></textarea>\n  <button class=\"submit\" style=\"").concat(css$2.submitbutton, "\"><b>Submit</b></button>\n</div>\n"); // template
+  var template$5 = "\n<div>\n  <textarea class=\"comment\" type=\"text\" rows=\"1\" placeholder=\"What do you think?\" style=\"".concat(css$3.textarea, "\"></textarea>\n  <button class=\"submit\" style=\"").concat(css$3.submitbutton, "\"><b>Submit</b></button>\n</div>\n"); // template
 
   var AddCommentForm = /*#__PURE__*/function () {
     function AddCommentForm(id) {
@@ -2488,7 +2544,7 @@
 
       this._user = "";
       var obj = this;
-      obj.node = html2element(template$4);
+      obj.node = html2element(template$5);
       obj.viewid = id; // Author input got omitted because the author also needs to be known when voting on a comment, and I didn't want to implement an input there. That's why now there will be an overall login box that will control everything.
 
       obj.commentinput = obj.node.querySelector("textarea.comment");
@@ -2549,14 +2605,14 @@
     return AddCommentForm;
   }(); // AddCommentForm
 
-  var css$1 = {
+  var css$2 = {
     button: "\n    border: none;\n\tbackground-color: white;\n\tcursor: pointer;\n  ",
     replybutton: "\n    color: gray;\n\tpadding: 0 0 0 0;\n  ",
     votenumberi: "\n    margin-left: 4px;\n  ",
     timestampspan: "\n    color: gray;\n\tfont-size: 14px;\n\tmargin-left: 12px;\n  "
   }; // css
 
-  var template$3 = "\n<div class=\"comment\">\n  <div class=\"header\">\n    <b class=\"author\"></b>\n\t<span class=\"timestamp\" style=\"".concat(css$1.timestampspan, "\"></span>\n  </div>\n  <div class=\"body\"></div>\n  <div class=\"footer\">\n    <button class=\"upvote\" style=\"").concat(css$1.button, "\">\n\t  <i class=\"fa fa-thumbs-up\"></i>\n\t  <i class=\"vote-number\"></i>\n\t</button>\n\t<button class=\"downvote\" style=\"").concat(css$1.button, "\">\n\t  <i class=\"fa fa-thumbs-down\"></i>\n\t  <i class=\"vote-number\" style=\"").concat(css$1.votenumberi, "\"></i>\n\t</button>\n\t<button class=\"reply\" style=\"").concat(css$1.button, " ").concat(css$1.replybutton, "\"><b>REPLY</b></button>\n  </div>\n</div>\n"); // template
+  var template$4 = "\n<div class=\"comment\">\n  <div class=\"header\">\n    <b class=\"author\"></b>\n\t<span class=\"timestamp\" style=\"".concat(css$2.timestampspan, "\"></span>\n  </div>\n  <div class=\"body\"></div>\n  <div class=\"footer\">\n    <button class=\"upvote\" style=\"").concat(css$2.button, "\">\n\t  <i class=\"fa fa-thumbs-up\"></i>\n\t  <i class=\"vote-number\"></i>\n\t</button>\n\t<button class=\"downvote\" style=\"").concat(css$2.button, "\">\n\t  <i class=\"fa fa-thumbs-down\"></i>\n\t  <i class=\"vote-number\" style=\"").concat(css$2.votenumberi, "\"></i>\n\t</button>\n\t<button class=\"reply\" style=\"").concat(css$2.button, " ").concat(css$2.replybutton, "\"><b>REPLY</b></button>\n  </div>\n</div>\n"); // template
 
   var Comment = /*#__PURE__*/function () {
     function Comment(config) {
@@ -2565,7 +2621,7 @@
       this.user = "Default User: Aljaz";
       var obj = this; // Make a new node.
 
-      obj.node = html2element(template$3); // Fill the template with the options from the config. There must be a comment, and there must be an author.
+      obj.node = html2element(template$4); // Fill the template with the options from the config. There must be a comment, and there must be an author.
 
       obj.config = config; // Upon creation the author is also the user? True when the user makes them, not otherwise... But the user is updated when the login is initiated.
 
@@ -2758,7 +2814,7 @@
   // Sort the comments before passing them to the comments below. How will replies be updated? Ultimately everything should be coming from the server??
   // This is just a template for the controls which allow the replies to be expanded or collapsed. These are invisible at first.
 
-  var template$2 = "\n<div style=\"display: none;\">\n  <div class=\"expand-controls\" style=\"color: blue; cursor: pointer;\">\n    <i class=\"fa fa-caret-down\"></i>\n\t<i class=\"control-text\">View replies</i>\n  </div>\n  <div class=\"replies\" style=\"display: none;\"></div>\n</div>\n"; // Maybe the general comments can be added on top, but the replies should follow in chronological order.
+  var template$3 = "\n<div style=\"display: none;\">\n  <div class=\"expand-controls\" style=\"color: blue; cursor: pointer;\">\n    <i class=\"fa fa-caret-down\"></i>\n\t<i class=\"control-text\">View replies</i>\n  </div>\n  <div class=\"replies\" style=\"display: none;\"></div>\n</div>\n"; // Maybe the general comments can be added on top, but the replies should follow in chronological order.
 
   var GeneralComment = /*#__PURE__*/function (_Comment) {
     _inherits(GeneralComment, _Comment);
@@ -2776,7 +2832,7 @@
       var obj = _assertThisInitialized(_this); // The general comment can have replies associated with it. Handle these here. Furthermore an additional control for expanding, reducing hte comments is required.
 
 
-      obj.replynode = html2element(template$2);
+      obj.replynode = html2element(template$3);
       obj.node.appendChild(obj.replynode); // Add the functionality to the caret.
 
       obj.repliesExpanded = false;
@@ -2871,12 +2927,12 @@
     return candidates.length > 0 ? candidates[0] : false;
   } // findArrayItemById
 
-  var template$1 = "\n<div style=\"margin-bottom: 5px;\"></div>\n"; // template
+  var template$2 = "\n<div style=\"margin-bottom: 5px;\"></div>\n"; // template
   // Maybe make them grey with italis writing?
 
-  var css = "\nborder: none;\nbackground-color: gainsboro;\nmargin-right: 2px;\n"; // css
+  var css$1 = "\nborder: none;\nbackground-color: gainsboro;\nmargin-right: 2px;\ncursor: pointer;\n"; // css
 
-  var tagtemplate = "\n<button style=\"".concat(css, "\"><i></i></button>\n"); // A general tag should always be present. This tag should then show all comments without tags.
+  var tagtemplate = "\n<button style=\"".concat(css$1, "\"><i></i></button>\n"); // A general tag should always be present. This tag should then show all comments without tags.
 
   var DiscussionSelector = /*#__PURE__*/function () {
     function DiscussionSelector() {
@@ -2885,7 +2941,7 @@
       this.tags = [];
       this.selected = [];
       var obj = this;
-      obj.node = html2element(template$1);
+      obj.node = html2element(template$2);
     } // constructor
 
 
@@ -2951,14 +3007,14 @@
     return DiscussionSelector;
   }(); // DiscussionSelector
 
-  var template = "\n<div class=\"commenting\" style=\"width:300px;\">\n  <div class=\"hideShowText\" style=\"cursor: pointer; margin-bottom: 5px; color: gray;\">\n    <b class=\"text\">Show comments</b>\n\t<b class=\"counter\"></b>\n\t<i class=\"fa fa-caret-down\"></i>\n  </div>\n  <div class=\"commentingWrapper\" style=\"display: none;\">\n    <div class=\"comment-form\"></div>\n    <hr>\n    <div class=\"comment-tags\"></div>\n    <div class=\"comments\" style=\"overflow-y: auto; max-height: 200px;\"></div>\n  </div>\n</div>\n"; // template
+  var template$1 = "\n<div class=\"commenting\" style=\"width:300px;\">\n  <div class=\"hideShowText\" style=\"cursor: pointer; margin-bottom: 5px; color: gray;\">\n    <b class=\"text\">Show comments</b>\n\t<b class=\"counter\"></b>\n\t<i class=\"fa fa-caret-down\"></i>\n  </div>\n  <div class=\"commentingWrapper\" style=\"display: none;\">\n    <div class=\"comment-form\"></div>\n    <hr>\n    <div class=\"comment-tags\"></div>\n    <div class=\"comments\" style=\"overflow-y: auto; max-height: 200px;\"></div>\n  </div>\n</div>\n"; // template
 
   var CommentingManager = /*#__PURE__*/function () {
     function CommentingManager(id) {
       _classCallCheck(this, CommentingManager);
 
       var obj = this;
-      obj.node = html2element(template);
+      obj.node = html2element(template$1);
       obj.viewid = id;
       obj.comments = []; // Make the form;
 
@@ -2982,8 +3038,7 @@
 
 
       obj.discussion = new DiscussionSelector();
-      obj.node.querySelector("div.comment-tags").appendChild(obj.discussion.node);
-      obj.discussion.update(["#vortex", "#shock"]);
+      obj.node.querySelector("div.comment-tags").appendChild(obj.discussion.node); // obj.discussion.update(["#vortex", "#shock"])
 
       obj.discussion.externalAction = function () {
         obj.hideNonDiscussionComments();
@@ -3149,6 +3204,121 @@
   } // findArrayItemById
    // arrayIncludesAll
 
+  var css = {
+    button: "\n    border: none;\n\tcursor: pointer;\n\tborder-radius: 4px;\n  ",
+    timebutton: "\n    background-color: gainsboro;\n  ",
+    submitbutton: "\n    background-color: black;\n\tcolor: white;\n  "
+  }; // css
+
+  var template = "\n<div style=\"300px\">\n  <input type=\"text\" placeholder=\"#tag-name\" style=\"width: 100px;\"></input>\n  \n  <div style=\"display: inline-block; float: right;\">\n  <button class=\"starttime\" style=\"".concat(css.button, " ").concat(css.timebutton, "\">start</button>\n  <i>-</i>\n  <button class=\"endtime\" style=\"").concat(css.button, " ").concat(css.timebutton, "\">end</button>\n  <button class=\"submit\" style=\"").concat(css.button, " ").concat(css.submitbutton, "\">\n    Submit\n  </button>\n  </div>\n  \n  \n</div>\n"); // template
+
+  var AnnotationForm = /*#__PURE__*/function () {
+    function AnnotationForm() {
+      _classCallCheck(this, AnnotationForm);
+
+      this.user = "Default user: Aljaz";
+      var obj = this;
+      obj.node = html2element$1(template);
+      obj.input = obj.node.querySelector("input"); // This value will be overwritten during interactions, and is where the tag manager collects the time for the timestamps.
+
+      obj.t = 0;
+      obj.clear(); // The button should cycle through black, green, and red. It will need some way of tracking its current state, and a way to load in existing tags! This will allow users to subsequently change the tag if needed? Maybe this is a bit much for now. It will need a submit button.
+      // If the tag is loaded and the button switches to timestamping then any user can add the ned timesteps. Then the users name needs to be checked in addition. Maybe some way of filtering out the tags that are added? How would that work?
+      // For now add 3 buttons. A starttime endtime and submit button. For the submit button only the start and name need to be filled in. The buttons must also show the selected times!
+      // If one of the times is set, it should check with the other time to make sure it's set correctly.
+
+      obj.node.querySelector("button.starttime").onclick = function () {
+        obj.starttime = obj.t;
+        obj.update();
+      }; // onclick
+
+
+      obj.node.querySelector("button.endtime").onclick = function () {
+        obj.endtime = obj.t;
+        obj.update();
+      }; // onclick
+
+
+      obj.node.querySelector("button.submit").onclick = function () {
+        var tag = obj.tag;
+
+        if (tag) {
+          obj.externalAction(tag);
+          obj.clear();
+        } // if
+
+      }; // onclick
+
+    } // constructor
+
+
+    _createClass(AnnotationForm, [{
+      key: "update",
+      value: function update() {
+        var obj = this; // Ensure that the times are always consistent (end > start);
+
+        if (obj.endtime && obj.starttime) {
+          var t0 = Math.min(obj.starttime, obj.endtime);
+          var t1 = Math.max(obj.starttime, obj.endtime);
+          obj.starttime = t0;
+          obj.endtime = t1;
+        } // if
+        // Update the time tags also.
+
+
+        var it0 = obj.node.querySelector("button.starttime");
+        var it1 = obj.node.querySelector("button.endtime");
+        it0.innerText = obj.starttime != undefined ? obj.starttime.toFixed(3) : "start";
+        it1.innerText = obj.endtime != undefined ? obj.endtime.toFixed(3) : "end"; // The button is black by default, and making it look disabled is a bit more involved.
+
+        var button = obj.node.querySelector("button.submit");
+
+        if (obj.tag) {
+          // Enable.
+          button.style.opacity = 1;
+          button.style.backgroundColor = "black";
+          button.style.color = "white";
+        } else {
+          button.style.opacity = 0.6;
+          button.style.backgroundColor = "gainsboro";
+          button.style.color = "black";
+        } // if
+
+      } // update
+
+    }, {
+      key: "clear",
+      value: function clear() {
+        var obj = this;
+        obj.starttime = undefined;
+        obj.endtime = undefined;
+        obj.input.value = "";
+        obj.update();
+      } // clear
+
+    }, {
+      key: "tag",
+      get: function get() {
+        var obj = this; // The time should be defined, but it can also be 0, or less than 0!
+
+        return obj.user && obj.input.value && obj.starttime != undefined ? {
+          author: obj.user,
+          label: obj.input.value,
+          starttime: obj.starttime,
+          endtime: obj.endtime
+        } : false;
+      } // tag
+      // Placeholder for communication between classes.
+
+    }, {
+      key: "externalAction",
+      value: function externalAction() {} // externalAction
+
+    }]);
+
+    return AnnotationForm;
+  }(); // AnnotationForm
+
   // It's advantageous to inherit from ViewFrame2D because the geometry changes on the go - first some dummy geometry is specified, and after the actual geometry is loaded in that just gets automatically used on next FrameAnimationRate step. If the ViewFrame is a module then the UnsteadyPlayer has to monitor when the geometry changes, and update the ViewFrame accordingly.
   // Because it's advantageous to inherit from ViewFrame2D it is also advantageous to create the outside html player wrapper in it. Then the unsteady player only needs to add other modules into it.
 
@@ -3173,11 +3343,26 @@
       obj.dt = 1000 / obj.fps;
       obj.timelastdraw = 0; // Add in a playbar
 
-      obj.playbar = new PlayBar();
-      obj.node.appendChild(obj.playbar.node); // Add in the commenting system. The metadata filename is used as the id of this 'video', and thus this player. The node needs to be added also.
+      obj.playcontrols = new PlayControls();
+      obj.node.appendChild(obj.playcontrols.node); // The tag adding.
+
+      obj.annotationform = new AnnotationForm();
+      obj.node.appendChild(obj.annotationform.node); // Add in the commenting system. The metadata filename is used as the id of this 'video', and thus this player. The node needs to be added also.
 
       obj.commenting = new CommentingManager(unsteadyMetadataFilename);
-      obj.node.appendChild(obj.commenting.node);
+      obj.node.appendChild(obj.commenting.node); //  Tags need to be pushed to the playbar, but also to the commenting!
+
+      obj.annotationform.externalAction = function (tag) {
+        obj.playcontrols.bar.annotations.push(tag);
+        obj.playcontrols.bar.rebuild();
+        obj.playcontrols.bar.update();
+        var discussiontags = obj.playcontrols.bar.annotations.map(function (a) {
+          return a.label;
+        });
+        obj.commenting.discussion.update(discussiontags);
+      }; // externalAction
+
+
       return _this;
     } // constructor
 
@@ -3192,22 +3377,21 @@
         obj.computeOrthographicMatrix(); // Will the rendering loop have to be redone in order to allow promises to be returned to ensure that the player is ready for the next step?
 
         if (now > obj.timelastdraw + obj.dt) {
-          if (obj.playbar.playStatus) {
+          if (obj.playcontrols.playing) {
             obj.timelastdraw = now;
             obj.incrementTimeStep();
-          } else if (obj.playbar.userNavigated) {
+          } else if (obj.playcontrols.skipped) {
             obj.timelastdraw = now;
             obj.incrementTimeStep(0);
-            obj.playbar.userNavigated = false;
+            obj.playcontrols.skipped = false;
           } // if
 
         } // if
-        // Update the playbar
+        // The time domain can only be known AFTER the metadata is loaded. But, after the timesteps are updated the playcontrols need to be updated too. Specifically, the chapters need to be rebuild because they are independent of the actual annotations. But they currently don't need to be! Yes, they do - e.g. padding etc.
 
 
-        obj.playbar.t_min = obj.geometry.domain.t[0];
-        obj.playbar.t_max = obj.geometry.domain.t[1];
-        obj.playbar.update();
+        obj.playcontrols.t_domain = obj.geometry.domain.t;
+        obj.annotationform.t = obj.playcontrols.bar.t_play;
       } // update
 
     }, {
@@ -3221,17 +3405,19 @@
         For now the playbar can just play forward correctly, and the t_play can be used to keep track of the actual playing time. The dt is just added on to that time them.
         */
         var obj = this;
+        var bar = obj.playcontrols.bar;
 
         if (dt >= 0) {
-          var t_new = obj.playbar.t_play + dt;
+          var t_new = bar.t_play + dt;
           obj.geometry.timestepCurrentFrame(t_new);
-          obj.playbar.t_play = t_new;
+          bar.t_play = t_new;
         } else {
           obj.geometry.incrementCurrentFrame();
-          obj.playbar.t_play = obj.geometry.currentTime;
+          bar.t_play = obj.geometry.currentTime;
         } // if
 
 
+        bar.update();
         obj.geometry.updateCurrentFrameBuffer();
       } // incrementTimeStep
 

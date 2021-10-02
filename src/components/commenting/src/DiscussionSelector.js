@@ -9,7 +9,9 @@ let css = `
 border: none;
 background-color: gainsboro;
 margin-right: 2px;
+cursor: pointer;
 `; // css
+
 let tagtemplate = `
 <button style="${ css }"><i></i></button>
 `;

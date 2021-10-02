@@ -31,7 +31,7 @@
 
 // The mesh renderer implements the frag and color shaders, and runs the main drawing loop.
 import MeshRenderer2D from "./renderers/MeshRenderer2D.js";
-import { addDraggingToSiblingItems } from "./renderers/dragging.js";
+import { addDraggingToSiblingItems } from "./components/arrangement/dragging.js";
 
 // The MeshRenderer is the engine that draws the scene.
 let renderer = new MeshRenderer2D();

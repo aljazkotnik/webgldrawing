@@ -51,7 +51,7 @@ export default class CommentingManager{
     obj.node
 	  .querySelector("div.comment-tags")
 	  .appendChild(obj.discussion.node);
-    obj.discussion.update(["#vortex", "#shock"])
+    // obj.discussion.update(["#vortex", "#shock"])
 	obj.discussion.externalAction = function(){
 		obj.hideNonDiscussionComments();
 	} // externalAction

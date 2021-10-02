@@ -12,12 +12,12 @@ MeshRenderer2D actually does the GPU drawing
 import ViewFrame2D from "./ViewFrame2D.js";
 import Mesh2D from "../geometry/Mesh2D.js";
 
-import PlayBar from "./PlayBar.js";
 
 
-// Load in the commenting module.
+// Load in hte external modules. Should all this be wrapped up in one item?
+import PlayControls from "../components/playbar/PlayControls.js";
 import CommentingManager from "../components/commenting/src/CommentingManager.js";
-
+import AnnotationForm from "../components/playbar/AnnotationForm.js";
 
 
 
@@ -46,13 +46,28 @@ export default class UnsteadyPlayer2D extends ViewFrame2D {
 	
 	
 	// Add in a playbar
-	obj.playbar = new PlayBar();
-	obj.node.appendChild( obj.playbar.node );
+	obj.playcontrols = new PlayControls();
+	obj.node.appendChild( obj.playcontrols.node );
 	
+	
+	// The tag adding.
+	obj.annotationform = new AnnotationForm();
+	obj.node.appendChild( obj.annotationform.node )
 	
 	// Add in the commenting system. The metadata filename is used as the id of this 'video', and thus this player. The node needs to be added also.
 	obj.commenting = new CommentingManager(unsteadyMetadataFilename);
 	obj.node.appendChild( obj.commenting.node );
+	
+	
+	//  Tags need to be pushed to the playbar, but also to the commenting!
+	obj.annotationform.externalAction = function(tag){
+		obj.playcontrols.bar.annotations.push(tag)
+		obj.playcontrols.bar.rebuild();
+		obj.playcontrols.bar.update();
+		
+		let discussiontags = obj.playcontrols.bar.annotations.map(a=>a.label);
+		obj.commenting.discussion.update(discussiontags);
+	} // externalAction
 	
   } // constructor
   
@@ -66,21 +81,20 @@ export default class UnsteadyPlayer2D extends ViewFrame2D {
 	
 	// Will the rendering loop have to be redone in order to allow promises to be returned to ensure that the player is ready for the next step?
 	if(now > obj.timelastdraw + obj.dt){
-	  if( obj.playbar.playStatus ){
+	  if( obj.playcontrols.playing ){
 		obj.timelastdraw = now;
 		obj.incrementTimeStep();
-	  } else if ( obj.playbar.userNavigated ){
+	  } else if ( obj.playcontrols.skipped ){
 		obj.timelastdraw = now;
 		obj.incrementTimeStep(0)
-		obj.playbar.userNavigated = false;
+		obj.playcontrols.skipped = false;
 	  } // if
 	} // if
     
     
-	// Update the playbar
-	obj.playbar.t_min = obj.geometry.domain.t[0];
-	obj.playbar.t_max = obj.geometry.domain.t[1];
-	obj.playbar.update()
+	// The time domain can only be known AFTER the metadata is loaded. But, after the timesteps are updated the playcontrols need to be updated too. Specifically, the chapters need to be rebuild because they are independent of the actual annotations. But they currently don't need to be! Yes, they do - e.g. padding etc.
+	obj.playcontrols.t_domain = obj.geometry.domain.t;
+	obj.annotationform.t = obj.playcontrols.bar.t_play;
   } // update
   
   
@@ -93,17 +107,18 @@ export default class UnsteadyPlayer2D extends ViewFrame2D {
 	For now the playbar can just play forward correctly, and the t_play can be used to keep track of the actual playing time. The dt is just added on to that time them.
 	*/
 	let obj = this;
-	
+	let bar = obj.playcontrols.bar;
 	
 	if(dt >= 0){
-	  let t_new = obj.playbar.t_play + dt
+	  let t_new = bar.t_play + dt
 	  obj.geometry.timestepCurrentFrame(t_new);
-	  obj.playbar.t_play = t_new;
+	  bar.t_play = t_new;
 	} else {
 	  obj.geometry.incrementCurrentFrame();
-	  obj.playbar.t_play = obj.geometry.currentTime;
+	  bar.t_play = obj.geometry.currentTime;
 	} // if
 	
+	bar.update();
 	obj.geometry.updateCurrentFrameBuffer();
   } // incrementTimeStep
   
