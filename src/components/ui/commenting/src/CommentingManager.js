@@ -115,6 +115,7 @@ export default class CommentingManager{
 	} // if
 	
 	// Update the comments count.
+	obj.hideNonDiscussionComments();
 	obj.updateCommentCounter();
   } // add
   
@@ -173,6 +174,9 @@ export default class CommentingManager{
 	container.insertBefore(replacement.node, existing.node);
   } // replaceGeneralComment
   
+  get user(){
+	return this.form.user;
+  } // get user
   
   set user(name){
 	let obj = this;

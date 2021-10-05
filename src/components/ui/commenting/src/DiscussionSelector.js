@@ -34,7 +34,7 @@ export default class DiscussionSelector{
 	let obj = this;
 
 	if(newtags){
-	  // Replace the tags if necessary.
+	  // Replace the tags if necessary. The same tags should be grouped together, but different authors may have differing views on what constitutes features.
 	  obj.tags = newtags;
 	  obj.selected = obj.selected.filter(d=>newtags.includes(d));
 	  obj.externalAction();
@@ -70,6 +70,6 @@ export default class DiscussionSelector{
 	obj.externalAction();
   } // toggle
   
-  // placeholder for actual action
+  // Placeholder that will allow the actual comments to be hidden. Maybe just name it that?
   externalAction(){} // externalAction
 } // DiscussionSelector

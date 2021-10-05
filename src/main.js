@@ -30,21 +30,34 @@
 */
 
 // The mesh renderer implements the frag and color shaders, and runs the main drawing loop.
-import MeshRenderer2D from "./renderers/MeshRenderer2D.js";
-import { addDraggingToSiblingItems } from "./components/arrangement/dragging.js";
 
-// The MeshRenderer is the engine that draws the scene.
-let renderer = new MeshRenderer2D();
+
+
+
+// "C:/Users/ak2164/Documents/CAMBRIDGE/PhD/github_repos/webgldrawing/src/components/ui/commenting/commentingServerCommunications.js"
+
+
 
 
 // Make some makeshift metadata here. From here it should flow down to hte geometry etc.
 // In this case the metadata holds the reference to the unsteady simulation metadata, which then holds the references to the actual files required for rendering.
+// There should be an overhead object attached to eachtask? So that the filtering still happens on hte actual object read from hte json, but all the other metadata - tags,... are stored in hte overhead?
 var metadata = [
-{label: "Maybe we", slice: "./data/testmetadata.json"},
-{label: "should add", slice: "./data/testmetadata.json"},
-{label: "some more", slice: "./data/testmetadata.json"},
-{label: "tasks.", slice: "./data/testmetadata.json"},
+{label: "Maybe we", slice: "./data/testmetadata.json", tags: []},
+{label: "should add", slice: "./data/testmetadata_copy0.json", tags: []},
+{label: "some more", slice: "./data/testmetadata_copy1.json", tags: []},
+{label: "tasks.", slice: "./data/testmetadata_copy2.json", tags: []},
 ] // metadata
+
+
+
+
+
+
+
+// The MeshRenderer is the engine that draws the scene.
+import MeshRenderer2D from "./renderers/MeshRenderer2D.js";
+let renderer = new MeshRenderer2D();
 
 // Add the players in. The HTML will position hte frames.
 for(let i=0; i<4; i++){
@@ -55,14 +68,20 @@ for(let i=0; i<4; i++){
 	p.metadata = m;
 } // for
 
-
 // The renderer starts updating straight away. It's the responsibility of the geometries to provide something to draw. In the end some initial geometry is provided as default, as the buffers are initialised straight away.
 renderer.draw()
 console.log(renderer)
 
 
+
+
+
+
+
 // Add the dragging externally. The tabletop was positioned absolutely, with top: 0px. If this is not so the dragging will move the items on the initial drag start by the offset amount.
-addDraggingToSiblingItems(renderer.items, 80);
+import { addDraggingToSiblingItems } from "./components/arrangement/dragging.js";addDraggingToSiblingItems(renderer.items, 80);
+
+
 
 
 
@@ -71,14 +90,67 @@ addDraggingToSiblingItems(renderer.items, 80);
 let login = document.querySelector("div.login").querySelector("input");
 login.oninput = function(){
   renderer.items.forEach(item=>{
-	item.commenting.user = login.value;
+	item.ui.user = login.value;
   }) // forEach
 } // oninput
 
 
 
+
+
+
+// Load some test comments.
+import { getRequiredComments, sendCommentChanges } from "./components/ui/commenting/commentingServerCommunications.js";
+getRequiredComments( renderer.items.map( item=>item.ui.commenting ) )
+
+
 /*
 Chapter are actually added as ordinal variables - they have a name, and a timestep value. So they are not simple tags. But the metadata ordinal variables definitely should not appear as chapters. But the correlation between both should be available.
 */
+
+
+
+
+// The tags in the metadata and the comments are separate things! So comments can just keep track of their own tags, but the full annotations of the metadata are required for the navigation. The small multiples can just add to their metadata. Eventually the server should just be pushing the new updated annotations to the client all the time to keep it up to speed, which will be a good time to update the maps. Maybe it can even be done periodically?
+
+// For navigation the tags must be like: {id: "Root", author: "session"};
+
+// Tag adding works directly on the metadata. That means it's not exposed here - which means its more difficult to decide when to update. If it's on a hidden HUD then when it's toggled on. But what about the small map?
+let navigationdiv = document.querySelector("div.navigation-background");
+let navigationsvg = navigationdiv.querySelector("svg.navigation");
+import TreeRender from "./components/ui/treenavigation/TreeRender.js"
+let treenavigation = new TreeRender(metadata);
+navigationsvg.appendChild(treenavigation.node)
+treenavigation.update()
+
+document.querySelector("button.navigation").onclick = function(){navigationdiv.style.display = "none"}; 
+navigationdiv.onclick = function(event){ navigationdiv.style.display = "none"; }
+navigationsvg.onclick = function(event){ event.stopPropagation(); }
+
+// Maybe htere should be two separate trees. One that shows all the data at once, and another that just shows the small multiples in the view?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -1638,7 +1638,7 @@
 
   // Furthermore the overall wrapper is defined here so that after the class is inherited from there is space to append other modules. The class is inherited from (as opposed to plugged in as a module)
 
-  var template$a = "\n<div class=\"item\">\n  <div class=\"label\">Label</div>\n  <div class=\"view\" style=\"width:300px; height:200px; opacity:0.001;\">\n  </div>\n</div>\n";
+  var template$d = "\n<div class=\"item\">\n  <div class=\"label\">Label</div>\n  <div class=\"view\" style=\"width:300px; height:200px; opacity:0.001;\">\n  </div>\n</div>\n";
 
   var ViewFrame2D = /*#__PURE__*/function () {
     function ViewFrame2D(gl) {
@@ -1646,7 +1646,7 @@
 
       var obj = this;
       obj.gl = gl;
-      obj.node = html2element$2(template$a); // obj.view is a convenience reference that points to the node. Transforms.view is the view transformation matrix.
+      obj.node = html2element$2(template$d); // obj.view is a convenience reference that points to the node. Transforms.view is the view transformation matrix.
 
       obj.view = obj.node.querySelector("div.view"); // Some initial dummy geometry to allow initialisation.
 
@@ -2073,7 +2073,7 @@
     return template.content.firstChild;
   } // html2element
 
-  function svg2element(svg) {
+  function svg2element$1(svg) {
     var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
     g.innerHTML = svg.trim();
     return g.firstChild;
@@ -2155,7 +2155,7 @@
   } // pausePath
 
 
-  var template$9 = "\n<g style=\"cursor: pointer;\">\n  <path fill=\"tomato\" d=\"\"></path>\n</g>\n"; // Maybe the y should just be set outside? And the same for the chapter?? Maybe give it the y it should center itself about?
+  var template$c = "\n<g style=\"cursor: pointer;\">\n  <path fill=\"tomato\" d=\"\"></path>\n</g>\n"; // Maybe the y should just be set outside? And the same for the chapter?? Maybe give it the y it should center itself about?
   // textHeight + textBottomMargin + rectHighlightHeightDelta + rectHeight/2 - H/2
 
   var PlayButton = /*#__PURE__*/function () {
@@ -2166,7 +2166,7 @@
       this.y = 20 * 2 * Math.sqrt(3) / 3 / 2;
       this.width = 20;
       var obj = this;
-      obj.node = svg2element(template$9);
+      obj.node = svg2element$1(template$c);
     } // constructor
 
 
@@ -2184,7 +2184,7 @@
   }(); // PlayButton
 
   var defaultRectAttributes = "stroke=\"white\" stroke-width=\"2px\"";
-  var template$8 = "<g class=\"chapter\">\n  <rect class=\"background\" fill=\"gainsboro\" ".concat(defaultRectAttributes, "\"></rect>\n  <rect class=\"buffering\" fill=\"gray\" ").concat(defaultRectAttributes, "\"></rect>\n  <rect class=\"foreground\" fill=\"tomato\" ").concat(defaultRectAttributes, "\"></rect>\n  <text style=\"display: none;\"></text>\n</g>");
+  var template$b = "<g class=\"chapter\">\n  <rect class=\"background\" fill=\"gainsboro\" ".concat(defaultRectAttributes, "\"></rect>\n  <rect class=\"buffering\" fill=\"gray\" ").concat(defaultRectAttributes, "\"></rect>\n  <rect class=\"foreground\" fill=\"tomato\" ").concat(defaultRectAttributes, "\"></rect>\n  <text style=\"display: none;\"></text>\n</g>");
 
   var PlayBarAnnotation = /*#__PURE__*/function () {
     // y = textHeight + textBottomMargin + highlightHeightDelta
@@ -2195,7 +2195,7 @@
       this.height = 10;
       this.dh = 4;
       var obj = this;
-      obj.node = svg2element(template$8);
+      obj.node = svg2element$1(template$b);
       obj.background = obj.node.querySelector("rect.background");
       obj.buffering = obj.node.querySelector("rect.buffering");
       obj.foreground = obj.node.querySelector("rect.foreground");
@@ -2292,7 +2292,7 @@
     r.y.baseVal.value = y;
   } // unhighlightRectangle
 
-  var template$7 = "<g style=\"cursor: pointer;\"></g>"; // template
+  var template$a = "<g style=\"cursor: pointer;\"></g>"; // template
 
   var PlayBar = /*#__PURE__*/function () {
     // Coordinates in whole svg frame.
@@ -2308,7 +2308,7 @@
       this.t_buffer = 0;
       this.t_play = 0;
       var obj = this;
-      obj.node = svg2element(template$7);
+      obj.node = svg2element$1(template$a);
       obj._tscale = new scaleLinear();
     } // constructor
 
@@ -2391,7 +2391,7 @@
     return PlayBar;
   }(); // PlayBar
 
-  var template$6 = "\n<div class=\"player-controls\">\n  <svg id=\"playbar\" width=\"100%\" height=\"32px\">\n    <g class=\"playbutton\"></g>\n    <g class=\"playbar\"></g>\n  </svg>\n</div>\n"; // template
+  var template$9 = "\n<div class=\"player-controls\">\n  <svg id=\"playbar\" width=\"100%\" height=\"32px\">\n    <g class=\"playbutton\"></g>\n    <g class=\"playbar\"></g>\n  </svg>\n</div>\n"; // template
 
   var PlayControls = /*#__PURE__*/function () {
     function PlayControls() {
@@ -2401,7 +2401,7 @@
       this.textBottomMargin = 2;
       this.highlightHeightDelta = 3;
       var obj = this;
-      obj.node = html2element$1(template$6);
+      obj.node = html2element$1(template$9);
       var y = obj.textHeight + obj.textBottomMargin + obj.highlightHeightDelta; // Make a play button.
 
       obj.button = new PlayButton();
@@ -2536,7 +2536,7 @@
     submitbutton: "\n    color: white;\n\tbackground-color: black;\n\tborder-radius: 4px;\n\tcursor: pointer;\n  "
   }; // css
 
-  var template$5 = "\n<div>\n  <textarea class=\"comment\" type=\"text\" rows=\"1\" placeholder=\"What do you think?\" style=\"".concat(css$3.textarea, "\"></textarea>\n  <button class=\"submit\" style=\"").concat(css$3.submitbutton, "\"><b>Submit</b></button>\n</div>\n"); // template
+  var template$8 = "\n<div>\n  <textarea class=\"comment\" type=\"text\" rows=\"1\" placeholder=\"What do you think?\" style=\"".concat(css$3.textarea, "\"></textarea>\n  <button class=\"submit\" style=\"").concat(css$3.submitbutton, "\"><b>Submit</b></button>\n</div>\n"); // template
 
   var AddCommentForm = /*#__PURE__*/function () {
     function AddCommentForm(id) {
@@ -2544,7 +2544,7 @@
 
       this._user = "";
       var obj = this;
-      obj.node = html2element(template$5);
+      obj.node = html2element(template$8);
       obj.viewid = id; // Author input got omitted because the author also needs to be known when voting on a comment, and I didn't want to implement an input there. That's why now there will be an overall login box that will control everything.
 
       obj.commentinput = obj.node.querySelector("textarea.comment");
@@ -2612,7 +2612,7 @@
     timestampspan: "\n    color: gray;\n\tfont-size: 14px;\n\tmargin-left: 12px;\n  "
   }; // css
 
-  var template$4 = "\n<div class=\"comment\">\n  <div class=\"header\">\n    <b class=\"author\"></b>\n\t<span class=\"timestamp\" style=\"".concat(css$2.timestampspan, "\"></span>\n  </div>\n  <div class=\"body\"></div>\n  <div class=\"footer\">\n    <button class=\"upvote\" style=\"").concat(css$2.button, "\">\n\t  <i class=\"fa fa-thumbs-up\"></i>\n\t  <i class=\"vote-number\"></i>\n\t</button>\n\t<button class=\"downvote\" style=\"").concat(css$2.button, "\">\n\t  <i class=\"fa fa-thumbs-down\"></i>\n\t  <i class=\"vote-number\" style=\"").concat(css$2.votenumberi, "\"></i>\n\t</button>\n\t<button class=\"reply\" style=\"").concat(css$2.button, " ").concat(css$2.replybutton, "\"><b>REPLY</b></button>\n  </div>\n</div>\n"); // template
+  var template$7 = "\n<div class=\"comment\">\n  <div class=\"header\">\n    <b class=\"author\"></b>\n\t<span class=\"timestamp\" style=\"".concat(css$2.timestampspan, "\"></span>\n  </div>\n  <div class=\"body\"></div>\n  <div class=\"footer\">\n    <button class=\"upvote\" style=\"").concat(css$2.button, "\">\n\t  <i class=\"fa fa-thumbs-up\"></i>\n\t  <i class=\"vote-number\"></i>\n\t</button>\n\t<button class=\"downvote\" style=\"").concat(css$2.button, "\">\n\t  <i class=\"fa fa-thumbs-down\"></i>\n\t  <i class=\"vote-number\" style=\"").concat(css$2.votenumberi, "\"></i>\n\t</button>\n\t<button class=\"reply\" style=\"").concat(css$2.button, " ").concat(css$2.replybutton, "\"><b>REPLY</b></button>\n  </div>\n</div>\n"); // template
 
   var Comment = /*#__PURE__*/function () {
     function Comment(config) {
@@ -2621,7 +2621,7 @@
       this.user = "Default User: Aljaz";
       var obj = this; // Make a new node.
 
-      obj.node = html2element(template$4); // Fill the template with the options from the config. There must be a comment, and there must be an author.
+      obj.node = html2element(template$7); // Fill the template with the options from the config. There must be a comment, and there must be an author.
 
       obj.config = config; // Upon creation the author is also the user? True when the user makes them, not otherwise... But the user is updated when the login is initiated.
 
@@ -2814,7 +2814,7 @@
   // Sort the comments before passing them to the comments below. How will replies be updated? Ultimately everything should be coming from the server??
   // This is just a template for the controls which allow the replies to be expanded or collapsed. These are invisible at first.
 
-  var template$3 = "\n<div style=\"display: none;\">\n  <div class=\"expand-controls\" style=\"color: blue; cursor: pointer;\">\n    <i class=\"fa fa-caret-down\"></i>\n\t<i class=\"control-text\">View replies</i>\n  </div>\n  <div class=\"replies\" style=\"display: none;\"></div>\n</div>\n"; // Maybe the general comments can be added on top, but the replies should follow in chronological order.
+  var template$6 = "\n<div style=\"display: none;\">\n  <div class=\"expand-controls\" style=\"color: blue; cursor: pointer;\">\n    <i class=\"fa fa-caret-down\"></i>\n\t<i class=\"control-text\">View replies</i>\n  </div>\n  <div class=\"replies\" style=\"display: none;\"></div>\n</div>\n"; // Maybe the general comments can be added on top, but the replies should follow in chronological order.
 
   var GeneralComment = /*#__PURE__*/function (_Comment) {
     _inherits(GeneralComment, _Comment);
@@ -2832,7 +2832,7 @@
       var obj = _assertThisInitialized(_this); // The general comment can have replies associated with it. Handle these here. Furthermore an additional control for expanding, reducing hte comments is required.
 
 
-      obj.replynode = html2element(template$3);
+      obj.replynode = html2element(template$6);
       obj.node.appendChild(obj.replynode); // Add the functionality to the caret.
 
       obj.repliesExpanded = false;
@@ -2927,7 +2927,7 @@
     return candidates.length > 0 ? candidates[0] : false;
   } // findArrayItemById
 
-  var template$2 = "\n<div style=\"margin-bottom: 5px;\"></div>\n"; // template
+  var template$5 = "\n<div style=\"margin-bottom: 5px;\"></div>\n"; // template
   // Maybe make them grey with italis writing?
 
   var css$1 = "\nborder: none;\nbackground-color: gainsboro;\nmargin-right: 2px;\ncursor: pointer;\n"; // css
@@ -2941,7 +2941,7 @@
       this.tags = [];
       this.selected = [];
       var obj = this;
-      obj.node = html2element(template$2);
+      obj.node = html2element(template$5);
     } // constructor
 
 
@@ -2951,7 +2951,7 @@
         var obj = this;
 
         if (newtags) {
-          // Replace the tags if necessary.
+          // Replace the tags if necessary. The same tags should be grouped together, but different authors may have differing views on what constitutes features.
           obj.tags = newtags;
           obj.selected = obj.selected.filter(function (d) {
             return newtags.includes(d);
@@ -2996,7 +2996,7 @@
 
         obj.externalAction();
       } // toggle
-      // placeholder for actual action
+      // Placeholder that will allow the actual comments to be hidden. Maybe just name it that?
 
     }, {
       key: "externalAction",
@@ -3007,14 +3007,14 @@
     return DiscussionSelector;
   }(); // DiscussionSelector
 
-  var template$1 = "\n<div class=\"commenting\" style=\"width:300px;\">\n  <div class=\"hideShowText\" style=\"cursor: pointer; margin-bottom: 5px; color: gray;\">\n    <b class=\"text\">Show comments</b>\n\t<b class=\"counter\"></b>\n\t<i class=\"fa fa-caret-down\"></i>\n  </div>\n  <div class=\"commentingWrapper\" style=\"display: none;\">\n    <div class=\"comment-form\"></div>\n    <hr>\n    <div class=\"comment-tags\"></div>\n    <div class=\"comments\" style=\"overflow-y: auto; max-height: 200px;\"></div>\n  </div>\n</div>\n"; // template
+  var template$4 = "\n<div class=\"commenting\" style=\"width:300px;\">\n  <div class=\"hideShowText\" style=\"cursor: pointer; margin-bottom: 5px; color: gray;\">\n    <b class=\"text\">Show comments</b>\n\t<b class=\"counter\"></b>\n\t<i class=\"fa fa-caret-down\"></i>\n  </div>\n  <div class=\"commentingWrapper\" style=\"display: none;\">\n    <div class=\"comment-form\"></div>\n    <hr>\n    <div class=\"comment-tags\"></div>\n    <div class=\"comments\" style=\"overflow-y: auto; max-height: 200px;\"></div>\n  </div>\n</div>\n"; // template
 
   var CommentingManager = /*#__PURE__*/function () {
     function CommentingManager(id) {
       _classCallCheck(this, CommentingManager);
 
       var obj = this;
-      obj.node = html2element(template$1);
+      obj.node = html2element(template$4);
       obj.viewid = id;
       obj.comments = []; // Make the form;
 
@@ -3104,6 +3104,7 @@
         // Update the comments count.
 
 
+        obj.hideNonDiscussionComments();
         obj.updateCommentCounter();
       } // add
 
@@ -3164,6 +3165,10 @@
 
     }, {
       key: "user",
+      get: function get() {
+        return this.form.user;
+      } // get user
+      ,
       set: function set(name) {
         var obj = this; // The form has a change of author.
 
@@ -3210,7 +3215,7 @@
     submitbutton: "\n    background-color: black;\n\tcolor: white;\n  "
   }; // css
 
-  var template = "\n<div style=\"300px\">\n  <input type=\"text\" placeholder=\"#tag-name\" style=\"width: 100px;\"></input>\n  \n  <div style=\"display: inline-block; float: right;\">\n  <button class=\"starttime\" style=\"".concat(css.button, " ").concat(css.timebutton, "\">start</button>\n  <i>-</i>\n  <button class=\"endtime\" style=\"").concat(css.button, " ").concat(css.timebutton, "\">end</button>\n  <button class=\"submit\" style=\"").concat(css.button, " ").concat(css.submitbutton, "\">\n    Submit\n  </button>\n  </div>\n  \n  \n</div>\n"); // template
+  var template$3 = "\n<div style=\"300px\">\n  <input type=\"text\" placeholder=\"#tag-name\" style=\"width: 100px;\"></input>\n  \n  <div style=\"display: inline-block; float: right;\">\n  <button class=\"starttime\" style=\"".concat(css.button, " ").concat(css.timebutton, "\">start</button>\n  <i>-</i>\n  <button class=\"endtime\" style=\"").concat(css.button, " ").concat(css.timebutton, "\">end</button>\n  <button class=\"submit\" style=\"").concat(css.button, " ").concat(css.submitbutton, "\">\n    Submit\n  </button>\n  </div>\n  \n  \n</div>\n"); // template
 
   var AnnotationForm = /*#__PURE__*/function () {
     function AnnotationForm() {
@@ -3218,7 +3223,7 @@
 
       this.user = "Default user: Aljaz";
       var obj = this;
-      obj.node = html2element$1(template);
+      obj.node = html2element$1(template$3);
       obj.input = obj.node.querySelector("input"); // This value will be overwritten during interactions, and is where the tag manager collects the time for the timestamps.
 
       obj.t = 0;
@@ -3319,6 +3324,107 @@
     return AnnotationForm;
   }(); // AnnotationForm
 
+  // On the other hand, when discussing the tags it's good to avoid misunderstaning.
+  // Furthermore, it would be good to just accept someone elses tags. What about clicking on the users name? Then select adopting their annotations? How do you revert back? A clear all button? Allow reloading of annotations for editing??
+  // Anyway, the commenting should show all possible annotations.
+  // What about showing the most popular annotations by default?? Ideally, the annotations would show up when the comment addressing them would be hovered over.
+
+  var interactivePlayerUI = /*#__PURE__*/function () {
+    function interactivePlayerUI(id) {
+      _classCallCheck(this, interactivePlayerUI);
+
+      var obj = this;
+      obj.node = document.createElement("div"); // Add in a playbar
+
+      obj.playcontrols = new PlayControls();
+      obj.node.appendChild(obj.playcontrols.node); // The tag adding.
+
+      obj.annotationform = new AnnotationForm();
+      obj.node.appendChild(obj.annotationform.node); // Add in the commenting system. The metadata filename is used as the id of this 'video', and thus this player. The node needs to be added also.
+
+      obj.commenting = new CommentingManager(id);
+      obj.node.appendChild(obj.commenting.node); //  Tags need to be pushed to the playbar, but also to the commenting!
+
+      obj.annotationform.externalAction = function (tag) {
+        obj.playcontrols.bar.annotations.push(tag);
+        obj.playcontrols.bar.rebuild();
+        obj.playcontrols.bar.update();
+        var discussiontags = obj.playcontrols.bar.annotations.map(function (a) {
+          return a.label;
+        });
+        obj.commenting.discussion.update(discussiontags);
+      }; // externalAction
+      // Add onhover events to the tagged keywords in the text? That allows the user to show exactly which part of the data they meant, and also to compare it to others interpretations.
+      // What happens when the user replies in a thread for which he does not have an annotation for? For replies, it's the parent annotations that get pasted in. But what if you're making a general comment without having the playbar annotations? Which one should get selected? Or should just the text tags be retained? But in that case I can't show the different versions. Maybe keep the tag names, but also keep the annotations separate - that way they can only be added for mouseover if they're in hte text? And in the text they need to be marked using a #? But then no disagreements with the thread parent comment are possible... How to deal with this? Only allow the user to use their own annotations?
+      // Anyyyyyway, first include the tree navigation
+
+    } // constructor
+
+    /*
+    Getters and setters to simplify the API:
+    t_domain
+    t
+    playing
+    skipped
+    user
+    */
+
+
+    _createClass(interactivePlayerUI, [{
+      key: "playing",
+      get: function get() {
+        return this.playcontrols.playing;
+      } // get playing
+
+    }, {
+      key: "skipped",
+      get: function get() {
+        return this.playcontrols.skipped;
+      } // get skipped
+      ,
+      set: function set(v) {
+        this.playcontrols.skipped = false;
+      } // set skipped
+
+    }, {
+      key: "t_play",
+      get: function get() {
+        return this.playcontrols.bar.t_play;
+      } // get t_play
+      ,
+      set: function set(t) {
+        this.annotationform.t = t;
+        this.playcontrols.bar.t_play = t;
+        this.playcontrols.bar.update();
+      } // set t_play
+
+    }, {
+      key: "t_domain",
+      get: function get() {
+        return this.playcontrols.t_domain;
+      } // get t_domain
+      ,
+      set: function set(t) {
+        this.playcontrols.t_domain = t;
+      } // set t_domain
+
+    }, {
+      key: "user",
+      get: function get() {
+        // The annotation form is the primary annotation.
+        return this.annotationform.user;
+      } // get user
+      ,
+      set: function set(name) {
+        this.commenting.user = name;
+        this.annotationform.user = name;
+      } // set user
+
+    }]);
+
+    return interactivePlayerUI;
+  }(); // interactivePlayerUI
+
   // It's advantageous to inherit from ViewFrame2D because the geometry changes on the go - first some dummy geometry is specified, and after the actual geometry is loaded in that just gets automatically used on next FrameAnimationRate step. If the ViewFrame is a module then the UnsteadyPlayer has to monitor when the geometry changes, and update the ViewFrame accordingly.
   // Because it's advantageous to inherit from ViewFrame2D it is also advantageous to create the outside html player wrapper in it. Then the unsteady player only needs to add other modules into it.
 
@@ -3341,28 +3447,10 @@
 
       obj.fps = 24;
       obj.dt = 1000 / obj.fps;
-      obj.timelastdraw = 0; // Add in a playbar
+      obj.timelastdraw = 0; // Add in precofigured UI. The metadata filename identifies this small multiple.
 
-      obj.playcontrols = new PlayControls();
-      obj.node.appendChild(obj.playcontrols.node); // The tag adding.
-
-      obj.annotationform = new AnnotationForm();
-      obj.node.appendChild(obj.annotationform.node); // Add in the commenting system. The metadata filename is used as the id of this 'video', and thus this player. The node needs to be added also.
-
-      obj.commenting = new CommentingManager(unsteadyMetadataFilename);
-      obj.node.appendChild(obj.commenting.node); //  Tags need to be pushed to the playbar, but also to the commenting!
-
-      obj.annotationform.externalAction = function (tag) {
-        obj.playcontrols.bar.annotations.push(tag);
-        obj.playcontrols.bar.rebuild();
-        obj.playcontrols.bar.update();
-        var discussiontags = obj.playcontrols.bar.annotations.map(function (a) {
-          return a.label;
-        });
-        obj.commenting.discussion.update(discussiontags);
-      }; // externalAction
-
-
+      obj.ui = new interactivePlayerUI(unsteadyMetadataFilename);
+      obj.node.appendChild(obj.ui.node);
       return _this;
     } // constructor
 
@@ -3377,21 +3465,20 @@
         obj.computeOrthographicMatrix(); // Will the rendering loop have to be redone in order to allow promises to be returned to ensure that the player is ready for the next step?
 
         if (now > obj.timelastdraw + obj.dt) {
-          if (obj.playcontrols.playing) {
+          if (obj.ui.playing) {
             obj.timelastdraw = now;
             obj.incrementTimeStep();
-          } else if (obj.playcontrols.skipped) {
+          } else if (obj.ui.skipped) {
             obj.timelastdraw = now;
             obj.incrementTimeStep(0);
-            obj.playcontrols.skipped = false;
+            obj.ui.skipped = false;
           } // if
 
         } // if
         // The time domain can only be known AFTER the metadata is loaded. But, after the timesteps are updated the playcontrols need to be updated too. Specifically, the chapters need to be rebuild because they are independent of the actual annotations. But they currently don't need to be! Yes, they do - e.g. padding etc.
 
 
-        obj.playcontrols.t_domain = obj.geometry.domain.t;
-        obj.annotationform.t = obj.playcontrols.bar.t_play;
+        obj.ui.t_domain = obj.geometry.domain.t;
       } // update
 
     }, {
@@ -3405,19 +3492,17 @@
         For now the playbar can just play forward correctly, and the t_play can be used to keep track of the actual playing time. The dt is just added on to that time them.
         */
         var obj = this;
-        var bar = obj.playcontrols.bar;
 
         if (dt >= 0) {
-          var t_new = bar.t_play + dt;
+          var t_new = obj.ui.t_play + dt;
           obj.geometry.timestepCurrentFrame(t_new);
-          bar.t_play = t_new;
+          obj.ui.t_play = t_new;
         } else {
           obj.geometry.incrementCurrentFrame();
-          bar.t_play = obj.geometry.currentTime;
+          obj.ui.t_play = obj.geometry.currentTime;
         } // if
 
 
-        bar.update();
         obj.geometry.updateCurrentFrameBuffer();
       } // incrementTimeStep
 
@@ -3703,23 +3788,1160 @@
     }); // forEach
   } // addDraggingToSiblingItems
 
-  var renderer = new MeshRenderer2D(); // Make some makeshift metadata here. From here it should flow down to hte geometry etc.
+  function sortCommentsBeforePushing(a, b) {
+    // The primary comments must be added first so that the replies can be added to them. The comments can just be sorted by time of creation. Replies can only be created after the primary comment.
+    return Date.parse(a.time) - Date.parse(b.time);
+  } // sortCommentsBeforePushing
+
+
+  function getRequiredComments(allCommentingManagers) {
+    // Return hte comments needed. Make a call in a promise, and after it's resolved push the comments to the right owner.
+    // Now add in some test comments
+    fetch('./data/annotations/test.json').then(function (response) {
+      return response.json();
+    }).then(function (data) {
+      data.sort(sortCommentsBeforePushing).forEach(function (comment) {
+        allCommentingManagers.forEach(function (m) {
+          if (m.viewid == comment.viewid) {
+            m.add(comment);
+          } // if  
+
+        }); // forEach
+      }); // forEach
+    }); // then	
+  } // getRequiredComments
+   // sendCommentChanges
+
+  function svg2element(svg) {
+    var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.innerHTML = svg.trim();
+    return g.firstChild;
+  } // svg2element
+  // From regular helpers.
+
+  function arrayEqual(A, B) {
+    return arrayIncludesAll(A, B) && arrayIncludesAll(B, A);
+  } // arrayEqual
+
+  function arrayIncludesAll(A, B) {
+    // 'arrayIncludesAll' checks if array A includes all elements of array B. The elements of the arrays are expected to be strings.
+    // Return element of B if it is not contained in A. If the response array has length 0 then A includes all elements of B, and 'true' is returned.
+    var f = B.filter(function (b) {
+      return !A.includes(b);
+    });
+    return f.length == 0 ? true : false;
+  } // arrayIncludesAll
+
+  var scaleCategorical = /*#__PURE__*/function () {
+    function scaleCategorical() {
+      _classCallCheck(this, scaleCategorical);
+
+      this.domain = [];
+      this.range = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'];
+    }
+
+    _createClass(scaleCategorical, [{
+      key: "dom2range",
+      value: // Opposite function is not defined - two domain values can map to the same range value.
+      function dom2range(v) {
+        var obj = this;
+        var i = (obj.domain.indexOf(v) + 1) % obj.range.length - 1;
+
+        if (i < 0) {
+          obj.domain.push(v);
+          return obj.range[obj.domain.length - 1];
+        } else {
+          return obj.range[i];
+        } // if
+
+      } // dom2range
+
+    }]);
+
+    return scaleCategorical;
+  }(); // scaleCategorical
+
+  var DrawLink = /*#__PURE__*/function () {
+    // Indices when exiting parent node, entering child node, and the index of position of the bend.
+    // Actual dimensions. The label width is the minimum horizontal line length. Bundle width is the space reserved for the vertical line width. Line width is the actual width of the white outline. The default radius is the basis for the actual bend radii.
+    function DrawLink(parentnode, childnode, author) {
+      _classCallCheck(this, DrawLink);
+
+      this.pi = 0;
+      this.ci = 0;
+      this.bendi = 0;
+      this.node_label_width = 70;
+      this.bundle_width = 4;
+      this.line_width = 4;
+      this.r = 16;
+      var obj = this; // So that hte locations can be changed on hte go.
+
+      obj.parentnode = parentnode;
+      obj.childnode = childnode;
+      obj.author = author; // Exit radius is determined node level difference.
+
+      obj.r1 = (childnode.level - parentnode.level) * obj.r;
+      obj.r2 = obj.r;
+    } // constructor
+
+
+    _createClass(DrawLink, [{
+      key: "path",
+      get: function get() {
+        // Doesn't take into account the offsets yet!!
+        // Allow this to return a straight path, or a curved one. The straight path is exclusively for bundles that have only one parent. Furthermore, that one should only be allowed when connecting nodes on the same height. So maybe just base the decision off of that?
+        // Straight path is just M0 0 L40 0 or so.
+        var obj = this;
+        var dyc = obj.ci * obj.line_width + obj.childnode.markerEmptyIn;
+        var dyp = obj.pi * obj.line_width + obj.parentnode.markerEmptyOut; // The target x should be > `xHorizontal + r1 + r2'
+
+        var xHorizontal = obj.parentnode.x + obj.node_label_width + obj.bendi * obj.bundle_width; // Origin and target MUST be at least `[node_label_width + 2*r, 2*r]' apart otherwise the graphic logic doesn't follow.
+
+        var origin = {
+          x: obj.parentnode.x,
+          y: obj.parentnode.yMarkerStart + dyp
+        };
+        var target = {
+          x: obj.childnode.x,
+          y: obj.childnode.yMarkerStart + dyc
+        };
+        var arc1start = {
+          x: xHorizontal - obj.r1,
+          y: origin.y
+        };
+        var arc1end = {
+          x: xHorizontal,
+          y: origin.y + obj.r1
+        };
+        var arc2start = {
+          x: xHorizontal,
+          y: target.y - obj.r2
+        };
+        var arc2end = {
+          x: xHorizontal + obj.r2,
+          y: target.y
+        };
+        /*
+        How the path is made up.
+        start point                   : M0 0
+        horizontal line               : L40 0
+        first bend to vertical        : A16 16 90 0 1 46 16
+        vertical line                 : L46 34
+        second bend to horizontal     : A16 16 90 0 0 62 50
+        horizontal connection to node : L62 50
+        */
+
+        var p = "M".concat(origin.x, " ").concat(origin.y, " L").concat(arc1start.x, " ").concat(arc1start.y, " A").concat(obj.r1, " ").concat(obj.r1, " 90 0 1 ").concat(arc1end.x, " ").concat(arc1end.y, " L").concat(arc2start.x, " ").concat(arc2start.y, " A").concat(obj.r2, " ").concat(obj.r2, " 90 0 0 ").concat(arc2end.x, " ").concat(arc2end.y, " L").concat(target.x, " ").concat(target.y);
+        return p;
+      } // path
+
+    }]);
+
+    return DrawLink;
+  }(); // DrawLink
+
+  var template$2 = "\n<g class=\"bundle\">\n  <path stroke=\"white\" stroke-width=\"5\" fill=\"none\"></path>\n  <path stroke=\"black\" stroke-width=\"2\" fill=\"none\"></path>\n</g>\n"; // tempalte
+  // These should just be exposed at the link level... The tree level also has them, and it's non hygienic.
+
+  var node_label_width$1 = 70;
+  var bundle_width$1 = 4;
+  var r$1 = 16; // Bundles are the connections between two levels of nodes.
+
+  var treebundle = /*#__PURE__*/function () {
+    // Index is the ranked position of this bundle within hte level. It determines the position of hte vertical line segment, and the corner radius.
+    function treebundle(seednode, author) {
+      _classCallCheck(this, treebundle);
+
+      this.links = [];
+      this._bendi = 0; // A seed node is passed in to define the bundle parents and thus instantiate a bundle. After instantialisation only the children of the bundle can change.
+      // NOTE: seednode is a `treenode' instance, but parents and children are `taskgroup' instances. The level is only defined for the node because it can change when the user interacts with the tree.
+
+      var obj = this;
+      obj.node = svg2element(template$2);
+      obj.author = author, obj.level = seednode.level;
+      obj.parents = seednode.connections.parents;
+      obj.children = [seednode.connections.group];
+      obj.nodeChildren = [seednode];
+      obj.nodeParents = [];
+    } // constructor
+
+
+    _createClass(treebundle, [{
+      key: "bendi",
+      get: // bendi
+      function get() {
+        return this._bendi;
+      } // get bendi
+      ,
+      set: function set(i) {
+        // When a bunldes bend index is set it should propagate it to all the children.
+        var obj = this;
+        obj.links.forEach(function (link) {
+          link.bendi = i;
+        }); // forEach
+
+        obj._bendi = i;
+      }
+    }, {
+      key: "update",
+      value: function update(color) {
+        var obj = this;
+        var paths = obj.node.querySelectorAll("path");
+
+        for (var i = 0; i < paths.length; i++) {
+          paths[i].setAttribute("d", obj.path);
+        } // for
+
+
+        if (color) {
+          paths[paths.length - 1].setAttribute("stroke", color);
+        } // if
+
+      } // update
+
+    }, {
+      key: "addparent",
+      value: function addparent(node) {
+        // Only nodes can be pushed. And only the ones declared upon initialisation!
+        var obj = this;
+        var isNodeAllowed = obj.parents.includes(node.connections.group);
+        var isNodeUnknown = !obj.nodeParents.includes(node);
+
+        if (isNodeAllowed && isNodeUnknown) {
+          obj.nodeParents.push(node);
+          obj.updateNodeMinPositions();
+        } // if
+
+      } // addparent
+
+    }, {
+      key: "addchild",
+      value: function addchild(node) {
+        var obj = this;
+
+        if (!obj.children.includes(node.connections.group)) {
+          obj.children.push(node.connections.group);
+        } // if
+
+
+        if (!obj.nodeChildren.includes(node)) {
+          obj.nodeChildren.push(node);
+          obj.updateNodeMinPositions();
+        } // if
+
+      } // addchild
+
+    }, {
+      key: "makelinks",
+      value: function makelinks() {
+        var obj = this; // Links must be made for every child-parent combination. Strictly speaking at least one link must be made for all the children, and at least one link must connect to every parent.
+
+        var links = [];
+        obj.nodeParents.forEach(function (p) {
+          obj.nodeChildren.forEach(function (c) {
+            links.push(new DrawLink(p, c));
+          }); // forEach
+        }); // forEach
+
+        obj.links = links;
+      } // links
+      // Make the full path here??
+
+    }, {
+      key: "path",
+      get: function get() {
+        var obj = this;
+        return obj.links.map(function (link) {
+          return link.path;
+        }).join("");
+      } // path
+
+    }, {
+      key: "width",
+      get: function get() {
+        // The width of the bundle is the fixed horizontal distance plus the number of bundles multiplied by the width reserved for the vertical line segment. The nodes, and therefore the lines are not yet positioned properly, therefore their width cannot be used to calculate the bunlde width. But they can be just summed together though!
+        // Note that this is the minimum width of spanning one level, and not the entire width of the bundle, which may include lines spanning multiple levels!
+        return node_label_width$1 + obj.bundles.length * bundle_width$1 + r$1;
+      } // get width
+
+    }, {
+      key: "updateNodeMinPositions",
+      value: function updateNodeMinPositions() {
+        // This should just be run whenever teh parents or the children are changed.
+        // Because the links make two 90 degree turns when connecting the parent to the child the radii of these turns constitute the minimum y offset of this bundle relative to the previous one. Furthermore, this is offset relative to the lowest parent! This is important when positioning the child nodes.
+        var obj = this;
+        var y_lowest_parent = obj.nodeParents.reduce(function (acc, p) {
+          return acc > p.y ? acc : p.y;
+        }, 0);
+        obj.nodeChildren.forEach(function (child) {
+          child.miny = y_lowest_parent + 2 * r$1;
+        }); // forEach
+      } // y_min
+
+    }]);
+
+    return treebundle;
+  }(); // treebundle
+
+  var node_label_width = 70; // length of text
+
+  var bundle_width = 4; // reserved space for the vertical bunlde line
+
+  var r = 16; // arc radius
+  // A level is an organisational group. All dimensioning is done through a treelevel. The primary elements that define the level are its bundles. The TreeLevel is necessary because the bundles need to be sequenced within a level, and the level width is required to position hte levels. Because the bundles are based on a set of parents, the level of the bundle is the level of the children.
+
+  var TreeLevel = /*#__PURE__*/function () {
+    function TreeLevel(nodes, bundles, nlevel) {
+      _classCallCheck(this, TreeLevel);
+
+      var obj = this;
+      obj.n = nlevel;
+      obj.bundles = bundles.filter(function (b) {
+        return b.level == nlevel;
+      });
+      obj.nodes = nodes.filter(function (n) {
+        return n.level == nlevel;
+      });
+    } // constructor
+
+
+    _createClass(TreeLevel, [{
+      key: "width",
+      get: function get() {
+        // The width of the entire level. It's the width of the label plus the width of all the vertical line segments (including padding), plus the length of the finishing horizontal segment (this is zero for the right-most bundle).
+        var obj = this; // The width of the level is determined by the bundles that end in it. If there aren't any bundles, there is no width. Maybe do a reduce and move the width calculation to the bundle? That would eliminate the dimensions here.
+
+        if (obj.bundles.length > 0) {
+          return node_label_width + obj.bundles.length * bundle_width + r;
+        } else {
+          return 0;
+        } // if
+
+      } // width
+
+    }]);
+
+    return TreeLevel;
+  }(); // TreeLevel
+
+  /* 
+  A defined group hierarchy (groups, group members, and group parents have been established) is passed in. The input data is an array of groups to be drawn.
+
+  This is the background data based on which a tree chart can be established. Interactions with the tree don't change the underlying group hierarchy, only the drawn representation.
+  */
+
+  /*
+  Node height -> number of bundles connecting to it
+  Node x -> depends on the levels and their widths
+  Node y -> position of parent nodes
+  Level width -> number of bundles
+  Bundle links -> parent/child nodes
+  */
+
+  function getBundleLinesGoingThroughNode(bundle, node) {
+    // Given some bundles find which of its lines go through a specific node. Whether the lines are incoming or outgoing is not needed, because it's determined by the relationship between the bundles and the node. Instead the node must just be referenced by the line.
+    return bundle.links.filter(function (link) {
+      return link.childnode == node || link.parentnode == node;
+    }); // filter
+  } // getBundleLines
+
+
+  function arrangeIncomingOutgoingTracks(node, bundles) {
+    // To draw the node I need to know where to start, how big it should be, and I should also know what the label is, and what the corresponding tags are.
+    // Each bundle should be staggered when entering a particular node. But bundles can also hold lines of several authors. These should be staggered as well.
+    var outgoingbundles = bundles.filter(function (b) {
+      return b.parents.includes(node.connections.group);
+    }); // filter
+
+    var incomingbundles = bundles.filter(function (b) {
+      return b.children.includes(node.connections.group);
+    }); // filter
+    // Bundles spanning multiple levels should be all the way at the top. Then they should be ordered by bundle ind. Larger bendi means bend happens more to the right.
+
+    incomingbundles.sort(function (a, b) {
+      return b.level - a.level || b.bendi - a.bendi;
+    }); // sort
+
+    outgoingbundles.sort(function (a, b) {
+      return b.level - a.level || b.bendi - a.bendi;
+    }); // sort
+    // This should be improved. First of all, the track indices and the bundle indices should be coordinated by sorting the lines by bundle ind before assigning the track ind. Secondly, it would be good if bundles of the same color could maintain same track positions...
+    // Assign the index of track to enter the node by.
+
+    incomingbundles.forEach(function (bundle, i) {
+      var lines = getBundleLinesGoingThroughNode(bundle, node);
+      lines.forEach(function (line) {
+        line.ci = i;
+      });
+    }); // forEach
+
+    outgoingbundles.forEach(function (bundle, i) {
+      var lines = getBundleLinesGoingThroughNode(bundle, node);
+      lines.forEach(function (line) {
+        line.pi = i;
+      });
+    }); // forEach
+    // Set number of incoming bundles.
+
+    node.nbundlesin = incomingbundles.length;
+    node.nbundlesout = outgoingbundles.length;
+  } // arrangeIncomingOutgoingTracks
+
+
+  function arrangeBundlesOfLevel(bundles) {
+    bundles.sort(function (a, b) {
+      // How to sort by similarity? Similarity is based on a pairs, not on individual. Maybe order by size, and then progressively do smaller sorts? Or just sort the nodes, and adjust the bundles to that?
+      // Sort by size.
+      return b.children.length - a.children.length;
+    }); // sort
+    // But it also depends on hte nodes in hte previous level? So just arrange them sensibly? Go through them and assign minimum y positions based on the parents. This can later be used to create further bundles?
+    // Maybe the nodes should just track the indices of the paths that lead to them? Sort of a history? That would also allow the longest chain to be identified. And then the level indices of the paths/bundles can be used to determine the order.
+    // Maybe if the up-path is also allowed it can be used to reclaim some space after a particular branch ends?
+    // The bundle needs an ind for within the level. This can be used to sort the bundle links horizontally. The location of the vertical line segment is determined based on this index.
+
+    var maxBundleInd = bundles.length - 1;
+    bundles.forEach(function (b, i) {
+      b.bendi = maxBundleInd - i;
+    }); // forEach
+  } // arrangeBundlesOfLevel
+
+
+  function getbundles(nodes) {
+    // The bundles should be differentiated based on tag authors.
+    var bundleseeds = nodes.filter(function (node) {
+      return node.connections.parents.length > 0;
+    }); // filter
+    // The `taskgroup' objects have several tags connected to them. Each tag represents a group that was created by some user. For every author of a group there should be a different bundle connecting to it. Even if the tag has only been created for that specific group.
+    // Two bundles are not necessarily the same if htey have the same parents. They should be differentiated by the user tag also.
+
+    var bundles = bundleseeds.reduce(function (bundles, node) {
+      // This node may belong to several bundles made by different authors. Find thos bundles, and if they can't be found create them.
+      node.connections.group.tags.forEach(function (tag) {
+        var existing = bundles.filter(function (b) {
+          return b.author == tag.author;
+        }).filter(function (b) {
+          return arrayEqual(b.parents, node.connections.parents);
+        });
+
+        if (existing.length > 0) {
+          existing.forEach(function (b) {
+            b.addchild(node);
+          }); // forEach
+        } else {
+          bundles.push(new treebundle(node, tag.author));
+        } // if
+
+      });
+      return bundles;
+    }, []); // map
+    // Go through hte nodes one more time to assign the parent nodes also. Originally only the groups are assigned as parents as the incoming nodes don't reference other nodes, but the groups do reference each other.
+    // `treebundle' instances will check whether parents are valid.
+
+    nodes.forEach(function (node) {
+      bundles.forEach(function (bundle) {
+        bundle.addparent(node);
+      });
+    }); // forEach
+    // Make sure the bundles create all the required links.
+
+    bundles.forEach(function (bundle) {
+      bundle.makelinks();
+    });
+    return bundles;
+  } // get bundles
+
+
+  function getlevels(nodes, bundles) {
+    // Always create all new levels!!
+    var levels = []; // Find all the levels from the bundles.
+
+    var maxlevel = Math.max.apply(Math, _toConsumableArray(nodes.map(function (n) {
+      return n.level;
+    })));
+
+    for (var level = 0; level < maxlevel + 1; level++) {
+      levels.push(new TreeLevel(nodes, bundles, level));
+    } // for
+
+
+    return levels;
+  } // get levels
+  // Maybe devolve this one into TreeRender and hierarchy?
+  // The user can only click on the nodes to directly interact with the tree. Currently the 'collapsenode' is used for that.
+
+
+  function dimensioning(nodes) {
+    // `dimension' calculates the positions of the nodes on the screen, and dimensions the connecting links.
+    nodes.forEach(function (node) {
+      return node.clear();
+    }); // Need to get teh levels so that I have a constant copy... mobx would probably improve this, but it'll do for now. Maybe it'd just be better to collect this with some sort of functions? And not getters?
+
+    var bundles = getbundles(nodes);
+    var levels = getlevels(nodes, bundles); // First order the bundles within hte levels.
+
+    levels.forEach(function (level) {
+      return arrangeBundlesOfLevel(level.bundles);
+    }); // forEach
+    // ASSIGN INCOMING/OUTGOING INDICES TO LINES.
+
+    nodes.forEach(function (node) {
+      return arrangeIncomingOutgoingTracks(node, bundles);
+    }); // forEach
+    // Last thing is to position the nodes.
+
+    var x_offset = 0;
+    levels.forEach(function (level) {
+      // Recalculate the minimum node positions.
+      level.bundles.forEach(function (b) {
+        return b.updateNodeMinPositions();
+      }); // Now sort the nodes by their miny to conserve as much space as possible.
+
+      level.nodes.sort(function (a, b) {
+        return a.miny - b.miny;
+      }); // sort
+      // With the sizes of the nodes defined, the x and y locations can be assigned. The x location depends on the level, and the y location on the order within hte level.
+
+      x_offset += level.width;
+      var y_offset = 0;
+      level.nodes.forEach(function (n) {
+        n.x = x_offset;
+        n.y = y_offset; // Compute offset for next node. This is just offset within the level!
+
+        y_offset = n.y + n.markersize + n.pitch;
+      }); // forEach
+    }); // forEach
+
+    return {
+      nodes: nodes,
+      bundles: bundles
+    };
+  } // dimensioning
+
+  // text -> 	"x", node => node.labelx, "y", node => node.labely, label node=>node.label
+
+  var template$1 = "\n<g class=\"node\" cursor=\"pointer\">\n  <g class=\"marker\">\n    <path class=\"outline\" stroke=\"black\" stroke-width=\"8\" stroke-linecap=\"round\"></path>\n    <path class=\"fill\" stroke=\"white\" stroke-width=\"4\" stroke-linecap=\"round\"></path>\n  </g>\n  <g class=\"label\">\n    <text class=\"unselectable\" stroke=\"white\" stroke-width=\"2\" font-size=\"10px\"></text>\n    <text class=\"unselectable\" stroke=\"black\" stroke-width=\"0.5\" font-size=\"10px\"></text>\n  </g>\n</g>\n"; // template
+  // A treenode object is a higher level wrapper that contains all the dimensioning information. The `connections' attribute is supposed to hold the `treegroup' object, which contains a reference the an individual group, all it's ancestors, it's direct parents, and all its descendants.
+
+  var TreeNode = /*#__PURE__*/function () {
+    // Line width is the width of the incoming line. The pitch is the vertical spacing to the next node.
+    function TreeNode(treegroup) {
+      _classCallCheck(this, TreeNode);
+
+      this.x = undefined;
+      this._y = 0;
+      this.miny = 0;
+      this.line_width = 4;
+      this.pitch = 32;
+      this.nbundlesin = 0;
+      this.nbundlesout = 0;
+      this.hidden = false;
+      var obj = this;
+      obj.node = svg2element(template$1); // The treegroup holds all the connections of a particular group.
+
+      obj.connections = treegroup;
+      var label = obj.node.querySelector("g.label");
+
+      label.onmouseenter = function () {
+        obj.highlighttext(true);
+      };
+
+      label.onmouseleave = function () {
+        obj.highlighttext(false);
+      };
+
+      var marker = obj.node.querySelector("g.marker");
+
+      marker.onmouseenter = function () {
+        obj.highlightmarker(true);
+      };
+
+      marker.onmouseleave = function () {
+        obj.highlightmarker(false);
+      };
+    } // constructor	
+
+
+    _createClass(TreeNode, [{
+      key: "update",
+      value: function update() {
+        var obj = this;
+        var marker = obj.node.querySelector("g.marker");
+        var paths = marker.querySelectorAll("path");
+        var label = obj.node.querySelector("g.label");
+        var texts = label.querySelectorAll("text");
+
+        for (var i = 0; i < paths.length; i++) {
+          paths[i].setAttribute("d", "M".concat(obj.x, " ").concat(obj.yMarkerStart, " L").concat(obj.x, " ").concat(obj.yMarkerStart + obj.markersize));
+        } // for
+
+
+        label.setAttribute("transform", "translate(".concat(obj.labelx, ", ").concat(obj.labely, ")"));
+
+        for (var _i = 0; _i < texts.length; _i++) {
+          texts[_i].innerHTML = obj.label;
+        } // for
+
+      } // update
+
+    }, {
+      key: "highlighttext",
+      value: function highlighttext(v) {
+        var obj = this;
+        var size = v ? "12px" : "10px";
+        var texts = obj.node.querySelector("g.label").querySelectorAll("text");
+
+        for (var i = 0; i < texts.length; i++) {
+          texts[i].setAttribute("font-size", size);
+        } // for
+
+      } // highlighttext
+
+    }, {
+      key: "highlightmarker",
+      value: function highlightmarker(v) {
+        var obj = this;
+        var size = v ? 10 : 8;
+        var outline = obj.node.querySelector("g.marker").querySelector("path.outline");
+        outline.setAttribute("stroke-width", size);
+      } // highlighttext
+
+    }, {
+      key: "clear",
+      value: function clear() {
+        var obj = this;
+        obj.x = undefined;
+        obj._y = 0;
+        obj.miny = 0;
+        obj.nbundlesin = 0;
+        obj.nbundlesout = 0;
+      } // clear
+
+    }, {
+      key: "y",
+      get: // set y
+      function get() {
+        var obj = this;
+        return Math.max(obj._y, obj.miny);
+      } // get y
+      ,
+      set: function set(val) {
+        var obj = this;
+        obj._y = val;
+      }
+    }, {
+      key: "yMarkerStart",
+      get: function get() {
+        var obj = this;
+        var yoffset = obj.markersize > 0 ? obj.line_width / 2 : 0;
+        return obj.y - obj.markersize / 2 + yoffset;
+      } // markery
+
+    }, {
+      key: "markersize",
+      get: function get() {
+        return Math.max(this.nbundlesin - 1, this.nbundlesout - 1, 0) * this.line_width;
+      } // markersize
+
+    }, {
+      key: "markerEmptyIn",
+      get: function get() {
+        // If the marker is larger than the width of the lines coming in, then the lines should be centered in hte middle of the marker. Calculate the empty space from hte marker start to where the lines should begin.
+        var obj = this;
+        return (obj.markersize - (obj.nbundlesin - 1) * obj.line_width) / 2;
+      } // markerEmptyIn
+
+    }, {
+      key: "markerEmptyOut",
+      get: function get() {
+        var obj = this;
+        return (obj.markersize - (obj.nbundlesout - 1) * obj.line_width) / 2;
+      } // markerEmptyIn
+      // Label to be displayed next to it. Shouldn't be larger than the node_label_width.
+
+    }, {
+      key: "label",
+      get: function get() {
+        var obj = this;
+        var name = obj.connections.group.tags[0].id; // Temporarily changed to show n tasks for troubleshooting.
+        // let n = obj.connections.descendants.length;
+
+        var n = obj.connections.group.members.length;
+        return "".concat(name, " ").concat(n > 0 ? "(".concat(n, ")") : "");
+      } // label
+
+    }, {
+      key: "labelx",
+      get: function get() {
+        return this.x + 4;
+      } // labelx
+
+    }, {
+      key: "labely",
+      get: function get() {
+        return this.yMarkerStart - 4;
+      } // labely
+
+    }]);
+
+    return TreeNode;
+  }(); // TreeNode
+
+  // DONT LOOK ABOVE!!
+  // FROM AN ARRAY OF TASKS WITH TAGS TO A TREE
+
+  function array2tree(array) {
+    /*
+    1.) Find groups.
+    2.) Merge them.
+    3.) Create parent-child relationships
+    */
+    // Find all created groups, and merge the ones with identical members.
+    var groups = findAllTagBasedGroups(array);
+    var mergedgroups = mergeIdenticalGroups(groups); // Convert the groups into a higher level object to avoid circular references when figuring out ancestry.
+
+    var hierarchicalnodes = findParentalRelationships(mergedgroups);
+    return hierarchicalnodes;
+  } // array2tree
+  // The tree node represents a single group, but also holds references to the parent and child nodes. The treenode is a higher level object to avoid circular referencing of objects.
+
+  var treegroup = function treegroup(taskgroup) {
+    _classCallCheck(this, treegroup);
+
+    var obj = this;
+    obj.group = taskgroup; // Groups CAN have more than 1 parent. While it's true that during a single dive through the tasks each group can only have one parent, it's possible that additional dives (by the same, or other users) will produce the same groups, but tracing different steps. The merging already combines all identical groups, so the merged groups can have multiple parents.
+    // Select the parents as all those candidate  groups that have not been referenced by other candidate groups already.
+
+    obj.ancestors = []; // All upstream groups
+
+    obj.parents = []; // Only groups directly above this one.
+
+    obj.descendants = []; // All downstream groups
+
+    obj.children = undefined; // Only groups directly below. Is this needed??
+  } // constructor
+  ; // treegroup
+
+
+  var taskgroup = /*#__PURE__*/function () {
+    function taskgroup(tags) {
+      _classCallCheck(this, taskgroup);
+
+      this.tags = tags;
+      this.members = [];
+    } // constructor
+
+
+    _createClass(taskgroup, [{
+      key: "addtask",
+      value: function addtask(task) {
+        var obj = this;
+
+        if (!obj.members.includes(task)) {
+          obj.members.push(task);
+        } // if
+
+      } // addtask
+
+    }, {
+      key: "addtags",
+      value: function addtags(tags) {
+        var obj = this;
+        tags.forEach(function (tag) {
+          if (!obj.tags.includes(tag)) {
+            obj.tags.push(tag);
+          } // if
+
+        }); // forEach
+      } // addtags
+
+    }]);
+
+    return taskgroup;
+  }(); // group
+  // Making groups.
+
+
+  function findAllTagBasedGroups(array) {
+    // Create a group for each tag present in the array. We also need to differentiate teh groups by the author at this point. Otherwise parallel trees won't be possible.
+    var dict = {};
+    var groups = [];
+    array.forEach(function (taskobj) {
+      taskobj.tags.forEach(function (tag) {
+        // If you tag something in the session, then that tag is reserved for a particular group. If you tag other elements with it, it'll become a part of that group.
+        var groupid = [tag.id, tag.author].join("-");
+
+        if (!dict[groupid]) {
+          // Here just pass the tag in. The group will need to hold on to it.
+          dict[groupid] = new taskgroup([tag]);
+          groups.push(dict[groupid]);
+        } // if
+        // Add teh task to the specific group, but also to the root group.
+
+
+        dict[groupid].addtask(taskobj);
+      }); // forEach
+    }); // forEach
+    // A root group should be present. It will be merged with other existing groups if possible in hte next tep.
+
+    var root = makeRootGroup(array);
+    return groups.concat(root);
+  } // findAllTagBasedGroups
+
+
+  function makeRootGroup(array) {
+    // The root MUST always contain all of the data!! It will also allow navigation all the way to the start.
+    var root = new taskgroup([{
+      id: "Root",
+      author: "session",
+      timestamp: new Date()
+    }]); // Root should contain all tasks.
+
+    array.forEach(function (task) {
+      root.addtask(task);
+    }); // forEach
+
+    return root;
+  } // makeRootGroup
+
+
+  function mergeIdenticalGroups(groups) {
+    var mergedgroups = groups.reduce(function (acc, g) {
+      // Find group with identical members.
+      var identicalg = acc.filter(function (g_) {
+        return arrayEqual(g_.members, g.members);
+      }); // filter
+
+      if (identicalg.length > 0) {
+        // Add another author to existing group.
+        identicalg[0].addtags(g.tags);
+      } else {
+        // Add this group to the unique ones.
+        acc = acc.concat(g);
+      } // if
+
+
+      return acc;
+    }, []); // reduce
+
+    return mergedgroups;
+  } // mergeIdenticalGroups
+
+
+  function isSubset(a, b) {
+    // Check whether array a is a subset of array b.
+    // A must be strictly smaller than b.
+    if (a.length < b.length) {
+      // Check if b contains all of a.
+      return arrayIncludesAll(b, a);
+    } else {
+      return false;
+    } // if
+
+  } // isSubset
+
+
+  function findParentalRelationships(groups) {
+    // First create an object one level above to avoid cross referenceing of objects.
+    var nodes = groups.map(function (g) {
+      return new treegroup(g);
+    }); // maybe calculate all ancestors, all descendants, and then parents and children? Could be useful to have all hte information available.
+    // FIND PARENT CANDIDATES FOR ALL GROUPS.
+
+    nodes.forEach(function (node) {
+      // Ancestor groups are all groups that include all of the members of the node group, but are larger than it.
+      node.ancestors = groups.filter(function (g) {
+        return isSubset(node.group.members, g.members);
+      }); // filter
+      // Descendant groups are all groups that contain a subset of the members of this group.
+
+      node.descendants = groups.filter(function (g) {
+        return isSubset(g.members, node.group.members);
+      });
+    }); // forEach
+    // Groups CAN have more than 1 parent. While it's true that during a single dive through the tasks each group can only have one parent, it's possible that additional dives (by the same, or other users) will produce the same groups, but tracing different steps. The merging already combines all identical groups, so the merged groups can have multiple parents.
+    // Select the parents as all those candidate  groups that have not been referenced by other candidate groups already.
+    // Loop over all the candidates of a particular group, and remove all candidates that appear in that.
+
+    nodes.forEach(function (node) {
+      node.parents = node.ancestors; // All parents of a candidate parent are considered `grandparents'. All grandparents cannot be the parent. Loop over the candidates and remove all grandparents. Candidates also include teh candidates parents, so the whole lineage is checked.
+
+      node.parents.forEach(function (candidate) {
+        // The candidate now no longer has parents. Just check directly? If another group contains all the members of a group then it is its parent.
+        node.parents = node.parents.filter(function (parent) {
+          if (candidate == parent) {
+            // A candidate can't eliminate himself.
+            return true;
+          } else {
+            return !isSubset(candidate.members, parent.members);
+          } // if
+
+        }); // filter
+      }); // forEach
+    }); // forEach
+
+    return nodes;
+  } // findParentalRelationships
+
+
+  function calculateLevelNumbers(nodes) {
+    // First clear all the levels and set any root ones.
+    nodes.forEach(function (node) {
+      node.level = undefined;
+
+      if (node.connections.parents.length == 0) {
+        node.level = 0;
+      } // if
+
+    }); // Now move through the nodes and check if all parents already had a level assigned. If so the level of the node is max(parents.level) + 1. This must be done until all the nodes have an assigned level.
+
+    for (var i = 0; i < nodes.length; i++) {
+      var unassignednodes = nodes.filter(function (node) {
+        return node.level == undefined;
+      });
+      unassignednodes.forEach(function (node) {
+        // All parents must have an assigned level, otherwise skip. Check if any don't have level.
+        var parents = node.connections.parents.reduce(function (acc, parent) {
+          return acc.concat(nodes.filter(function (node) {
+            return node.connections.group == parent;
+          }));
+        }, []); // reduce
+
+        if (parents.some(function (parent) {
+          return parent.level == undefined;
+        })) ; else {
+          node.level = Math.max.apply(Math, _toConsumableArray(parents.map(function (parent) {
+            return parent.level;
+          }))) + 1;
+        } // if
+
+      }); // forEach
+
+      if (unassignednodes.length == 0) {
+        break;
+      } // if
+
+    } // for
+
+  } // calculateLevelNumbers
+
+  var TreeHierarchy = /*#__PURE__*/function () {
+    function TreeHierarchy(data) {
+      _classCallCheck(this, TreeHierarchy);
+
+      var obj = this;
+      obj.data = data;
+      obj.collapsednodes = [];
+      obj.update();
+    } // constructor
+
+
+    _createClass(TreeHierarchy, [{
+      key: "update",
+      value: function update() {
+        // Recalculate makes new treenodes. Maybe instead of having hidden nodes just have hidden tasks? And any group that consists only of the hidden tasks is hidden also? That's how the hierarchy creation works anyway.
+        // Nah, just push the togglig to the node itself! However, anytime that the data will be recalculated the hidden aspect will disappear....
+        var obj = this;
+        obj.nodes = array2tree(obj.data).map(function (group) {
+          return new TreeNode(group);
+        }); // map
+      } // update
+
+    }, {
+      key: "visiblenodes",
+      get: function get() {
+        var obj = this;
+        var collapsednodes = obj.nodes.filter(function (node) {
+          return node.hidden;
+        }); // Based on the collapsed nodes determine which ones are still visible. I can ignore any incorrect nodes here. But I would rather just get rid of them.
+
+        var hiddennodes = obj.nodes.filter(function (node) {
+          return collapsednodes.some(function (collapsed) {
+            return collapsed.connections.descendants.includes(node.connections.group);
+          }); // some
+        }); // filter
+        // Filter out any disabled nodes. Maybe this can be made more sophisticated so that the folds further down the line are preserved?
+
+        var nodes = obj.nodes.filter(function (node) {
+          return !hiddennodes.includes(node);
+        }); // The level numbers should be assigned to all active nodes.
+
+        calculateLevelNumbers(nodes);
+        return nodes;
+      } // get nodes
+
+    }]);
+
+    return TreeHierarchy;
+  }(); // TreeHierarchy
+
+  /* TODO
+  - Connect to a scatter plot for interactive tag addition.
+  - Handle unassigned tasks.
+  */
+
+  /* ADVANCED
+  - Single parent bundles should allow for straight links too.
+
+  - How to display very large trees?
+  	Make the tree zoomable?
+
+  - How should the group descriptions be presented? 
+  	Number of tasks, number of children, text description, AUTHOR!! All the data is available. Maybe on text hover all the information should be displayed?? Maybe in a tooltip?
+  - Which label to select when making nodes?
+  	The current author should be allowed to control their branch. This would require some differentiation between users. Certainly can't be done now. For now just select the first one?
+  - How to merge the groups interactively? I.e. a git pull.
+  */
+
+  /* DONE
+  - Collapsible nodes - collapse, with the folding history saved.
+  - Enforce partial branches to be inserted - tree created on bundle level.
+  - Make text unselectable - add into app css
+  - Fix node mouseover css - css affects specific child of mover g.
+  */
+
+  var template = "\n<g transform=\"translate(20, 20)\">\n  <g class=\"bundles\"></g>\n  <g class=\"nodes\"></g>\n  <g class=\"nodetooltip\"></g>\n  <g class=\"linktooltip\"></g>\n</g>\n";
+
+  var TreeRender = /*#__PURE__*/function () {
+    function TreeRender(data) {
+      _classCallCheck(this, TreeRender);
+
+      var obj = this; // Hierarchy
+
+      obj.hierarchy = new TreeHierarchy(data); // Drawing
+
+      obj.node = svg2element(template);
+      obj.gnodes = obj.node.querySelector("g.nodes");
+      obj.gbundles = obj.node.querySelector("g.bundles");
+      obj.color = new scaleCategorical();
+    } // constructor
+
+
+    _createClass(TreeRender, [{
+      key: "clear",
+      value: function clear() {
+        // When clearing by looping through .children and .remove() it only removed the nodes in the last step. When redrawing it added all of them back somehow...
+        var obj = this;
+        obj.gnodes.innerHTML = "";
+        obj.gbundles.innerHTML = "";
+      } // clear
+
+    }, {
+      key: "interact",
+      value: function interact() {
+        var obj = this;
+        obj.clear();
+        obj.map = dimensioning(obj.hierarchy.visiblenodes);
+        obj.updatenodes();
+        obj.updatelines();
+      } // interact
+
+    }, {
+      key: "update",
+      value: function update() {
+        var obj = this;
+        obj.hierarchy.update();
+        obj.interact();
+      } // update
+      // The functionality is added in here. Maybe refactor to remove the nestedness??
+
+    }, {
+      key: "updatenodes",
+      value: function updatenodes() {
+        var obj = this;
+        obj.map.nodes.forEach(function (nodeobj) {
+          obj.gnodes.appendChild(nodeobj.node);
+          nodeobj.update(); // Add teh styling changes on mouseover. Clicking the label moves view to the group.
+
+          nodeobj.node.querySelector("g.label").onclick = function () {
+            obj.moveto(nodeobj);
+          }; // onclick
+          // Clicking on hte node just collapses branches.
+
+
+          obj.node.querySelector("g.marker").onclick = function () {
+            nodeobj.hidden = !nodeobj.hidden;
+            obj.interact();
+          }; // onclick
+
+        }); // forEach
+      } // updatenodes
+
+    }, {
+      key: "updatelines",
+      value: function updatelines() {
+        var obj = this; // The renderer controls the color of the lines!!
+
+        obj.map.bundles.forEach(function (bundleobj) {
+          obj.gbundles.appendChild(bundleobj.node);
+          bundleobj.update(obj.color.dom2range(bundleobj.author));
+        }); // forEach
+      } // updatelines
+
+    }, {
+      key: "moveto",
+      value: function moveto(group) {
+        console.log("Move to", group);
+      } // moveto
+
+    }]);
+
+    return TreeRender;
+  }(); // TreeRender
+
+  /* To do: 
+    DONE: - allow scrolling
+    DONE: - add style to frames.
+    DONE: - make divs appear side by side also
+    DONE: - don't update invisible divs
+    DONE: - zooming, panning
+    
+    DONE: - use the actual data
+    DONE: - value based color shader calculation
+    DONE: - (panning relaxation must be manually adjusted) - 2D and 3D cameras.
+    DONE: - auto set the original domain (DONE (width, height), near/far plane)
+
+    DONE: - dragging frames around
+    - auto selecting the height of the viewport in pixels
+    - pinch gestures
+
+    - play multiple views at once.
+    - loading buffering && data limitation, and subsequent viewframe number limitation.
+    
+    - expandable description and tools section?
+    - adding chapter annotations
+        The annotations are not really chapters. They can be, but they should also support having a start AND end points, and be allowed to overlap. The playbar san still show them in order of appearance, but a more general view of the tag annotations should be available.
+    DONE comments, reintroduce tags as threads
+    - spatial arranging and metadata connection
+    - tree hierarchy
+    - grouping (hierarchy operates on tags, and is thus independent of grouping)
+    
+    - put it all on a github webpage??
+    
+  */
+  // The mesh renderer implements the frag and color shaders, and runs the main drawing loop.
+  // "C:/Users/ak2164/Documents/CAMBRIDGE/PhD/github_repos/webgldrawing/src/components/ui/commenting/commentingServerCommunications.js"
+  // Make some makeshift metadata here. From here it should flow down to hte geometry etc.
   // In this case the metadata holds the reference to the unsteady simulation metadata, which then holds the references to the actual files required for rendering.
+  // There should be an overhead object attached to eachtask? So that the filtering still happens on hte actual object read from hte json, but all the other metadata - tags,... are stored in hte overhead?
 
   var metadata = [{
     label: "Maybe we",
-    slice: "./data/testmetadata.json"
+    slice: "./data/testmetadata.json",
+    tags: []
   }, {
     label: "should add",
-    slice: "./data/testmetadata.json"
+    slice: "./data/testmetadata_copy0.json",
+    tags: []
   }, {
     label: "some more",
-    slice: "./data/testmetadata.json"
+    slice: "./data/testmetadata_copy1.json",
+    tags: []
   }, {
     label: "tasks.",
-    slice: "./data/testmetadata.json"
+    slice: "./data/testmetadata_copy2.json",
+    tags: []
   }]; // metadata
-  // Add the players in. The HTML will position hte frames.
+  var renderer = new MeshRenderer2D(); // Add the players in. The HTML will position hte frames.
 
   for (var i = 0; i < 4; i++) {
     var m = metadata[i]; // Player is added within the MeshRenderer because it needs the 'gl'.
@@ -3733,20 +4955,42 @@
 
   renderer.draw();
   console.log(renderer); // Add the dragging externally. The tabletop was positioned absolutely, with top: 0px. If this is not so the dragging will move the items on the initial drag start by the offset amount.
-
   addDraggingToSiblingItems(renderer.items, 80); // COMMENTING: Add the login info.
 
   var login = document.querySelector("div.login").querySelector("input");
 
   login.oninput = function () {
     renderer.items.forEach(function (item) {
-      item.commenting.user = login.value;
+      item.ui.user = login.value;
     }); // forEach
   }; // oninput
-
+  getRequiredComments(renderer.items.map(function (item) {
+    return item.ui.commenting;
+  }));
   /*
   Chapter are actually added as ordinal variables - they have a name, and a timestep value. So they are not simple tags. But the metadata ordinal variables definitely should not appear as chapters. But the correlation between both should be available.
   */
+  // The tags in the metadata and the comments are separate things! So comments can just keep track of their own tags, but the full annotations of the metadata are required for the navigation. The small multiples can just add to their metadata. Eventually the server should just be pushing the new updated annotations to the client all the time to keep it up to speed, which will be a good time to update the maps. Maybe it can even be done periodically?
+  // For navigation the tags must be like: {id: "Root", author: "session"};
+  // Tag adding works directly on the metadata. That means it's not exposed here - which means its more difficult to decide when to update. If it's on a hidden HUD then when it's toggled on. But what about the small map?
+
+  var navigationdiv = document.querySelector("div.navigation-background");
+  var navigationsvg = navigationdiv.querySelector("svg.navigation");
+  var treenavigation = new TreeRender(metadata);
+  navigationsvg.appendChild(treenavigation.node);
+  treenavigation.update();
+
+  document.querySelector("button.navigation").onclick = function () {
+    navigationdiv.style.display = "none";
+  };
+
+  navigationdiv.onclick = function (event) {
+    navigationdiv.style.display = "none";
+  };
+
+  navigationsvg.onclick = function (event) {
+    event.stopPropagation();
+  }; // Maybe htere should be two separate trees. One that shows all the data at once, and another that just shows the small multiples in the view?
 
 }());
 //# sourceMappingURL=webgldrawing.js.map
