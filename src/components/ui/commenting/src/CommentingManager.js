@@ -102,6 +102,12 @@ export default class CommentingManager{
   } // updateCommentCounter
   
   
+  submit(config){
+	// This function is called when the button is pressed. By default it just routes the comment to 'add' so that the comment is added straight away. Alternately it should be passed to the server first. Maybe it's good if both things are done in cases when the connection is not good?
+	this.add(config);
+  } // submit
+  
+  
   add(config){
 	// When the comments are loaded from the server they will be added through this interface. Therefore it must handle both the primary and secondary comments.
 	let obj = this;

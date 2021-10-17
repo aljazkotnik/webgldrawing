@@ -80,12 +80,11 @@ let cmap = new Uint8Array( [
 
 
 export default class MeshRenderer2D{
-  constructor(){
+  constructor(canvas, container){
 	let obj = this;  
 	
-	obj.domcontainer = document.getElementById("table-top");
-	
-	let canvas = document.getElementById("canvas");	
+	obj.domcontainer = container;
+		
 	obj.canvas = canvas;
 	obj.canvas.width = window.innerWidth;
 	obj.canvas.height = window.innerHeight;

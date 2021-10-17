@@ -24,13 +24,22 @@
   </div>
 
 
-  <!-- the canvas and table-top must both be 'position: absolute' otherwise the events on svgs appended to the tabletop later on don't work -->
+  <!-- the canvas and table-top must both be 'position: absolute' otherwise the events on svgs appended to the tabletop later on don't work.
+ 
+  Another svg is positioned between the tabletop and the canvas. It supports drawing the lasso selection, and hosts the navigation tree! It can also host zooming in and out to reduce the size of hte small multiples.
+  
+  This svg must be behind the canvas if the players should draw over the tree. However, for the tree to be interactive, it has to be on top of the canvas.
+  
+  -->
   <div class="container">
 	<canvas id="canvas" style="position: absolute; top:0px; left:0px; outline: black 3px solid;"></canvas>
+	<svg class="hud" height="100%" width="100%" style="position: absolute; top:0px; left:0px;">
+	  <g class="tree" transform="translate(0,60)"></g>
+	</svg>
 	<div id="table-top" style="position: absolute; top:0px;"></div>
 	
 	<!-- Head up display -->
-	<div class="hud" style="position: fixed; width: 100%; height: 100% top: 0px;">
+	<div class="hud" style="position: fixed; width: 100%; top: 0px;">
 	  <div class="login" style="display: inline-block; float: right; color: gray; margin-top: 10px;">
         Login as:
         <input type="text" placeholder="alias" style="width: 50px"></input>

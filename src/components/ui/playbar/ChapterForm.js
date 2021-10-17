@@ -35,7 +35,7 @@ let template = `
 </div>
 `; // template
 
-export default class AnnotationForm{
+export default class ChapterForm{
   
   user = "Default user: Aljaz"
   
@@ -68,7 +68,7 @@ export default class AnnotationForm{
 	obj.node.querySelector("button.submit").onclick = function(){
 		let tag = obj.tag;
 		if(tag){
-			obj.externalAction(tag);
+			obj.submit(tag);
 			obj.clear()
 		} // if
 	} // onclick
@@ -117,11 +117,19 @@ export default class AnnotationForm{
   } // clear
   
   get tag(){
+	// Chapter tag should belong to the task id so that the observations across multiple slices are available together to the user.
 	let obj = this;
 	// The time should be defined, but it can also be 0, or less than 0!
-	return obj.user && obj.input.value && ( obj.starttime != undefined ) ? {author: obj.user, label: obj.input.value, starttime: obj.starttime, endtime: obj.endtime} : false; 
+	return obj.user && obj.input.value && ( obj.starttime != undefined ) ? { 
+		taskId: obj.taskId,
+		label: obj.input.value,	
+		author: obj.user,  
+		starttime: obj.starttime, 
+		endtime: obj.endtime,
+		id: `${obj.user} ${Date()}`
+	} : false; 
   } // tag
 
   // Placeholder for communication between classes.
-  externalAction(){} // externalAction
-} // AnnotationForm
+  submit(tag){} // submit
+} // ChapterForm

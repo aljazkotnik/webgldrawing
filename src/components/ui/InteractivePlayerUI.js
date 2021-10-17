@@ -1,6 +1,6 @@
 import PlayControls from "./playbar/PlayControls.js";
 import CommentingManager from "./commenting/src/CommentingManager.js";
-import AnnotationForm from "./playbar/AnnotationForm.js";
+import ChapterForm from "./playbar/ChapterForm.js";
 
 
 // DONE: Which annotations should be seen on the playbar? Just the current users, or those of otehr users as well? Capturing all annotations would allow feature tracking for example. But it may clutter the play bar. 
@@ -19,7 +19,7 @@ import AnnotationForm from "./playbar/AnnotationForm.js";
 export default class interactivePlayerUI{
   constructor(id){
 	let obj = this;
-	
+	obj.viewid = id;
 	obj.node = document.createElement("div");
 	
 	// Add in a playbar
@@ -28,23 +28,21 @@ export default class interactivePlayerUI{
 	
 	
 	// The tag adding.
-	obj.annotationform = new AnnotationForm();
-	obj.node.appendChild( obj.annotationform.node )
+	obj.chapterform = new ChapterForm();
+	obj.node.appendChild( obj.chapterform.node )
 	
 	// Add in the commenting system. The metadata filename is used as the id of this 'video', and thus this player. The node needs to be added also.
 	obj.commenting = new CommentingManager( id );
 	obj.node.appendChild( obj.commenting.node );
 	
 	
-	//  Tags need to be pushed to the playbar, but also to the commenting!
-	obj.annotationform.externalAction = function(tag){
-		obj.playcontrols.bar.annotations.push(tag)
-		obj.playcontrols.bar.rebuild();
-		obj.playcontrols.bar.update();
+	//  Tags need to be pushed to the playbar, but also to the commenting! Should individual tags be allowed to influence the navigation? I guess so?
+	obj.chapterform.submit = function(tag){
+		obj.playcontrols.bar.addchapter(tag);
 		
 		let discussiontags = obj.playcontrols.bar.annotations.map(a=>a.label);
 		obj.commenting.discussion.update(discussiontags);
-	} // externalAction
+	} // submit
 	
 	
 	// Add onhover events to the tagged keywords in the text? That allows the user to show exactly which part of the data they meant, and also to compare it to others interpretations.
@@ -88,7 +86,7 @@ export default class interactivePlayerUI{
   } // get t_play
   
   set t_play(t){
-	this.annotationform.t = t;
+	this.chapterform.t = t;
 	this.playcontrols.bar.t_play = t;
 	this.playcontrols.bar.update();
   } // set t_play
@@ -103,13 +101,23 @@ export default class interactivePlayerUI{
   
   get user(){
 	// The annotation form is the primary annotation.
-	return this.annotationform.user
+	return this.chapterform.user
   } // get user
   
   set user(name){
 	this.commenting.user = name;
-	this.annotationform.user = name;
+	this.chapterform.user = name;
   } // set user
+  
+  set metadata(m){
+	this._metadata = m;
+	this.chapterform.taskId = m.taskId;
+  } // set metadata
+  
+  get metadata(){
+	return this._metadata;
+  } // set metadata
+  
 } // interactivePlayerUI
 
 

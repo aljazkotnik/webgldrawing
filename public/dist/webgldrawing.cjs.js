@@ -24,7 +24,7 @@ function _interopNamespace(e) {
 
 var twgl__namespace = /*#__PURE__*/_interopNamespace(twgl);
 
-function html2element$2(html){
+function html2element$4(html){
   let template = document.createElement('template'); 
   template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
   return template.content.firstChild;
@@ -273,7 +273,7 @@ Could the mesh renderer just do the rendering all the time, and teh ViewFrames d
 
 // div must have opacity to register the mouse events!!
 // Furthermore the overall wrapper is defined here so that after the class is inherited from there is space to append other modules. The class is inherited from (as opposed to plugged in as a module)
-let template$d = `
+let template$f = `
 <div class="item">
   <div class="label">Label</div>
   <div class="view" style="width:300px; height:200px; opacity:0.001;">
@@ -288,7 +288,7 @@ class ViewFrame2D{
 	let obj = this;
 	
 	obj.gl = gl;
-	obj.node = html2element$2(template$d);
+	obj.node = html2element$4(template$f);
 	
 	// obj.view is a convenience reference that points to the node. Transforms.view is the view transformation matrix.
 	obj.view = obj.node.querySelector("div.view");
@@ -760,7 +760,7 @@ function loadBinData(filename){
 }
 */
 
-function html2element$1(html){
+function html2element$3(html){
   let template = document.createElement('template'); 
   template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
   return template.content.firstChild;
@@ -863,7 +863,7 @@ function pause(width, y){
 } // pausePath
 
 
-let template$c = `
+let template$e = `
 <g style="cursor: pointer;">
   <path fill="tomato" d=""></path>
 </g>
@@ -884,7 +884,7 @@ class PlayButton{
 	
   constructor(){
     let obj = this;
-	obj.node = svg2element$1( template$c );
+	obj.node = svg2element$1( template$e );
   } // constructor
   
   update(playing){
@@ -895,7 +895,7 @@ class PlayButton{
 } // PlayButton
 
 let defaultRectAttributes = `stroke="white" stroke-width="2px"`;
-let template$b = `<g class="chapter">
+let template$d = `<g class="chapter">
   <rect class="background" fill="gainsboro" ${ defaultRectAttributes }"></rect>
   <rect class="buffering" fill="gray" ${ defaultRectAttributes }"></rect>
   <rect class="foreground" fill="tomato" ${ defaultRectAttributes }"></rect>
@@ -912,7 +912,7 @@ class PlayBarAnnotation{
   
   constructor(config, tscale){
     let obj = this;
-	obj.node = svg2element$1(template$b);
+	obj.node = svg2element$1(template$d);
 	
 	obj.background = obj.node.querySelector("rect.background");
 	obj.buffering = obj.node.querySelector("rect.buffering");
@@ -939,27 +939,27 @@ class PlayBarAnnotation{
   update(t_play, t_buffer){
 	let obj = this;
 	
-	  let y = obj.y;
-	  let x = obj.tscale.dom2range(obj.config.starttime);
+	let y = obj.y;
+	let x = obj.tscale.dom2range(obj.config.starttime);
 
-      obj.background.setAttribute("y", y);
-	  obj.background.setAttribute("x", x);
-	  obj.background.setAttribute("width", obj.width);
-	  obj.background.setAttribute("height", obj.height);
+    obj.background.setAttribute("y", y);
+	obj.background.setAttribute("x", x);
+	obj.background.setAttribute("width", obj.width);
+	obj.background.setAttribute("height", obj.height);
+	 
+	obj.buffering.setAttribute("y", y);
+	obj.buffering.setAttribute("x", x);
+	obj.buffering.setAttribute("width", obj.width*obj.timeFraction(t_buffer));
+	obj.buffering.setAttribute("height", obj.height);
 	  
-	  obj.buffering.setAttribute("y", y);
-	  obj.buffering.setAttribute("x", x);
-	  obj.buffering.setAttribute("width", obj.width*obj.timeFraction(t_buffer));
-	  obj.buffering.setAttribute("height", obj.height);
+	obj.foreground.setAttribute("y", y);
+	obj.foreground.setAttribute("x", x);
+	obj.foreground.setAttribute("width", obj.width*obj.timeFraction(t_play));
+	obj.foreground.setAttribute("height", obj.height);
 	  
-	  obj.foreground.setAttribute("y", y);
-	  obj.foreground.setAttribute("x", x);
-	  obj.foreground.setAttribute("width", obj.width*obj.timeFraction(t_play));
-	  obj.foreground.setAttribute("height", obj.height);
-	  
-	  obj.label.setAttribute("y", 12);
-	  obj.label.setAttribute("x", x);
-	  obj.label.innerHTML = obj.config.label;
+	obj.label.setAttribute("y", 12);
+	obj.label.setAttribute("x", x);
+	obj.label.innerHTML = obj.config.label;
 
   } // update
   
@@ -968,7 +968,8 @@ class PlayBarAnnotation{
 	let obj = this;
 	let x0 = obj.tscale.dom2range(obj.config.starttime);
 	let x1 = obj.tscale.dom2range(obj.config.endtime);
-	return x1 - x0;
+	// At the beginning hte widths may be negative because the starttime of the comment exceeds the time domain of the playbar that hasn't yet been updated to the right interval. Returen 0 while this is so.
+	return x1 - x0 < 0 ? 0 : x1 - x0;
   } // width
   
   timeFraction(t){
@@ -1007,7 +1008,7 @@ function unhighlightRectangle(r, y, h){
 
 // This class is in charge of drawing the play bar. It takes in user prescribed annotations and the min and maximum times. It fills the gaps between the user prescribed annotations and the min/max times with empty chapters. The process is repeated anytime a new annotation is added.
 
-let template$a = `<g style="cursor: pointer;"></g>`; // template
+let template$c = `<g style="cursor: pointer;"></g>`; // template
 
 class PlayBar{
 	
@@ -1026,7 +1027,7 @@ class PlayBar{
 	
   constructor(){
 	let obj = this;
-	obj.node = svg2element$1( template$a );
+	obj.node = svg2element$1( template$c );
 	
 	obj._tscale = new scaleLinear();
   } // constructor
@@ -1102,6 +1103,21 @@ class PlayBar{
 		chapter.update( obj.t_play, obj.t_buffer );
 	});
   } // update
+  
+  addchapter(tag){
+	// The player may need to be updated when the serverr pushes updates. Also if other users update the annotations it should appear straightaway.
+	let obj = this;
+	
+	// tags are required to have a 'starttime'.
+	if(tag.starttime){
+		let i = obj.annotations.findIndex(a=>a.id==tag.id);
+		obj.annotations.splice(i, 1, tag);
+	
+		// Update the bar.
+		obj.rebuild();
+		obj.update();
+	} // if
+  } // addchapter
 } // PlayBar
 
 /*
@@ -1109,7 +1125,7 @@ PLAYBAR only controls the appearance of the playbar, but does not control the pl
 */
 
 // The canvas will be positioned, and this should be relative to that positioning. Maybe there should be an overall div that contains the canvas and a sibling div that contains all the markup.
-let template$9 = `
+let template$b = `
 <div class="player-controls">
   <svg id="playbar" width="100%" height="32px">
     <g class="playbutton"></g>
@@ -1131,7 +1147,7 @@ class PlayControls{
   constructor(){
 	let obj = this;
 	
-	obj.node = html2element$1(template$9);
+	obj.node = html2element$3(template$b);
 	
 	let y = obj.textHeight + obj.textBottomMargin + obj.highlightHeightDelta;
 	
@@ -1227,7 +1243,7 @@ class PlayControls{
   
 } // PlayControls
 
-function html2element(html){
+function html2element$2(html){
   let template = document.createElement('template'); 
   template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
   return template.content.firstChild;
@@ -1282,7 +1298,7 @@ let css$3 = {
 
 
 
-let template$8 = `
+let template$a = `
 <div>
   <textarea class="comment" type="text" rows="1" placeholder="What do you think?" style="${css$3.textarea}"></textarea>
   <button class="submit" style="${css$3.submitbutton}"><b>Submit</b></button>
@@ -1296,7 +1312,7 @@ class AddCommentForm{
   constructor(id){
     let obj = this;
 	
-	obj.node = html2element(template$8);
+	obj.node = html2element$2(template$a);
 	obj.viewid = id;
 	
 	// Author input got omitted because the author also needs to be known when voting on a comment, and I didn't want to implement an input there. That's why now there will be an overall login box that will control everything.
@@ -1375,7 +1391,7 @@ let css$2 = {
   `
 }; // css
 
-let template$7 = `
+let template$9 = `
 <div class="comment">
   <div class="header">
     <b class="author"></b>
@@ -1406,7 +1422,7 @@ class Comment{
 	let obj = this;
 	
 	// Make a new node.
-	obj.node = html2element(template$7);
+	obj.node = html2element$2(template$9);
 	
 	// Fill the template with the options from the config. There must be a comment, and there must be an author.
 	obj.config = config;
@@ -1597,7 +1613,7 @@ class ReplyComment extends Comment{
 
 
 // This is just a template for the controls which allow the replies to be expanded or collapsed. These are invisible at first.
-let template$6 = `
+let template$8 = `
 <div style="display: none;">
   <div class="expand-controls" style="color: blue; cursor: pointer;">
     <i class="fa fa-caret-down"></i>
@@ -1617,7 +1633,7 @@ class GeneralComment extends Comment{
 	let obj = this;
 	
 	// The general comment can have replies associated with it. Handle these here. Furthermore an additional control for expanding, reducing hte comments is required.
-	obj.replynode = html2element(template$6);
+	obj.replynode = html2element$2(template$8);
 	obj.node.appendChild( obj.replynode );
 	
 	// Add the functionality to the caret.
@@ -1713,7 +1729,7 @@ function findArrayItemById$1(A, id){
   return candidates.length > 0 ? candidates[0] : false;
 } // findArrayItemById
 
-let template$5 = `
+let template$7 = `
 <div style="margin-bottom: 5px;"></div>
 `; // template
 
@@ -1738,7 +1754,7 @@ class DiscussionSelector{
   
   constructor(){
     let obj = this;
-	obj.node = html2element(template$5);
+	obj.node = html2element$2(template$7);
 	
 	
   } // constructor
@@ -1756,7 +1772,7 @@ class DiscussionSelector{
 	let buttons = joinDataToElements(obj.tags, obj.node.querySelectorAll("button"), d=>d);
 	
 	buttons.enter.forEach(d=>{
-		let el = html2element(tagtemplate);
+		let el = html2element$2(tagtemplate);
 		obj.node.appendChild( el );
 		el.querySelector("i").innerText = d;
 		el.__data__ = d;
@@ -1788,7 +1804,7 @@ class DiscussionSelector{
 } // DiscussionSelector
 
 // Needs a way to minimise the commenting completely.
-let template$4 = `
+let template$6 = `
 <div class="commenting" style="width:300px;">
   <div class="hideShowText" style="cursor: pointer; margin-bottom: 5px; color: gray;">
     <b class="text">Show comments</b>
@@ -1808,7 +1824,7 @@ let template$4 = `
 class CommentingManager{
   constructor(id){
     let obj = this;
-	obj.node = html2element( template$4 );
+	obj.node = html2element$2( template$6 );
 	obj.viewid = id;
 	obj.comments = [];
 	
@@ -1884,6 +1900,12 @@ class CommentingManager{
 	counterNode.innerText = n ? `(${n})` : "";
 	
   } // updateCommentCounter
+  
+  
+  submit(config){
+	// This function is called when the button is pressed. By default it just routes the comment to 'add' so that the comment is added straight away. Alternately it should be passed to the server first. Maybe it's good if both things are done in cases when the connection is not good?
+	this.add(config);
+  } // submit
   
   
   add(config){
@@ -2015,7 +2037,7 @@ let css = {
 }; // css
 
 
-let template$3 = `
+let template$5 = `
 <div style="300px">
   <input type="text" placeholder="#tag-name" style="width: 100px;"></input>
   
@@ -2032,13 +2054,13 @@ let template$3 = `
 </div>
 `; // template
 
-class AnnotationForm{
+class ChapterForm{
   
   user = "Default user: Aljaz"
   
   constructor(){
     let obj = this;
-	obj.node = html2element$1(template$3);
+	obj.node = html2element$3(template$5);
 	
 	obj.input = obj.node.querySelector("input");
 	
@@ -2065,7 +2087,7 @@ class AnnotationForm{
 	obj.node.querySelector("button.submit").onclick = function(){
 		let tag = obj.tag;
 		if(tag){
-			obj.externalAction(tag);
+			obj.submit(tag);
 			obj.clear();
 		} // if
 	}; // onclick
@@ -2114,14 +2136,22 @@ class AnnotationForm{
   } // clear
   
   get tag(){
+	// Chapter tag should belong to the task id so that the observations across multiple slices are available together to the user.
 	let obj = this;
 	// The time should be defined, but it can also be 0, or less than 0!
-	return obj.user && obj.input.value && ( obj.starttime != undefined ) ? {author: obj.user, label: obj.input.value, starttime: obj.starttime, endtime: obj.endtime} : false; 
+	return obj.user && obj.input.value && ( obj.starttime != undefined ) ? { 
+		taskId: obj.taskId,
+		label: obj.input.value,	
+		author: obj.user,  
+		starttime: obj.starttime, 
+		endtime: obj.endtime,
+		id: `${obj.user} ${Date()}`
+	} : false; 
   } // tag
 
   // Placeholder for communication between classes.
-  externalAction(){} // externalAction
-} // AnnotationForm
+  submit(tag){} // submit
+} // ChapterForm
 
 // DONE: Which annotations should be seen on the playbar? Just the current users, or those of otehr users as well? Capturing all annotations would allow feature tracking for example. But it may clutter the play bar. 
 	
@@ -2139,7 +2169,7 @@ class AnnotationForm{
 class interactivePlayerUI{
   constructor(id){
 	let obj = this;
-	
+	obj.viewid = id;
 	obj.node = document.createElement("div");
 	
 	// Add in a playbar
@@ -2148,23 +2178,21 @@ class interactivePlayerUI{
 	
 	
 	// The tag adding.
-	obj.annotationform = new AnnotationForm();
-	obj.node.appendChild( obj.annotationform.node );
+	obj.chapterform = new ChapterForm();
+	obj.node.appendChild( obj.chapterform.node );
 	
 	// Add in the commenting system. The metadata filename is used as the id of this 'video', and thus this player. The node needs to be added also.
 	obj.commenting = new CommentingManager( id );
 	obj.node.appendChild( obj.commenting.node );
 	
 	
-	//  Tags need to be pushed to the playbar, but also to the commenting!
-	obj.annotationform.externalAction = function(tag){
-		obj.playcontrols.bar.annotations.push(tag);
-		obj.playcontrols.bar.rebuild();
-		obj.playcontrols.bar.update();
+	//  Tags need to be pushed to the playbar, but also to the commenting! Should individual tags be allowed to influence the navigation? I guess so?
+	obj.chapterform.submit = function(tag){
+		obj.playcontrols.bar.addchapter(tag);
 		
 		let discussiontags = obj.playcontrols.bar.annotations.map(a=>a.label);
 		obj.commenting.discussion.update(discussiontags);
-	}; // externalAction
+	}; // submit
 	
 	
 	// Add onhover events to the tagged keywords in the text? That allows the user to show exactly which part of the data they meant, and also to compare it to others interpretations.
@@ -2208,7 +2236,7 @@ class interactivePlayerUI{
   } // get t_play
   
   set t_play(t){
-	this.annotationform.t = t;
+	this.chapterform.t = t;
 	this.playcontrols.bar.t_play = t;
 	this.playcontrols.bar.update();
   } // set t_play
@@ -2223,13 +2251,23 @@ class interactivePlayerUI{
   
   get user(){
 	// The annotation form is the primary annotation.
-	return this.annotationform.user
+	return this.chapterform.user
   } // get user
   
   set user(name){
 	this.commenting.user = name;
-	this.annotationform.user = name;
+	this.chapterform.user = name;
   } // set user
+  
+  set metadata(m){
+	this._metadata = m;
+	this.chapterform.taskId = m.taskId;
+  } // set metadata
+  
+  get metadata(){
+	return this._metadata;
+  } // set metadata
+  
 } // interactivePlayerUI
 
 // How to actually perform the playing? First, just allow a small multiple to play itself. When the button is pressed the player becomes 'active'. The UnsteadyPlayer must be given the fps at which the data should change. Then when the internal document timestamp passes another full timestep from the beginning of the document it changes the data. The data must be ready beforehand though.
@@ -2386,12 +2424,11 @@ let cmap = new Uint8Array( [
 
 
 class MeshRenderer2D{
-  constructor(){
+  constructor(canvas, container){
 	let obj = this;  
 	
-	obj.domcontainer = document.getElementById("table-top");
-	
-	let canvas = document.getElementById("canvas");	
+	obj.domcontainer = container;
+		
 	obj.canvas = canvas;
 	obj.canvas.width = window.innerWidth;
 	obj.canvas.height = window.innerHeight;
@@ -2657,11 +2694,20 @@ function addDraggingToSiblingItems(items, headeroffset){
 		item.node.style.left = positions[i][0] + "px";
 		item.node.style.top = positions[i][1] + "px";
 		
+		
+		let onstart = function(){
+			// Move this item to the end of the drawing queue to ensure it's drawn on top.
+			items.splice(items.indexOf(item), 1);
+			items.push(item);
+		}; // function
+		addDraggingToItem(item, onstart);
+		
+		/*
 		// Add an object to facilitate the dragging.
 		item.dragging = {
 			active: false,
 			itemRelativePosition: [0, 0]
-		}; // dragging
+		} // dragging
 
 		item.node.onmousedown = function(e){
 			if(e.target == item.node){
@@ -2675,52 +2721,74 @@ function addDraggingToSiblingItems(items, headeroffset){
 				
 				// Move this item to the end of the drawing queue to ensure it's drawn on top.
 				items.splice(items.indexOf(item), 1);
-				items.push(item);
+				items.push(item)
 				
 				// Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
 				item.node.parentNode.insertBefore(item.node, null);
 			} // if
-		}; // onmousedown
+		} // onmousedown
 		item.node.onmousemove = function(e){
 			if(item.dragging.active){
 				let x = e.pageX - item.dragging.itemRelativePosition[0];
 				let y = e.pageY - item.dragging.itemRelativePosition[1];
 				
-				item.node.style.left = x + "px";
-				item.node.style.top  = y + "px";
+				item.node.style.left = x + "px"
+				item.node.style.top  = y + "px"
 			} // if
-		}; // mousemove
+		} // mousemove
 		item.node.onmouseup   = function(){
 			item.dragging.active = false;
-		}; // onmouseup
-
+		} // onmouseup
+		*/
 	}); // forEach
 	
 } // addDraggingToSiblingItems
 
-// Some comments came back from the server side, add them to the views.
-function sortCommentsBeforePushing(a,b){
-	// The primary comments must be added first so that the replies can be added to them. The comments can just be sorted by time of creation. Replies can only be created after the primary comment.
-	return Date.parse(a.time)-Date.parse(b.time)
-} // sortCommentsBeforePushing
 
-function getRequiredComments(allCommentingManagers){
-	// Return hte comments needed. Make a call in a promise, and after it's resolved push the comments to the right owner.
-	
-	// Now add in some test comments
-    fetch('./data/annotations/test.json')
-     .then(response => response.json())
-     .then(data =>{
-		data.sort(sortCommentsBeforePushing).forEach(comment=>{
-			allCommentingManagers.forEach(m=>{
-				if(m.viewid == comment.viewid){
-					m.add(comment);
-				} // if  
-			}); // forEach
-		}); // forEach
-	 }); // then	
-} // getRequiredComments
- // sendCommentChanges
+// How to make the addition of dragging more general?? There are some things that have to happen. Pass them in as additional functions?
+function addDraggingToItem(item, onstart){
+	// Add an object to facilitate the dragging.
+	item.dragging = {
+		active: false,
+		itemRelativePosition: [0, 0]
+	}; // dragging
+
+	item.node.onmousedown = function(e){
+		if(e.target == item.node){
+			let rect = item.node.getBoundingClientRect();
+			
+			item.dragging.active = true;
+			item.dragging.itemRelativePosition = [
+				e.clientX - rect.x,
+				e.clientY - rect.y
+			];
+			
+			
+			// Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
+			item.node.parentNode.insertBefore(item.node, null);
+			
+			if(onstart){onstart();} // if
+		} // if
+	}; // onmousedown
+	item.node.onmousemove = function(e){
+		if(item.dragging.active){
+			let x = e.pageX - item.dragging.itemRelativePosition[0];
+			let y = e.pageY - item.dragging.itemRelativePosition[1];
+			
+			item.node.style.left = x + "px";
+			item.node.style.top  = y + "px";
+		} // if
+	}; // mousemove
+	item.node.onmouseup   = function(){
+		item.dragging.active = false;
+	}; // onmouseup
+} // addDraggingToItem
+
+function html2element$1(html){
+	let template = document.createElement('template'); 
+	template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
+	return template.content.firstChild;
+} // html2element
 
 function svg2element(svg){
   let g = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -2864,7 +2932,7 @@ class DrawLink{
 } // DrawLink
 
 // Lines are drawn in bundles. The links are drawn as two pats, one in color, and the other white. The white paths are in the background and help make the transitions over lines neater. If links were drawn individually then the bundle itself would have an overlap somewhere.	
-let template$2 = `
+let template$4 = `
 <g class="bundle">
   <path stroke="white" stroke-width="5" fill="none"></path>
   <path stroke="black" stroke-width="2" fill="none"></path>
@@ -2887,7 +2955,7 @@ class treebundle{
 		// A seed node is passed in to define the bundle parents and thus instantiate a bundle. After instantialisation only the children of the bundle can change.
 		// NOTE: seednode is a `treenode' instance, but parents and children are `taskgroup' instances. The level is only defined for the node because it can change when the user interacts with the tree.
 		let obj = this;
-		obj.node = svg2element( template$2 );
+		obj.node = svg2element( template$4 );
 		
 		obj.author = author,
 		obj.level = seednode.level;
@@ -3248,7 +3316,7 @@ function dimensioning(nodes){
 
 // d, node=>node.path
 // text -> 	"x", node => node.labelx, "y", node => node.labely, label node=>node.label
-let template$1 = `
+let template$3 = `
 <g class="node" cursor="pointer">
   <g class="marker">
     <path class="outline" stroke="black" stroke-width="8" stroke-linecap="round"></path>
@@ -3278,7 +3346,7 @@ class TreeNode{
 	
 	constructor(treegroup){
 		let obj = this;
-		obj.node = svg2element( template$1 );
+		obj.node = svg2element( template$3 );
 		// The treegroup holds all the connections of a particular group.
 		obj.connections = treegroup;
 		
@@ -3382,7 +3450,7 @@ class TreeNode{
 	// Label to be displayed next to it. Shouldn't be larger than the node_label_width.
 	get label(){
 		let obj = this;
-		let name = obj.connections.group.tags[0].id;
+		let name = obj.connections.group.tags[0].label;
 		
 		// Temporarily changed to show n tasks for troubleshooting.
 		// let n = obj.connections.descendants.length;
@@ -3480,20 +3548,17 @@ function findAllTagBasedGroups(array){
 	let dict = {};
 	let groups = [];
 	
-	array.forEach(taskobj=>{
-		taskobj.tags.forEach(tag=>{
-			// If you tag something in the session, then that tag is reserved for a particular group. If you tag other elements with it, it'll become a part of that group.
-			let groupid = [tag.id, tag.author].join("-");
-			if(!dict[groupid]){
-				// Here just pass the tag in. The group will need to hold on to it.
-				dict[groupid] = new taskgroup([tag]);
-				groups.push(dict[groupid]);
-			} // if
-			
-			// Add teh task to the specific group, but also to the root group.
-			dict[groupid].addtask(taskobj);
-			
-		}); // forEach
+	array.forEach(tag=>{
+		// If you tag something in the session, then that tag is reserved for a particular group. If you tag other elements with it, it'll become a part of that group.
+		let groupid = [tag.label, tag.author].join("-");
+		if(!dict[groupid]){
+			// Here just pass the tag in. The group will need to hold on to it.
+			dict[groupid] = new taskgroup([tag]);
+			groups.push(dict[groupid]);
+		} // if
+		
+		// Add teh task to the specific group, but also to the root group.
+		dict[groupid].addtask(tag.taskId);
 	}); // forEach
 	
 	
@@ -3511,11 +3576,11 @@ function findAllTagBasedGroups(array){
 function makeRootGroup(array){
 	
 	// The root MUST always contain all of the data!! It will also allow navigation all the way to the start.
-	let root = new taskgroup([{id: "Root", author: "session", timestamp: new Date()}]);
+	let root = new taskgroup([{id: "Root", label: "Root", author: "session", timestamp: new Date()}]);
 	
 	// Root should contain all tasks.
-	array.forEach(task=>{
-		root.addtask(task);
+	array.forEach(tag=>{
+		root.addtask(tag.taskId);
 	}); // forEach
 	
 	return root
@@ -3653,10 +3718,10 @@ function calculateLevelNumbers(nodes){
 } // calculateLevelNumbers
 
 class TreeHierarchy{
-  constructor(data){
+  constructor(){
 	  let obj = this;
 	  
-	  obj.data = data;
+	  obj.data = [];
 	  obj.collapsednodes = [];
 	  
 	  obj.update();
@@ -3733,7 +3798,7 @@ class TreeHierarchy{
 
 
 
-let template = `
+let template$2 = `
 <g transform="translate(20, 20)">
   <g class="bundles"></g>
   <g class="nodes"></g>
@@ -3745,15 +3810,15 @@ let template = `
 
 
 class TreeRender {
-	constructor(data){
+	constructor(){
 		let obj = this;
 		
 		// Hierarchy
-		obj.hierarchy = new TreeHierarchy(data);
+		obj.hierarchy = new TreeHierarchy();
 		
 		
 		// Drawing
-		obj.node = svg2element( template );
+		obj.node = svg2element( template$2 );
 		obj.gnodes = obj.node.querySelector("g.nodes");
 		obj.gbundles = obj.node.querySelector("g.bundles");
 		
@@ -3802,7 +3867,7 @@ class TreeRender {
 			
 			
 			// Clicking on hte node just collapses branches.
-			obj.node.querySelector("g.marker").onclick = function(){
+			nodeobj.node.querySelector("g.marker").onclick = function(){
 				nodeobj.hidden = !nodeobj.hidden;
 				obj.interact();
 			}; // onclick
@@ -3822,11 +3887,382 @@ class TreeRender {
 		}); // forEach
 	} // updatelines
 	
-	moveto(group){
-		console.log("Move to", group);
+	moveto(nodeobj){
+		// I want to move to the group which contains only tasks given by "nodeobj.connections.group.members", but I also want to show all the groups within that grop.
+		console.log("Move to", nodeobj.connections.group.members);
 	} // moveto
 	
 } // TreeRender
+
+function html2element(html){
+  let template = document.createElement('template'); 
+  template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
+  return template.content.firstChild;
+} // html2element
+ // mapSpaceAValueToSpaceB
+
+// This class should just act as an UI and it should use the constituent items for the actual drawing.
+// The main difficulty with this is drawing the standard deviation plot. How would that look like in 3D anyway?
+
+let template$1 = `
+<div class="item item-group" style="position: absolute;">
+  <div class="label">
+    Group
+	<button class="ungroup" style="float: right; background-color: white; border: none; color: gainsboro;"><i class="fa fa-times" style="font-size: 20px;"></i></button>
+  </div>
+  <div class="view" style="width:300px; height:200px; opacity:0.001;">
+  </div>
+</div>
+`; // template
+
+
+// When made it should have a series of squares, which when moused over will move between the individual items. Where should these controls be placed though? How should the title be made visible?
+// Maybe controls should be above, and the name should change? Then the comments can always be below. Should there be a comment section for all of them at once? I guess so, so that they can all be characterised together.
+// Ok, comment sections can be turned off - only the playbar is needed! It also needs a way to remove the group alltogether. A cross in the right top.
+
+class Group{
+  constructor(members){
+	let obj = this;
+	obj.node = html2element(template$1);
+	obj.members = members;
+	
+	// Calculate where the node should be added:
+	let n = obj.members.length;
+	obj.pos = obj.members.reduce((acc, item)=>{
+		let p = [parseInt( item.node.style.left ), parseInt( item.node.style.top )];
+		acc.group[0] += p[0]/n;
+		acc.group[1] += p[1]/n;
+		acc.items.push(p);
+		return acc
+	}, {group: [0,0], items: []});
+	
+	obj.node.style.left = obj.pos.group[0] + "px";
+	obj.node.style.top = obj.pos.group[1] + "px";
+	
+	// All the members should also be moved to this position. Turn off their uis, wih the exception of the playbar. Also remember their relative positions?
+	obj.members.forEach(item=>{
+		item.node.style.left = obj.pos.group[0] + "px";
+		item.node.style.top = obj.pos.group[1] + "px";
+		
+		item.ui.chapterform.node.style.display = "none";
+		item.ui.commenting.node.style.display = "none";
+	}); // forEach
+	
+	
+	// Removal of the group.
+	obj.node.querySelector("button.ungroup").onclick = function(){
+	  obj.node.remove();
+		
+	  // Redistribute the items according to their original positions.`	
+		
+	  obj.members.forEach((item, i)=>{
+		item.node.style.left = obj.pos.items[i][0] + "px";
+	    item.node.style.top = obj.pos.items[i][1] + "px";
+		
+		item.ui.chapterform.node.style.display = "";
+		item.ui.commenting.node.style.display = "";
+	  });
+	}; // onclick
+	
+  } // constructor
+  
+  remove(){
+	  // All the members should be made visible again, and their comment sections should be turned back on, and they should be staggered to their relative psitions.
+	  let obj = this;
+	  
+	  obj.members.forEach(item=>{
+		item.ui.chapterform.node.style.display = "";
+		item.ui.commenting.node.style.display = "";
+	  }); // forEach
+	  
+	  obj.node.remove();
+  } // remove
+} // Group
+
+/* 
+Make a class that will be able to perform most coordination tasks required for the spatial harnessing. This involves getting and setting the coordinates of the small multiples.
+
+
+Should groups allow the user to enter them? Maybe its simpler to restrict the navigation solely to the navigation tree. Otherwise when clicking on a group node it has to communicate to the GroupingCoordinator to initiate the change, and also keep track of the descendant groups.
+
+If navigation is constrained to the navigation tree, then groups can just be an array of arrays of tasks. Maybe the navigation trre should be controlled from within here? And then the hierarchy can be used to create the groups on the go?
+	
+
+*/
+let template = `<div></div>`; // template
+
+class GroupingCoordinator {
+  constructor(items){
+    let obj = this;
+	obj.node = html2element$1( template );
+	obj.items = items;
+	obj.tasks = items.map(item=>item.ui.metadata.taskId);
+	obj.groups = [];
+	
+	// First the items need to be draggable to allow for grouping.
+	addDraggingToSiblingItems(items, 80);
+	
+	
+	// The hierarchy is essentially a function of the grouping. The navigation tree can therefore be used to create teh grouping interface.
+	obj.navigation = new TreeRender([]);
+	// navigationsvg.appendChild(obj.navigation.node)
+	// obj.navigation.update();
+	
+	obj.navigation.moveto = function(nodeobj){
+		// Now remove all existing group items, hide all unnecessary items, calculate the direct descendant groups, and create items for them.
+		let current = nodeobj.connections.group.members;
+		
+		obj.clear();
+		obj.showCurrentTasks( current );
+		obj.makeDirectDescendantGroups(nodeobj);
+		
+		console.log("Move to", nodeobj );
+	}; // moveto
+
+	
+	
+	// Allow the current makeup to be communicated from outside. So a number of groups can be passed into here, and the groups for them should be created. The groups can be simply the taskids. Task ids are better than view ids because they allow groups to be carried over between slices (view ids are slice specific, but allow comments to be specifically targeted.).
+	// So, hte parent group needs to be specified, as well as the child groups.
+  } // constructor
+  
+  
+  clear(){
+	let obj = this;
+	obj.groups.forEach(group=>{
+		group.remove();
+	});
+	obj.groups = [];
+  } // clear
+  
+  // When the parent group is specified the items should be adjusted immediately.
+  showCurrentTasks(tasks){
+	let obj = this;
+	
+	// First find if any of the specified tsks are valid.
+	let validtasks = tasks.filter(task=>obj.tasks.includes(task));
+	
+	if(validtasks.length > 0){
+		obj.items.forEach(item=>{
+			if(validtasks.includes(item.ui.metadata.taskId)){
+				item.node.style.display = "";
+			} else {
+				item.node.style.display = "none";
+			} // if
+		}); // forEach
+	} // if
+  } // showCurrentTasks
+  
+  
+  makeDirectDescendantGroups(nodeobj){
+	let obj = this;
+	
+	let descendants = nodeobj.connections.descendants;
+	let directDescendants = descendants.filter(group=>{
+		return !descendants.some(d=>{
+			if(d != group){
+				return arrayIncludesAll(d.members, group.members)
+			} // if
+			return false
+		}) // some
+	}); // filter
+	
+	
+	directDescendants.forEach(d=>{
+		// Pass the actual item objects to the group.
+		let members = obj.items.filter(item=>{
+			return d.members.includes(item.ui.metadata.taskId);
+		}); // filter
+		let groupitem = new Group(members);
+		obj.groups.push( groupitem );
+		obj.node.appendChild( groupitem.node );
+		addDraggingToItem( groupitem );
+	});
+	
+	console.log(obj.groups);
+  } // makeDirectDescendantGroups
+  
+  
+  
+  getCurrentPositions(items, variable){
+    // Current positions are needed for calculating correlations, or for adding additional metadata variables based on the users actions. How should the positions and the metadata be combined actually? Should there be a specific method for it? If a variable is specified, then return it with the positions.
+	return items.map(item=>{
+	  let pos = [
+		ParseInt(item.node.style.left), 
+		ParseInt(item.node.style.top)
+      ];
+
+	  if(variables != undefined){
+		pos.push(item.metadata[variable]);
+	  } // if
+	  
+	  return pos 
+	}) // map
+  } // getCurrentPositions
+  
+  
+  
+  setPositionsByMetadata(items, variable){
+    // Reposition hte items on screen given their metadata values. Reposition to within the current client viewport, or the whole document? Whole document to spread the small multiples out a bit.
+	
+	
+	
+	
+  } // setPositionsByMetadata
+  
+  
+  makeGroupFromArrayOfItems(items){
+    // Calculate the position of the group and create the html elements required for it. How should the renderer be convinced to draw the appropriate contours? It gets the viewport directly from the ViewFrame, which in this case will be disabled. Allow the group object to pass it's own viewport to the correct item, and use them if the div is set to display none?
+	
+	
+  } // makeGroupFromArrayOfItems
+  
+} // GroupingCoordinator
+
+// Some comments came back from the server side, add them to the views.
+function sortCommentsBeforePushing(a,b){
+	// The primary comments must be added first so that the replies can be added to them. The comments can just be sorted by time of creation. Replies can only be created after the primary comment.
+	return Date.parse(a.time)-Date.parse(b.time)
+} // sortCommentsBeforePushing
+
+class KnowledgeManager{
+  constructor(container, items){
+	// All knowedge must be pushed to individual IPUI (Interactive Player User Interfaces) when received.
+	let obj = this;
+	obj.container = container;
+	obj.items = items;
+	
+	// Tags and chapters should be available for correlations. Tags and chapters are time invariant, but the metadata IS time variant. So even the metadata needs to be queried!
+	
+	
+	// Add the dragging externally. The tabletop was positioned absolutely, with top: 0px. If this is not so the dragging will move the items on the initial drag start by the offset amount.
+	// The grouping coordinator does: adds dragging, positioning of the items by metadata values, retrieveng position and metadata pairs, grouping, and grouping navigation.
+	// Groups need to be added to the same container as the actual items, otherwise either the items cant be dragged over the groups, or vice versa.
+	obj.grouping = new GroupingCoordinator(items);
+	obj.container.appendChild(obj.grouping.node);
+	
+	
+	/*
+	New comments must be passed to the stores. Also, when up/downvotes change it should be sent to the server. The local version should also be updated straight away.
+	
+	upvote/downvote are in 'Comment.js';
+	reply button onclick is in 'addGeneralComment' of 'CommentingManager.js';
+	submit button onclick is in 'constructor' of 'CommentingManager.js';
+	
+	How to post the comments to the server? Should each individual be able to post itself to the server? Because it will have to post changes on itself, for example up/downvotes. Anyway, can be left for later for now.
+	*/
+	
+	
+	
+	
+	// Make some proxy stores that simulate the communication with the server. Connect them to the points where the annotations are submitted, so that they circulate through the stores.
+	obj.comments = new ProxyServerStore('./data/annotations/testcomments.json');
+	obj.comments.update = function(){
+		obj.updateAllComments();
+	}; // update
+	
+	obj.chapters = new ProxyServerStore('./data/annotations/testchapters.json');
+	obj.chapters.update = function(){
+		obj.updatePlaybarChapters();
+	}; // update
+	
+	obj.tags = new ProxyServerStore('./data/annotations/testtags.json');
+	obj.tags.update = function(){
+		obj.updateTagAnnotations();
+	}; // update
+	
+	
+	
+	
+	// Make the forms submit the annotations to the appropriate stores, which will then in turn update the display modules.
+	obj.items.forEach(item=>{
+		
+	  // The chapter annotations should update the playbar, the discussion tags, and the navigation tree.
+	  item.ui.chapterform.submit = function(chapter){
+		obj.chapters.add(chapter);
+	  }; // submit
+		
+	}); // forEach
+	
+  } // constructor
+  
+  updateAllComments(){
+	// Now add in some test comments
+    let obj = this;
+	
+	obj.comments.data.sort(sortCommentsBeforePushing).forEach(comment=>{
+	  obj.items.forEach(item=>{
+	    if(item.ui.viewid == comment.viewid){
+	      item.ui.commenting.add(comment);
+	    } // if  
+	  }); // forEach
+	}); // forEach
+  } // updateAllComments
+  
+  updatePlaybarChapters(){
+	let obj = this;
+	
+	obj.chapters.data.forEach(ch=>{
+	  ch.starttime = ch.starttime ? Number(ch.starttime) : undefined;
+	  ch.endtime   = ch.endtime   ? Number(ch.endtime)   : undefined;
+
+	  obj.items.forEach(item=>{
+		if(item.ui.metadata.taskId == ch.taskId){
+		  item.ui.playcontrols.bar.addchapter(ch);
+		} // if  
+	  }); // forEach
+	}); // forEach
+	
+  } // updatePlaybarChapters
+  
+  updateTagAnnotations(){
+	let obj = this;
+	
+	// Previously the tasks were pushed to the hierarchy, with the tags attached. Now the tags are standalone, and the task ids should be given to the hierarchy separately. Maybe just make them as new tags and merge them together here?
+	let tasktags = obj.items.map(item=>{return {
+		taskId: item.ui.metadata.taskId, 
+		label: "Root", 
+		author: "session"
+	}});
+	obj.grouping.navigation.hierarchy.data = tasktags.concat(obj.tags.data);
+	obj.grouping.navigation.update();
+	  
+  } // updateTagAnnotations
+  
+  
+} // KnowledgeManager
+
+
+
+
+
+class ProxyServerStore{
+	constructor(filename){
+		let obj = this;
+		obj.data = [];
+		
+		fetch(filename)
+		  .then(response => response.json())
+		  .then(data=>{
+			obj.data=data;
+			obj.update();
+			return data;
+		  });
+	} // constructor
+	
+	add(item){
+		// Check if the item is already present. Replace it, or just update the delta? Bank on the idea that no two queries will be simultaneous?
+		let obj = this;
+		let i = obj.data.findIndex(d=>d.taskId==item.taskId);
+		obj.data.splice(i,1,item);
+		obj.update();
+	} // add
+	
+	update(){
+		// Implement the push of all the comments etc to the actual modules for display.
+	} // update
+	
+	// Maybe no query is required anyway? Each project would have its own annotations, which are always loaded anyway? Unless you go into a list of users and remove them?
+} // ProxyServerStore
 
 /* To do: 
   DONE: - allow scrolling
@@ -3843,42 +4279,46 @@ class TreeRender {
   DONE: - dragging frames around
   - auto selecting the height of the viewport in pixels
   - pinch gestures
-
   - play multiple views at once.
   - loading buffering && data limitation, and subsequent viewframe number limitation.
   
-  - expandable description and tools section?
-  - adding chapter annotations
+  DONE: - expandable description and tools section?
+  DONE: - adding chapter annotations
       The annotations are not really chapters. They can be, but they should also support having a start AND end points, and be allowed to overlap. The playbar san still show them in order of appearance, but a more general view of the tag annotations should be available.
   DONE comments, reintroduce tags as threads
   - spatial arranging and metadata connection
-  - tree hierarchy
+  DONE: - tree hierarchy
+	  Need to still connect the tag adding to update the navigation tree. Maybe in this smaller example it's better to have the tree just under the title?
   - grouping (hierarchy operates on tags, and is thus independent of grouping)
+  - lasso
   
   - put it all on a github webpage??
   
 */
 
-// The mesh renderer implements the frag and color shaders, and runs the main drawing loop.
+/*
+
+Arranging by metadata: some metadata will change with respect to time. But those will have to be collected on the go - because the players can be navigated to different times. It's easiest to have this metadata attached to the timesteps. This is ok for now.
+
+Unsteady dbslice: How should the unsteady dbslice handle this data? Should every timestep be a different row in the metadata? Or should unsteady metadata be structured differently, with each attribute being an array of time-value pairs?
+
+*/
 
 
 
-
-// "C:/Users/ak2164/Documents/CAMBRIDGE/PhD/github_repos/webgldrawing/src/components/ui/commenting/commentingServerCommunications.js"
-
-
-
-
-// Make some makeshift metadata here. From here it should flow down to hte geometry etc.
-// In this case the metadata holds the reference to the unsteady simulation metadata, which then holds the references to the actual files required for rendering.
-// There should be an overhead object attached to eachtask? So that the filtering still happens on hte actual object read from hte json, but all the other metadata - tags,... are stored in hte overhead?
+// Hierarchy expects each task object to have some tags. Maybe the metadata should be loaded in from some database, and then converted to an object which includes the tags?
 var metadata = [
-{label: "Maybe we", slice: "./data/testmetadata.json", tags: []},
-{label: "should add", slice: "./data/testmetadata_copy0.json", tags: []},
-{label: "some more", slice: "./data/testmetadata_copy1.json", tags: []},
-{label: "tasks.", slice: "./data/testmetadata_copy2.json", tags: []},
+{taskId: "0", label: "Maybe we", slice: "./data/testmetadata.json"},
+{taskId: "1", label: "should add", slice: "./data/testmetadata_copy0.json"},
+{taskId: "2", label: "some more", slice: "./data/testmetadata_copy1.json"},
+{taskId: "3", label: "tasks.", slice: "./data/testmetadata_copy2.json"},
 ]; // metadata
-let renderer = new MeshRenderer2D();
+
+
+
+let canvas = document.getElementById("canvas");
+let container = document.getElementById("table-top");
+let renderer = new MeshRenderer2D(canvas, container);
 
 // Add the players in. The HTML will position hte frames.
 for(let i=0; i<4; i++){
@@ -3886,17 +4326,22 @@ for(let i=0; i<4; i++){
 	// Player is added within the MeshRenderer because it needs the 'gl'.
 	let p = renderer.add(m.slice);
 	p.title(m.label);
-	p.metadata = m;
+	p.ui.metadata = m;
 } // for
 
 // The renderer starts updating straight away. It's the responsibility of the geometries to provide something to draw. In the end some initial geometry is provided as default, as the buffers are initialised straight away.
 renderer.draw();
 console.log(renderer);
-addDraggingToSiblingItems(renderer.items, 80);
+let km = new KnowledgeManager( container, renderer.items );
 
+// Add the treenavigation graphic.
+document
+  .querySelector("svg.hud")
+  .querySelector("g.tree")
+  .appendChild(km.grouping.navigation.node);
+km.grouping.navigation.update();
 
-
-
+console.log(km);
 
 
 // COMMENTING: Add the login info.
@@ -3906,29 +4351,3 @@ login.oninput = function(){
 	item.ui.user = login.value;
   }); // forEach
 }; // oninput
-getRequiredComments( renderer.items.map( item=>item.ui.commenting ) );
-
-
-/*
-Chapter are actually added as ordinal variables - they have a name, and a timestep value. So they are not simple tags. But the metadata ordinal variables definitely should not appear as chapters. But the correlation between both should be available.
-*/
-
-
-
-
-// The tags in the metadata and the comments are separate things! So comments can just keep track of their own tags, but the full annotations of the metadata are required for the navigation. The small multiples can just add to their metadata. Eventually the server should just be pushing the new updated annotations to the client all the time to keep it up to speed, which will be a good time to update the maps. Maybe it can even be done periodically?
-
-// For navigation the tags must be like: {id: "Root", author: "session"};
-
-// Tag adding works directly on the metadata. That means it's not exposed here - which means its more difficult to decide when to update. If it's on a hidden HUD then when it's toggled on. But what about the small map?
-let navigationdiv = document.querySelector("div.navigation-background");
-let navigationsvg = navigationdiv.querySelector("svg.navigation");
-let treenavigation = new TreeRender(metadata);
-navigationsvg.appendChild(treenavigation.node);
-treenavigation.update();
-
-document.querySelector("button.navigation").onclick = function(){navigationdiv.style.display = "none";}; 
-navigationdiv.onclick = function(event){ navigationdiv.style.display = "none"; };
-navigationsvg.onclick = function(event){ event.stopPropagation(); };
-
-// Maybe htere should be two separate trees. One that shows all the data at once, and another that just shows the small multiples in the view?

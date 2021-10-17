@@ -1385,7 +1385,7 @@
     return createProgramInfoFromProgram(gl, program);
   }
 
-  function html2element$2(html) {
+  function html2element$4(html) {
     var template = document.createElement('template');
     template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
 
@@ -1638,7 +1638,7 @@
 
   // Furthermore the overall wrapper is defined here so that after the class is inherited from there is space to append other modules. The class is inherited from (as opposed to plugged in as a module)
 
-  var template$d = "\n<div class=\"item\">\n  <div class=\"label\">Label</div>\n  <div class=\"view\" style=\"width:300px; height:200px; opacity:0.001;\">\n  </div>\n</div>\n";
+  var template$f = "\n<div class=\"item\">\n  <div class=\"label\">Label</div>\n  <div class=\"view\" style=\"width:300px; height:200px; opacity:0.001;\">\n  </div>\n</div>\n";
 
   var ViewFrame2D = /*#__PURE__*/function () {
     function ViewFrame2D(gl) {
@@ -1646,7 +1646,7 @@
 
       var obj = this;
       obj.gl = gl;
-      obj.node = html2element$2(template$d); // obj.view is a convenience reference that points to the node. Transforms.view is the view transformation matrix.
+      obj.node = html2element$4(template$f); // obj.view is a convenience reference that points to the node. Transforms.view is the view transformation matrix.
 
       obj.view = obj.node.querySelector("div.view"); // Some initial dummy geometry to allow initialisation.
 
@@ -2066,7 +2066,7 @@
   }
   */
 
-  function html2element$1(html) {
+  function html2element$3(html) {
     var template = document.createElement('template');
     template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
 
@@ -2155,7 +2155,7 @@
   } // pausePath
 
 
-  var template$c = "\n<g style=\"cursor: pointer;\">\n  <path fill=\"tomato\" d=\"\"></path>\n</g>\n"; // Maybe the y should just be set outside? And the same for the chapter?? Maybe give it the y it should center itself about?
+  var template$e = "\n<g style=\"cursor: pointer;\">\n  <path fill=\"tomato\" d=\"\"></path>\n</g>\n"; // Maybe the y should just be set outside? And the same for the chapter?? Maybe give it the y it should center itself about?
   // textHeight + textBottomMargin + rectHighlightHeightDelta + rectHeight/2 - H/2
 
   var PlayButton = /*#__PURE__*/function () {
@@ -2166,7 +2166,7 @@
       this.y = 20 * 2 * Math.sqrt(3) / 3 / 2;
       this.width = 20;
       var obj = this;
-      obj.node = svg2element$1(template$c);
+      obj.node = svg2element$1(template$e);
     } // constructor
 
 
@@ -2184,7 +2184,7 @@
   }(); // PlayButton
 
   var defaultRectAttributes = "stroke=\"white\" stroke-width=\"2px\"";
-  var template$b = "<g class=\"chapter\">\n  <rect class=\"background\" fill=\"gainsboro\" ".concat(defaultRectAttributes, "\"></rect>\n  <rect class=\"buffering\" fill=\"gray\" ").concat(defaultRectAttributes, "\"></rect>\n  <rect class=\"foreground\" fill=\"tomato\" ").concat(defaultRectAttributes, "\"></rect>\n  <text style=\"display: none;\"></text>\n</g>");
+  var template$d = "<g class=\"chapter\">\n  <rect class=\"background\" fill=\"gainsboro\" ".concat(defaultRectAttributes, "\"></rect>\n  <rect class=\"buffering\" fill=\"gray\" ").concat(defaultRectAttributes, "\"></rect>\n  <rect class=\"foreground\" fill=\"tomato\" ").concat(defaultRectAttributes, "\"></rect>\n  <text style=\"display: none;\"></text>\n</g>");
 
   var PlayBarAnnotation = /*#__PURE__*/function () {
     // y = textHeight + textBottomMargin + highlightHeightDelta
@@ -2195,7 +2195,7 @@
       this.height = 10;
       this.dh = 4;
       var obj = this;
-      obj.node = svg2element$1(template$b);
+      obj.node = svg2element$1(template$d);
       obj.background = obj.node.querySelector("rect.background");
       obj.buffering = obj.node.querySelector("rect.buffering");
       obj.foreground = obj.node.querySelector("rect.foreground");
@@ -2244,8 +2244,9 @@
       get: function get() {
         var obj = this;
         var x0 = obj.tscale.dom2range(obj.config.starttime);
-        var x1 = obj.tscale.dom2range(obj.config.endtime);
-        return x1 - x0;
+        var x1 = obj.tscale.dom2range(obj.config.endtime); // At the beginning hte widths may be negative because the starttime of the comment exceeds the time domain of the playbar that hasn't yet been updated to the right interval. Returen 0 while this is so.
+
+        return x1 - x0 < 0 ? 0 : x1 - x0;
       } // width
 
     }, {
@@ -2292,7 +2293,7 @@
     r.y.baseVal.value = y;
   } // unhighlightRectangle
 
-  var template$a = "<g style=\"cursor: pointer;\"></g>"; // template
+  var template$c = "<g style=\"cursor: pointer;\"></g>"; // template
 
   var PlayBar = /*#__PURE__*/function () {
     // Coordinates in whole svg frame.
@@ -2308,7 +2309,7 @@
       this.t_buffer = 0;
       this.t_play = 0;
       var obj = this;
-      obj.node = svg2element$1(template$a);
+      obj.node = svg2element$1(template$c);
       obj._tscale = new scaleLinear();
     } // constructor
 
@@ -2386,12 +2387,30 @@
         });
       } // update
 
+    }, {
+      key: "addchapter",
+      value: function addchapter(tag) {
+        // The player may need to be updated when the serverr pushes updates. Also if other users update the annotations it should appear straightaway.
+        var obj = this; // tags are required to have a 'starttime'.
+
+        if (tag.starttime) {
+          var i = obj.annotations.findIndex(function (a) {
+            return a.id == tag.id;
+          });
+          obj.annotations.splice(i, 1, tag); // Update the bar.
+
+          obj.rebuild();
+          obj.update();
+        } // if
+
+      } // addchapter
+
     }]);
 
     return PlayBar;
   }(); // PlayBar
 
-  var template$9 = "\n<div class=\"player-controls\">\n  <svg id=\"playbar\" width=\"100%\" height=\"32px\">\n    <g class=\"playbutton\"></g>\n    <g class=\"playbar\"></g>\n  </svg>\n</div>\n"; // template
+  var template$b = "\n<div class=\"player-controls\">\n  <svg id=\"playbar\" width=\"100%\" height=\"32px\">\n    <g class=\"playbutton\"></g>\n    <g class=\"playbar\"></g>\n  </svg>\n</div>\n"; // template
 
   var PlayControls = /*#__PURE__*/function () {
     function PlayControls() {
@@ -2401,7 +2420,7 @@
       this.textBottomMargin = 2;
       this.highlightHeightDelta = 3;
       var obj = this;
-      obj.node = html2element$1(template$9);
+      obj.node = html2element$3(template$b);
       var y = obj.textHeight + obj.textBottomMargin + obj.highlightHeightDelta; // Make a play button.
 
       obj.button = new PlayButton();
@@ -2487,7 +2506,7 @@
     return PlayControls;
   }(); // PlayControls
 
-  function html2element(html) {
+  function html2element$2(html) {
     var template = document.createElement('template');
     template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
 
@@ -2536,7 +2555,7 @@
     submitbutton: "\n    color: white;\n\tbackground-color: black;\n\tborder-radius: 4px;\n\tcursor: pointer;\n  "
   }; // css
 
-  var template$8 = "\n<div>\n  <textarea class=\"comment\" type=\"text\" rows=\"1\" placeholder=\"What do you think?\" style=\"".concat(css$3.textarea, "\"></textarea>\n  <button class=\"submit\" style=\"").concat(css$3.submitbutton, "\"><b>Submit</b></button>\n</div>\n"); // template
+  var template$a = "\n<div>\n  <textarea class=\"comment\" type=\"text\" rows=\"1\" placeholder=\"What do you think?\" style=\"".concat(css$3.textarea, "\"></textarea>\n  <button class=\"submit\" style=\"").concat(css$3.submitbutton, "\"><b>Submit</b></button>\n</div>\n"); // template
 
   var AddCommentForm = /*#__PURE__*/function () {
     function AddCommentForm(id) {
@@ -2544,7 +2563,7 @@
 
       this._user = "";
       var obj = this;
-      obj.node = html2element(template$8);
+      obj.node = html2element$2(template$a);
       obj.viewid = id; // Author input got omitted because the author also needs to be known when voting on a comment, and I didn't want to implement an input there. That's why now there will be an overall login box that will control everything.
 
       obj.commentinput = obj.node.querySelector("textarea.comment");
@@ -2612,7 +2631,7 @@
     timestampspan: "\n    color: gray;\n\tfont-size: 14px;\n\tmargin-left: 12px;\n  "
   }; // css
 
-  var template$7 = "\n<div class=\"comment\">\n  <div class=\"header\">\n    <b class=\"author\"></b>\n\t<span class=\"timestamp\" style=\"".concat(css$2.timestampspan, "\"></span>\n  </div>\n  <div class=\"body\"></div>\n  <div class=\"footer\">\n    <button class=\"upvote\" style=\"").concat(css$2.button, "\">\n\t  <i class=\"fa fa-thumbs-up\"></i>\n\t  <i class=\"vote-number\"></i>\n\t</button>\n\t<button class=\"downvote\" style=\"").concat(css$2.button, "\">\n\t  <i class=\"fa fa-thumbs-down\"></i>\n\t  <i class=\"vote-number\" style=\"").concat(css$2.votenumberi, "\"></i>\n\t</button>\n\t<button class=\"reply\" style=\"").concat(css$2.button, " ").concat(css$2.replybutton, "\"><b>REPLY</b></button>\n  </div>\n</div>\n"); // template
+  var template$9 = "\n<div class=\"comment\">\n  <div class=\"header\">\n    <b class=\"author\"></b>\n\t<span class=\"timestamp\" style=\"".concat(css$2.timestampspan, "\"></span>\n  </div>\n  <div class=\"body\"></div>\n  <div class=\"footer\">\n    <button class=\"upvote\" style=\"").concat(css$2.button, "\">\n\t  <i class=\"fa fa-thumbs-up\"></i>\n\t  <i class=\"vote-number\"></i>\n\t</button>\n\t<button class=\"downvote\" style=\"").concat(css$2.button, "\">\n\t  <i class=\"fa fa-thumbs-down\"></i>\n\t  <i class=\"vote-number\" style=\"").concat(css$2.votenumberi, "\"></i>\n\t</button>\n\t<button class=\"reply\" style=\"").concat(css$2.button, " ").concat(css$2.replybutton, "\"><b>REPLY</b></button>\n  </div>\n</div>\n"); // template
 
   var Comment = /*#__PURE__*/function () {
     function Comment(config) {
@@ -2621,7 +2640,7 @@
       this.user = "Default User: Aljaz";
       var obj = this; // Make a new node.
 
-      obj.node = html2element(template$7); // Fill the template with the options from the config. There must be a comment, and there must be an author.
+      obj.node = html2element$2(template$9); // Fill the template with the options from the config. There must be a comment, and there must be an author.
 
       obj.config = config; // Upon creation the author is also the user? True when the user makes them, not otherwise... But the user is updated when the login is initiated.
 
@@ -2814,7 +2833,7 @@
   // Sort the comments before passing them to the comments below. How will replies be updated? Ultimately everything should be coming from the server??
   // This is just a template for the controls which allow the replies to be expanded or collapsed. These are invisible at first.
 
-  var template$6 = "\n<div style=\"display: none;\">\n  <div class=\"expand-controls\" style=\"color: blue; cursor: pointer;\">\n    <i class=\"fa fa-caret-down\"></i>\n\t<i class=\"control-text\">View replies</i>\n  </div>\n  <div class=\"replies\" style=\"display: none;\"></div>\n</div>\n"; // Maybe the general comments can be added on top, but the replies should follow in chronological order.
+  var template$8 = "\n<div style=\"display: none;\">\n  <div class=\"expand-controls\" style=\"color: blue; cursor: pointer;\">\n    <i class=\"fa fa-caret-down\"></i>\n\t<i class=\"control-text\">View replies</i>\n  </div>\n  <div class=\"replies\" style=\"display: none;\"></div>\n</div>\n"; // Maybe the general comments can be added on top, but the replies should follow in chronological order.
 
   var GeneralComment = /*#__PURE__*/function (_Comment) {
     _inherits(GeneralComment, _Comment);
@@ -2832,7 +2851,7 @@
       var obj = _assertThisInitialized(_this); // The general comment can have replies associated with it. Handle these here. Furthermore an additional control for expanding, reducing hte comments is required.
 
 
-      obj.replynode = html2element(template$6);
+      obj.replynode = html2element$2(template$8);
       obj.node.appendChild(obj.replynode); // Add the functionality to the caret.
 
       obj.repliesExpanded = false;
@@ -2927,7 +2946,7 @@
     return candidates.length > 0 ? candidates[0] : false;
   } // findArrayItemById
 
-  var template$5 = "\n<div style=\"margin-bottom: 5px;\"></div>\n"; // template
+  var template$7 = "\n<div style=\"margin-bottom: 5px;\"></div>\n"; // template
   // Maybe make them grey with italis writing?
 
   var css$1 = "\nborder: none;\nbackground-color: gainsboro;\nmargin-right: 2px;\ncursor: pointer;\n"; // css
@@ -2941,7 +2960,7 @@
       this.tags = [];
       this.selected = [];
       var obj = this;
-      obj.node = html2element(template$5);
+      obj.node = html2element$2(template$7);
     } // constructor
 
 
@@ -2964,7 +2983,7 @@
           return d;
         });
         buttons.enter.forEach(function (d) {
-          var el = html2element(tagtemplate);
+          var el = html2element$2(tagtemplate);
           obj.node.appendChild(el);
           el.querySelector("i").innerText = d;
           el.__data__ = d;
@@ -3007,14 +3026,14 @@
     return DiscussionSelector;
   }(); // DiscussionSelector
 
-  var template$4 = "\n<div class=\"commenting\" style=\"width:300px;\">\n  <div class=\"hideShowText\" style=\"cursor: pointer; margin-bottom: 5px; color: gray;\">\n    <b class=\"text\">Show comments</b>\n\t<b class=\"counter\"></b>\n\t<i class=\"fa fa-caret-down\"></i>\n  </div>\n  <div class=\"commentingWrapper\" style=\"display: none;\">\n    <div class=\"comment-form\"></div>\n    <hr>\n    <div class=\"comment-tags\"></div>\n    <div class=\"comments\" style=\"overflow-y: auto; max-height: 200px;\"></div>\n  </div>\n</div>\n"; // template
+  var template$6 = "\n<div class=\"commenting\" style=\"width:300px;\">\n  <div class=\"hideShowText\" style=\"cursor: pointer; margin-bottom: 5px; color: gray;\">\n    <b class=\"text\">Show comments</b>\n\t<b class=\"counter\"></b>\n\t<i class=\"fa fa-caret-down\"></i>\n  </div>\n  <div class=\"commentingWrapper\" style=\"display: none;\">\n    <div class=\"comment-form\"></div>\n    <hr>\n    <div class=\"comment-tags\"></div>\n    <div class=\"comments\" style=\"overflow-y: auto; max-height: 200px;\"></div>\n  </div>\n</div>\n"; // template
 
   var CommentingManager = /*#__PURE__*/function () {
     function CommentingManager(id) {
       _classCallCheck(this, CommentingManager);
 
       var obj = this;
-      obj.node = html2element(template$4);
+      obj.node = html2element$2(template$6);
       obj.viewid = id;
       obj.comments = []; // Make the form;
 
@@ -3087,6 +3106,13 @@
         var counterNode = obj.node.querySelector("div.hideShowText").querySelector("b.counter");
         counterNode.innerText = n ? "(".concat(n, ")") : "";
       } // updateCommentCounter
+
+    }, {
+      key: "submit",
+      value: function submit(config) {
+        // This function is called when the button is pressed. By default it just routes the comment to 'add' so that the comment is added straight away. Alternately it should be passed to the server first. Maybe it's good if both things are done in cases when the connection is not good?
+        this.add(config);
+      } // submit
 
     }, {
       key: "add",
@@ -3215,15 +3241,15 @@
     submitbutton: "\n    background-color: black;\n\tcolor: white;\n  "
   }; // css
 
-  var template$3 = "\n<div style=\"300px\">\n  <input type=\"text\" placeholder=\"#tag-name\" style=\"width: 100px;\"></input>\n  \n  <div style=\"display: inline-block; float: right;\">\n  <button class=\"starttime\" style=\"".concat(css.button, " ").concat(css.timebutton, "\">start</button>\n  <i>-</i>\n  <button class=\"endtime\" style=\"").concat(css.button, " ").concat(css.timebutton, "\">end</button>\n  <button class=\"submit\" style=\"").concat(css.button, " ").concat(css.submitbutton, "\">\n    Submit\n  </button>\n  </div>\n  \n  \n</div>\n"); // template
+  var template$5 = "\n<div style=\"300px\">\n  <input type=\"text\" placeholder=\"#tag-name\" style=\"width: 100px;\"></input>\n  \n  <div style=\"display: inline-block; float: right;\">\n  <button class=\"starttime\" style=\"".concat(css.button, " ").concat(css.timebutton, "\">start</button>\n  <i>-</i>\n  <button class=\"endtime\" style=\"").concat(css.button, " ").concat(css.timebutton, "\">end</button>\n  <button class=\"submit\" style=\"").concat(css.button, " ").concat(css.submitbutton, "\">\n    Submit\n  </button>\n  </div>\n  \n  \n</div>\n"); // template
 
-  var AnnotationForm = /*#__PURE__*/function () {
-    function AnnotationForm() {
-      _classCallCheck(this, AnnotationForm);
+  var ChapterForm = /*#__PURE__*/function () {
+    function ChapterForm() {
+      _classCallCheck(this, ChapterForm);
 
       this.user = "Default user: Aljaz";
       var obj = this;
-      obj.node = html2element$1(template$3);
+      obj.node = html2element$3(template$5);
       obj.input = obj.node.querySelector("input"); // This value will be overwritten during interactions, and is where the tag manager collects the time for the timestamps.
 
       obj.t = 0;
@@ -3248,7 +3274,7 @@
         var tag = obj.tag;
 
         if (tag) {
-          obj.externalAction(tag);
+          obj.submit(tag);
           obj.clear();
         } // if
 
@@ -3257,7 +3283,7 @@
     } // constructor
 
 
-    _createClass(AnnotationForm, [{
+    _createClass(ChapterForm, [{
       key: "update",
       value: function update() {
         var obj = this; // Ensure that the times are always consistent (end > start);
@@ -3304,25 +3330,28 @@
     }, {
       key: "tag",
       get: function get() {
+        // Chapter tag should belong to the task id so that the observations across multiple slices are available together to the user.
         var obj = this; // The time should be defined, but it can also be 0, or less than 0!
 
         return obj.user && obj.input.value && obj.starttime != undefined ? {
-          author: obj.user,
+          taskId: obj.taskId,
           label: obj.input.value,
+          author: obj.user,
           starttime: obj.starttime,
-          endtime: obj.endtime
+          endtime: obj.endtime,
+          id: "".concat(obj.user, " ").concat(Date())
         } : false;
       } // tag
       // Placeholder for communication between classes.
 
     }, {
-      key: "externalAction",
-      value: function externalAction() {} // externalAction
+      key: "submit",
+      value: function submit(tag) {} // submit
 
     }]);
 
-    return AnnotationForm;
-  }(); // AnnotationForm
+    return ChapterForm;
+  }(); // ChapterForm
 
   // On the other hand, when discussing the tags it's good to avoid misunderstaning.
   // Furthermore, it would be good to just accept someone elses tags. What about clicking on the users name? Then select adopting their annotations? How do you revert back? A clear all button? Allow reloading of annotations for editing??
@@ -3334,26 +3363,25 @@
       _classCallCheck(this, interactivePlayerUI);
 
       var obj = this;
+      obj.viewid = id;
       obj.node = document.createElement("div"); // Add in a playbar
 
       obj.playcontrols = new PlayControls();
       obj.node.appendChild(obj.playcontrols.node); // The tag adding.
 
-      obj.annotationform = new AnnotationForm();
-      obj.node.appendChild(obj.annotationform.node); // Add in the commenting system. The metadata filename is used as the id of this 'video', and thus this player. The node needs to be added also.
+      obj.chapterform = new ChapterForm();
+      obj.node.appendChild(obj.chapterform.node); // Add in the commenting system. The metadata filename is used as the id of this 'video', and thus this player. The node needs to be added also.
 
       obj.commenting = new CommentingManager(id);
-      obj.node.appendChild(obj.commenting.node); //  Tags need to be pushed to the playbar, but also to the commenting!
+      obj.node.appendChild(obj.commenting.node); //  Tags need to be pushed to the playbar, but also to the commenting! Should individual tags be allowed to influence the navigation? I guess so?
 
-      obj.annotationform.externalAction = function (tag) {
-        obj.playcontrols.bar.annotations.push(tag);
-        obj.playcontrols.bar.rebuild();
-        obj.playcontrols.bar.update();
+      obj.chapterform.submit = function (tag) {
+        obj.playcontrols.bar.addchapter(tag);
         var discussiontags = obj.playcontrols.bar.annotations.map(function (a) {
           return a.label;
         });
         obj.commenting.discussion.update(discussiontags);
-      }; // externalAction
+      }; // submit
       // Add onhover events to the tagged keywords in the text? That allows the user to show exactly which part of the data they meant, and also to compare it to others interpretations.
       // What happens when the user replies in a thread for which he does not have an annotation for? For replies, it's the parent annotations that get pasted in. But what if you're making a general comment without having the playbar annotations? Which one should get selected? Or should just the text tags be retained? But in that case I can't show the different versions. Maybe keep the tag names, but also keep the annotations separate - that way they can only be added for mouseover if they're in hte text? And in the text they need to be marked using a #? But then no disagreements with the thread parent comment are possible... How to deal with this? Only allow the user to use their own annotations?
       // Anyyyyyway, first include the tree navigation
@@ -3393,7 +3421,7 @@
       } // get t_play
       ,
       set: function set(t) {
-        this.annotationform.t = t;
+        this.chapterform.t = t;
         this.playcontrols.bar.t_play = t;
         this.playcontrols.bar.update();
       } // set t_play
@@ -3412,14 +3440,25 @@
       key: "user",
       get: function get() {
         // The annotation form is the primary annotation.
-        return this.annotationform.user;
+        return this.chapterform.user;
       } // get user
       ,
       set: function set(name) {
         this.commenting.user = name;
-        this.annotationform.user = name;
+        this.chapterform.user = name;
       } // set user
 
+    }, {
+      key: "metadata",
+      get: // set metadata
+      function get() {
+        return this._metadata;
+      } // set metadata
+      ,
+      set: function set(m) {
+        this._metadata = m;
+        this.chapterform.taskId = m.taskId;
+      }
     }]);
 
     return interactivePlayerUI;
@@ -3517,12 +3556,11 @@
   var cmap = new Uint8Array([68, 1, 84, 255, 71, 19, 101, 255, 72, 36, 117, 255, 70, 52, 128, 255, 65, 68, 135, 255, 59, 82, 139, 255, 53, 95, 141, 255, 47, 108, 142, 255, 42, 120, 142, 255, 37, 132, 142, 255, 33, 145, 140, 255, 30, 156, 137, 255, 34, 168, 132, 255, 47, 180, 124, 255, 68, 191, 112, 255, 94, 201, 98, 255, 122, 209, 81, 255, 155, 217, 60, 255, 189, 223, 38, 255, 223, 227, 24, 255, 253, 231, 37, 255]); // cmap
 
   var MeshRenderer2D = /*#__PURE__*/function () {
-    function MeshRenderer2D() {
+    function MeshRenderer2D(canvas, container) {
       _classCallCheck(this, MeshRenderer2D);
 
       var obj = this;
-      obj.domcontainer = document.getElementById("table-top");
-      var canvas = document.getElementById("canvas");
+      obj.domcontainer = container;
       obj.canvas = canvas;
       obj.canvas.width = window.innerWidth;
       obj.canvas.height = window.innerHeight; // Grab a context and setup a program.
@@ -3748,69 +3786,104 @@
     items.forEach(function (item, i) {
       item.node.style.position = "absolute";
       item.node.style.left = positions[i][0] + "px";
-      item.node.style.top = positions[i][1] + "px"; // Add an object to facilitate the dragging.
+      item.node.style.top = positions[i][1] + "px";
 
+      var onstart = function onstart() {
+        // Move this item to the end of the drawing queue to ensure it's drawn on top.
+        items.splice(items.indexOf(item), 1);
+        items.push(item);
+      }; // function
+
+
+      addDraggingToItem(item, onstart);
+      /*
+      // Add an object to facilitate the dragging.
       item.dragging = {
-        active: false,
-        itemRelativePosition: [0, 0]
-      }; // dragging
-
-      item.node.onmousedown = function (e) {
-        if (e.target == item.node) {
-          var rect = item.node.getBoundingClientRect();
-          item.dragging.active = true;
-          item.dragging.itemRelativePosition = [e.clientX - rect.x, e.clientY - rect.y]; // Move this item to the end of the drawing queue to ensure it's drawn on top.
-
-          items.splice(items.indexOf(item), 1);
-          items.push(item); // Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
-
-          item.node.parentNode.insertBefore(item.node, null);
-        } // if
-
-      }; // onmousedown
-
-
-      item.node.onmousemove = function (e) {
-        if (item.dragging.active) {
-          var x = e.pageX - item.dragging.itemRelativePosition[0];
-          var y = e.pageY - item.dragging.itemRelativePosition[1];
-          item.node.style.left = x + "px";
-          item.node.style.top = y + "px";
-        } // if
-
-      }; // mousemove
-
-
-      item.node.onmouseup = function () {
-        item.dragging.active = false;
-      }; // onmouseup
-
+      	active: false,
+      	itemRelativePosition: [0, 0]
+      } // dragging
+      		item.node.onmousedown = function(e){
+      	if(e.target == item.node){
+      		let rect = item.node.getBoundingClientRect();
+      		
+      		item.dragging.active = true;
+      		item.dragging.itemRelativePosition = [
+      			e.clientX - rect.x,
+      			e.clientY - rect.y
+      		];
+      		
+      		// Move this item to the end of the drawing queue to ensure it's drawn on top.
+      		items.splice(items.indexOf(item), 1);
+      		items.push(item)
+      		
+      		// Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
+      		item.node.parentNode.insertBefore(item.node, null);
+      	} // if
+      } // onmousedown
+      item.node.onmousemove = function(e){
+      	if(item.dragging.active){
+      		let x = e.pageX - item.dragging.itemRelativePosition[0];
+      		let y = e.pageY - item.dragging.itemRelativePosition[1];
+      		
+      		item.node.style.left = x + "px"
+      		item.node.style.top  = y + "px"
+      	} // if
+      } // mousemove
+      item.node.onmouseup   = function(){
+      	item.dragging.active = false;
+      } // onmouseup
+      */
     }); // forEach
   } // addDraggingToSiblingItems
+  // How to make the addition of dragging more general?? There are some things that have to happen. Pass them in as additional functions?
 
-  function sortCommentsBeforePushing(a, b) {
-    // The primary comments must be added first so that the replies can be added to them. The comments can just be sorted by time of creation. Replies can only be created after the primary comment.
-    return Date.parse(a.time) - Date.parse(b.time);
-  } // sortCommentsBeforePushing
+  function addDraggingToItem(item, onstart) {
+    // Add an object to facilitate the dragging.
+    item.dragging = {
+      active: false,
+      itemRelativePosition: [0, 0]
+    }; // dragging
+
+    item.node.onmousedown = function (e) {
+      if (e.target == item.node) {
+        var rect = item.node.getBoundingClientRect();
+        item.dragging.active = true;
+        item.dragging.itemRelativePosition = [e.clientX - rect.x, e.clientY - rect.y]; // Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
+
+        item.node.parentNode.insertBefore(item.node, null);
+
+        if (onstart) {
+          onstart();
+        } // if
+
+      } // if
+
+    }; // onmousedown
 
 
-  function getRequiredComments(allCommentingManagers) {
-    // Return hte comments needed. Make a call in a promise, and after it's resolved push the comments to the right owner.
-    // Now add in some test comments
-    fetch('./data/annotations/test.json').then(function (response) {
-      return response.json();
-    }).then(function (data) {
-      data.sort(sortCommentsBeforePushing).forEach(function (comment) {
-        allCommentingManagers.forEach(function (m) {
-          if (m.viewid == comment.viewid) {
-            m.add(comment);
-          } // if  
+    item.node.onmousemove = function (e) {
+      if (item.dragging.active) {
+        var x = e.pageX - item.dragging.itemRelativePosition[0];
+        var y = e.pageY - item.dragging.itemRelativePosition[1];
+        item.node.style.left = x + "px";
+        item.node.style.top = y + "px";
+      } // if
 
-        }); // forEach
-      }); // forEach
-    }); // then	
-  } // getRequiredComments
-   // sendCommentChanges
+    }; // mousemove
+
+
+    item.node.onmouseup = function () {
+      item.dragging.active = false;
+    }; // onmouseup
+
+  } // addDraggingToItem
+
+  function html2element$1(html) {
+    var template = document.createElement('template');
+    template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
+
+    return template.content.firstChild;
+  } // html2element
 
   function svg2element(svg) {
     var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -3940,7 +4013,7 @@
     return DrawLink;
   }(); // DrawLink
 
-  var template$2 = "\n<g class=\"bundle\">\n  <path stroke=\"white\" stroke-width=\"5\" fill=\"none\"></path>\n  <path stroke=\"black\" stroke-width=\"2\" fill=\"none\"></path>\n</g>\n"; // tempalte
+  var template$4 = "\n<g class=\"bundle\">\n  <path stroke=\"white\" stroke-width=\"5\" fill=\"none\"></path>\n  <path stroke=\"black\" stroke-width=\"2\" fill=\"none\"></path>\n</g>\n"; // tempalte
   // These should just be exposed at the link level... The tree level also has them, and it's non hygienic.
 
   var node_label_width$1 = 70;
@@ -3957,7 +4030,7 @@
       // NOTE: seednode is a `treenode' instance, but parents and children are `taskgroup' instances. The level is only defined for the node because it can change when the user interacts with the tree.
 
       var obj = this;
-      obj.node = svg2element(template$2);
+      obj.node = svg2element(template$4);
       obj.author = author, obj.level = seednode.level;
       obj.parents = seednode.connections.parents;
       obj.children = [seednode.connections.group];
@@ -4319,7 +4392,7 @@
 
   // text -> 	"x", node => node.labelx, "y", node => node.labely, label node=>node.label
 
-  var template$1 = "\n<g class=\"node\" cursor=\"pointer\">\n  <g class=\"marker\">\n    <path class=\"outline\" stroke=\"black\" stroke-width=\"8\" stroke-linecap=\"round\"></path>\n    <path class=\"fill\" stroke=\"white\" stroke-width=\"4\" stroke-linecap=\"round\"></path>\n  </g>\n  <g class=\"label\">\n    <text class=\"unselectable\" stroke=\"white\" stroke-width=\"2\" font-size=\"10px\"></text>\n    <text class=\"unselectable\" stroke=\"black\" stroke-width=\"0.5\" font-size=\"10px\"></text>\n  </g>\n</g>\n"; // template
+  var template$3 = "\n<g class=\"node\" cursor=\"pointer\">\n  <g class=\"marker\">\n    <path class=\"outline\" stroke=\"black\" stroke-width=\"8\" stroke-linecap=\"round\"></path>\n    <path class=\"fill\" stroke=\"white\" stroke-width=\"4\" stroke-linecap=\"round\"></path>\n  </g>\n  <g class=\"label\">\n    <text class=\"unselectable\" stroke=\"white\" stroke-width=\"2\" font-size=\"10px\"></text>\n    <text class=\"unselectable\" stroke=\"black\" stroke-width=\"0.5\" font-size=\"10px\"></text>\n  </g>\n</g>\n"; // template
   // A treenode object is a higher level wrapper that contains all the dimensioning information. The `connections' attribute is supposed to hold the `treegroup' object, which contains a reference the an individual group, all it's ancestors, it's direct parents, and all its descendants.
 
   var TreeNode = /*#__PURE__*/function () {
@@ -4336,7 +4409,7 @@
       this.nbundlesout = 0;
       this.hidden = false;
       var obj = this;
-      obj.node = svg2element(template$1); // The treegroup holds all the connections of a particular group.
+      obj.node = svg2element(template$3); // The treegroup holds all the connections of a particular group.
 
       obj.connections = treegroup;
       var label = obj.node.querySelector("g.label");
@@ -4462,7 +4535,7 @@
       key: "label",
       get: function get() {
         var obj = this;
-        var name = obj.connections.group.tags[0].id; // Temporarily changed to show n tasks for troubleshooting.
+        var name = obj.connections.group.tags[0].label; // Temporarily changed to show n tasks for troubleshooting.
         // let n = obj.connections.descendants.length;
 
         var n = obj.connections.group.members.length;
@@ -4565,21 +4638,19 @@
     // Create a group for each tag present in the array. We also need to differentiate teh groups by the author at this point. Otherwise parallel trees won't be possible.
     var dict = {};
     var groups = [];
-    array.forEach(function (taskobj) {
-      taskobj.tags.forEach(function (tag) {
-        // If you tag something in the session, then that tag is reserved for a particular group. If you tag other elements with it, it'll become a part of that group.
-        var groupid = [tag.id, tag.author].join("-");
+    array.forEach(function (tag) {
+      // If you tag something in the session, then that tag is reserved for a particular group. If you tag other elements with it, it'll become a part of that group.
+      var groupid = [tag.label, tag.author].join("-");
 
-        if (!dict[groupid]) {
-          // Here just pass the tag in. The group will need to hold on to it.
-          dict[groupid] = new taskgroup([tag]);
-          groups.push(dict[groupid]);
-        } // if
-        // Add teh task to the specific group, but also to the root group.
+      if (!dict[groupid]) {
+        // Here just pass the tag in. The group will need to hold on to it.
+        dict[groupid] = new taskgroup([tag]);
+        groups.push(dict[groupid]);
+      } // if
+      // Add teh task to the specific group, but also to the root group.
 
 
-        dict[groupid].addtask(taskobj);
-      }); // forEach
+      dict[groupid].addtask(tag.taskId);
     }); // forEach
     // A root group should be present. It will be merged with other existing groups if possible in hte next tep.
 
@@ -4592,12 +4663,13 @@
     // The root MUST always contain all of the data!! It will also allow navigation all the way to the start.
     var root = new taskgroup([{
       id: "Root",
+      label: "Root",
       author: "session",
       timestamp: new Date()
     }]); // Root should contain all tasks.
 
-    array.forEach(function (task) {
-      root.addtask(task);
+    array.forEach(function (tag) {
+      root.addtask(tag.taskId);
     }); // forEach
 
     return root;
@@ -4725,11 +4797,11 @@
   } // calculateLevelNumbers
 
   var TreeHierarchy = /*#__PURE__*/function () {
-    function TreeHierarchy(data) {
+    function TreeHierarchy() {
       _classCallCheck(this, TreeHierarchy);
 
       var obj = this;
-      obj.data = data;
+      obj.data = [];
       obj.collapsednodes = [];
       obj.update();
     } // constructor
@@ -4799,17 +4871,17 @@
   - Fix node mouseover css - css affects specific child of mover g.
   */
 
-  var template = "\n<g transform=\"translate(20, 20)\">\n  <g class=\"bundles\"></g>\n  <g class=\"nodes\"></g>\n  <g class=\"nodetooltip\"></g>\n  <g class=\"linktooltip\"></g>\n</g>\n";
+  var template$2 = "\n<g transform=\"translate(20, 20)\">\n  <g class=\"bundles\"></g>\n  <g class=\"nodes\"></g>\n  <g class=\"nodetooltip\"></g>\n  <g class=\"linktooltip\"></g>\n</g>\n";
 
   var TreeRender = /*#__PURE__*/function () {
-    function TreeRender(data) {
+    function TreeRender() {
       _classCallCheck(this, TreeRender);
 
       var obj = this; // Hierarchy
 
-      obj.hierarchy = new TreeHierarchy(data); // Drawing
+      obj.hierarchy = new TreeHierarchy(); // Drawing
 
-      obj.node = svg2element(template);
+      obj.node = svg2element(template$2);
       obj.gnodes = obj.node.querySelector("g.nodes");
       obj.gbundles = obj.node.querySelector("g.bundles");
       obj.color = new scaleCategorical();
@@ -4858,7 +4930,7 @@
           // Clicking on hte node just collapses branches.
 
 
-          obj.node.querySelector("g.marker").onclick = function () {
+          nodeobj.node.querySelector("g.marker").onclick = function () {
             nodeobj.hidden = !nodeobj.hidden;
             obj.interact();
           }; // onclick
@@ -4879,14 +4951,383 @@
 
     }, {
       key: "moveto",
-      value: function moveto(group) {
-        console.log("Move to", group);
+      value: function moveto(nodeobj) {
+        // I want to move to the group which contains only tasks given by "nodeobj.connections.group.members", but I also want to show all the groups within that grop.
+        console.log("Move to", nodeobj.connections.group.members);
       } // moveto
 
     }]);
 
     return TreeRender;
   }(); // TreeRender
+
+  function html2element(html) {
+    var template = document.createElement('template');
+    template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
+
+    return template.content.firstChild;
+  } // html2element
+   // mapSpaceAValueToSpaceB
+
+  // The main difficulty with this is drawing the standard deviation plot. How would that look like in 3D anyway?
+
+  var template$1 = "\n<div class=\"item item-group\" style=\"position: absolute;\">\n  <div class=\"label\">\n    Group\n\t<button class=\"ungroup\" style=\"float: right; background-color: white; border: none; color: gainsboro;\"><i class=\"fa fa-times\" style=\"font-size: 20px;\"></i></button>\n  </div>\n  <div class=\"view\" style=\"width:300px; height:200px; opacity:0.001;\">\n  </div>\n</div>\n"; // template
+  // When made it should have a series of squares, which when moused over will move between the individual items. Where should these controls be placed though? How should the title be made visible?
+  // Maybe controls should be above, and the name should change? Then the comments can always be below. Should there be a comment section for all of them at once? I guess so, so that they can all be characterised together.
+  // Ok, comment sections can be turned off - only the playbar is needed! It also needs a way to remove the group alltogether. A cross in the right top.
+
+  var Group = /*#__PURE__*/function () {
+    function Group(members) {
+      _classCallCheck(this, Group);
+
+      var obj = this;
+      obj.node = html2element(template$1);
+      obj.members = members; // Calculate where the node should be added:
+
+      var n = obj.members.length;
+      obj.pos = obj.members.reduce(function (acc, item) {
+        var p = [parseInt(item.node.style.left), parseInt(item.node.style.top)];
+        acc.group[0] += p[0] / n;
+        acc.group[1] += p[1] / n;
+        acc.items.push(p);
+        return acc;
+      }, {
+        group: [0, 0],
+        items: []
+      });
+      obj.node.style.left = obj.pos.group[0] + "px";
+      obj.node.style.top = obj.pos.group[1] + "px"; // All the members should also be moved to this position. Turn off their uis, wih the exception of the playbar. Also remember their relative positions?
+
+      obj.members.forEach(function (item) {
+        item.node.style.left = obj.pos.group[0] + "px";
+        item.node.style.top = obj.pos.group[1] + "px";
+        item.ui.chapterform.node.style.display = "none";
+        item.ui.commenting.node.style.display = "none";
+      }); // forEach
+      // Removal of the group.
+
+      obj.node.querySelector("button.ungroup").onclick = function () {
+        obj.node.remove(); // Redistribute the items according to their original positions.`	
+
+        obj.members.forEach(function (item, i) {
+          item.node.style.left = obj.pos.items[i][0] + "px";
+          item.node.style.top = obj.pos.items[i][1] + "px";
+          item.ui.chapterform.node.style.display = "";
+          item.ui.commenting.node.style.display = "";
+        });
+      }; // onclick
+
+    } // constructor
+
+
+    _createClass(Group, [{
+      key: "remove",
+      value: function remove() {
+        // All the members should be made visible again, and their comment sections should be turned back on, and they should be staggered to their relative psitions.
+        var obj = this;
+        obj.members.forEach(function (item) {
+          item.ui.chapterform.node.style.display = "";
+          item.ui.commenting.node.style.display = "";
+        }); // forEach
+
+        obj.node.remove();
+      } // remove
+
+    }]);
+
+    return Group;
+  }(); // Group
+
+  /* 
+  Make a class that will be able to perform most coordination tasks required for the spatial harnessing. This involves getting and setting the coordinates of the small multiples.
+
+
+  Should groups allow the user to enter them? Maybe its simpler to restrict the navigation solely to the navigation tree. Otherwise when clicking on a group node it has to communicate to the GroupingCoordinator to initiate the change, and also keep track of the descendant groups.
+
+  If navigation is constrained to the navigation tree, then groups can just be an array of arrays of tasks. Maybe the navigation trre should be controlled from within here? And then the hierarchy can be used to create the groups on the go?
+  	
+
+  */
+
+  var template = "<div></div>"; // template
+
+  var GroupingCoordinator = /*#__PURE__*/function () {
+    function GroupingCoordinator(items) {
+      _classCallCheck(this, GroupingCoordinator);
+
+      var obj = this;
+      obj.node = html2element$1(template);
+      obj.items = items;
+      obj.tasks = items.map(function (item) {
+        return item.ui.metadata.taskId;
+      });
+      obj.groups = []; // First the items need to be draggable to allow for grouping.
+
+      addDraggingToSiblingItems(items, 80); // The hierarchy is essentially a function of the grouping. The navigation tree can therefore be used to create teh grouping interface.
+
+      obj.navigation = new TreeRender([]); // navigationsvg.appendChild(obj.navigation.node)
+      // obj.navigation.update();
+
+      obj.navigation.moveto = function (nodeobj) {
+        // Now remove all existing group items, hide all unnecessary items, calculate the direct descendant groups, and create items for them.
+        var current = nodeobj.connections.group.members;
+        obj.clear();
+        obj.showCurrentTasks(current);
+        obj.makeDirectDescendantGroups(nodeobj);
+        console.log("Move to", nodeobj);
+      }; // moveto
+      // Allow the current makeup to be communicated from outside. So a number of groups can be passed into here, and the groups for them should be created. The groups can be simply the taskids. Task ids are better than view ids because they allow groups to be carried over between slices (view ids are slice specific, but allow comments to be specifically targeted.).
+      // So, hte parent group needs to be specified, as well as the child groups.
+
+    } // constructor
+
+
+    _createClass(GroupingCoordinator, [{
+      key: "clear",
+      value: function clear() {
+        var obj = this;
+        obj.groups.forEach(function (group) {
+          group.remove();
+        });
+        obj.groups = [];
+      } // clear
+      // When the parent group is specified the items should be adjusted immediately.
+
+    }, {
+      key: "showCurrentTasks",
+      value: function showCurrentTasks(tasks) {
+        var obj = this; // First find if any of the specified tsks are valid.
+
+        var validtasks = tasks.filter(function (task) {
+          return obj.tasks.includes(task);
+        });
+
+        if (validtasks.length > 0) {
+          obj.items.forEach(function (item) {
+            if (validtasks.includes(item.ui.metadata.taskId)) {
+              item.node.style.display = "";
+            } else {
+              item.node.style.display = "none";
+            } // if
+
+          }); // forEach
+        } // if
+
+      } // showCurrentTasks
+
+    }, {
+      key: "makeDirectDescendantGroups",
+      value: function makeDirectDescendantGroups(nodeobj) {
+        var obj = this;
+        var descendants = nodeobj.connections.descendants;
+        var directDescendants = descendants.filter(function (group) {
+          return !descendants.some(function (d) {
+            if (d != group) {
+              return arrayIncludesAll(d.members, group.members);
+            } // if
+
+
+            return false;
+          }); // some
+        }); // filter
+
+        directDescendants.forEach(function (d) {
+          // Pass the actual item objects to the group.
+          var members = obj.items.filter(function (item) {
+            return d.members.includes(item.ui.metadata.taskId);
+          }); // filter
+
+          var groupitem = new Group(members);
+          obj.groups.push(groupitem);
+          obj.node.appendChild(groupitem.node);
+          addDraggingToItem(groupitem);
+        });
+        console.log(obj.groups);
+      } // makeDirectDescendantGroups
+
+    }, {
+      key: "getCurrentPositions",
+      value: function getCurrentPositions(items, variable) {
+        // Current positions are needed for calculating correlations, or for adding additional metadata variables based on the users actions. How should the positions and the metadata be combined actually? Should there be a specific method for it? If a variable is specified, then return it with the positions.
+        return items.map(function (item) {
+          var pos = [ParseInt(item.node.style.left), ParseInt(item.node.style.top)];
+
+          if (variables != undefined) {
+            pos.push(item.metadata[variable]);
+          } // if
+
+
+          return pos;
+        }); // map
+      } // getCurrentPositions
+
+    }, {
+      key: "setPositionsByMetadata",
+      value: function setPositionsByMetadata(items, variable) {// Reposition hte items on screen given their metadata values. Reposition to within the current client viewport, or the whole document? Whole document to spread the small multiples out a bit.
+      } // setPositionsByMetadata
+
+    }, {
+      key: "makeGroupFromArrayOfItems",
+      value: function makeGroupFromArrayOfItems(items) {// Calculate the position of the group and create the html elements required for it. How should the renderer be convinced to draw the appropriate contours? It gets the viewport directly from the ViewFrame, which in this case will be disabled. Allow the group object to pass it's own viewport to the correct item, and use them if the div is set to display none?
+      } // makeGroupFromArrayOfItems
+
+    }]);
+
+    return GroupingCoordinator;
+  }(); // GroupingCoordinator
+
+  function sortCommentsBeforePushing(a, b) {
+    // The primary comments must be added first so that the replies can be added to them. The comments can just be sorted by time of creation. Replies can only be created after the primary comment.
+    return Date.parse(a.time) - Date.parse(b.time);
+  } // sortCommentsBeforePushing
+
+  var KnowledgeManager = /*#__PURE__*/function () {
+    function KnowledgeManager(container, items) {
+      _classCallCheck(this, KnowledgeManager); // All knowedge must be pushed to individual IPUI (Interactive Player User Interfaces) when received.
+
+
+      var obj = this;
+      obj.container = container;
+      obj.items = items; // Tags and chapters should be available for correlations. Tags and chapters are time invariant, but the metadata IS time variant. So even the metadata needs to be queried!
+      // Add the dragging externally. The tabletop was positioned absolutely, with top: 0px. If this is not so the dragging will move the items on the initial drag start by the offset amount.
+      // The grouping coordinator does: adds dragging, positioning of the items by metadata values, retrieveng position and metadata pairs, grouping, and grouping navigation.
+      // Groups need to be added to the same container as the actual items, otherwise either the items cant be dragged over the groups, or vice versa.
+
+      obj.grouping = new GroupingCoordinator(items);
+      obj.container.appendChild(obj.grouping.node);
+      /*
+      New comments must be passed to the stores. Also, when up/downvotes change it should be sent to the server. The local version should also be updated straight away.
+      
+      upvote/downvote are in 'Comment.js';
+      reply button onclick is in 'addGeneralComment' of 'CommentingManager.js';
+      submit button onclick is in 'constructor' of 'CommentingManager.js';
+      
+      How to post the comments to the server? Should each individual be able to post itself to the server? Because it will have to post changes on itself, for example up/downvotes. Anyway, can be left for later for now.
+      */
+      // Make some proxy stores that simulate the communication with the server. Connect them to the points where the annotations are submitted, so that they circulate through the stores.
+
+      obj.comments = new ProxyServerStore('./data/annotations/testcomments.json');
+
+      obj.comments.update = function () {
+        obj.updateAllComments();
+      }; // update
+
+
+      obj.chapters = new ProxyServerStore('./data/annotations/testchapters.json');
+
+      obj.chapters.update = function () {
+        obj.updatePlaybarChapters();
+      }; // update
+
+
+      obj.tags = new ProxyServerStore('./data/annotations/testtags.json');
+
+      obj.tags.update = function () {
+        obj.updateTagAnnotations();
+      }; // update
+      // Make the forms submit the annotations to the appropriate stores, which will then in turn update the display modules.
+
+
+      obj.items.forEach(function (item) {
+        // The chapter annotations should update the playbar, the discussion tags, and the navigation tree.
+        item.ui.chapterform.submit = function (chapter) {
+          obj.chapters.add(chapter);
+        }; // submit
+
+      }); // forEach
+    } // constructor
+
+
+    _createClass(KnowledgeManager, [{
+      key: "updateAllComments",
+      value: function updateAllComments() {
+        // Now add in some test comments
+        var obj = this;
+        obj.comments.data.sort(sortCommentsBeforePushing).forEach(function (comment) {
+          obj.items.forEach(function (item) {
+            if (item.ui.viewid == comment.viewid) {
+              item.ui.commenting.add(comment);
+            } // if  
+
+          }); // forEach
+        }); // forEach
+      } // updateAllComments
+
+    }, {
+      key: "updatePlaybarChapters",
+      value: function updatePlaybarChapters() {
+        var obj = this;
+        obj.chapters.data.forEach(function (ch) {
+          ch.starttime = ch.starttime ? Number(ch.starttime) : undefined;
+          ch.endtime = ch.endtime ? Number(ch.endtime) : undefined;
+          obj.items.forEach(function (item) {
+            if (item.ui.metadata.taskId == ch.taskId) {
+              item.ui.playcontrols.bar.addchapter(ch);
+            } // if  
+
+          }); // forEach
+        }); // forEach
+      } // updatePlaybarChapters
+
+    }, {
+      key: "updateTagAnnotations",
+      value: function updateTagAnnotations() {
+        var obj = this; // Previously the tasks were pushed to the hierarchy, with the tags attached. Now the tags are standalone, and the task ids should be given to the hierarchy separately. Maybe just make them as new tags and merge them together here?
+
+        var tasktags = obj.items.map(function (item) {
+          return {
+            taskId: item.ui.metadata.taskId,
+            label: "Root",
+            author: "session"
+          };
+        });
+        obj.grouping.navigation.hierarchy.data = tasktags.concat(obj.tags.data);
+        obj.grouping.navigation.update();
+      } // updateTagAnnotations
+
+    }]);
+
+    return KnowledgeManager;
+  }(); // KnowledgeManager
+
+  var ProxyServerStore = /*#__PURE__*/function () {
+    function ProxyServerStore(filename) {
+      _classCallCheck(this, ProxyServerStore);
+
+      var obj = this;
+      obj.data = [];
+      fetch(filename).then(function (response) {
+        return response.json();
+      }).then(function (data) {
+        obj.data = data;
+        obj.update();
+        return data;
+      });
+    } // constructor
+
+
+    _createClass(ProxyServerStore, [{
+      key: "add",
+      value: function add(item) {
+        // Check if the item is already present. Replace it, or just update the delta? Bank on the idea that no two queries will be simultaneous?
+        var obj = this;
+        var i = obj.data.findIndex(function (d) {
+          return d.taskId == item.taskId;
+        });
+        obj.data.splice(i, 1, item);
+        obj.update();
+      } // add
+
+    }, {
+      key: "update",
+      value: function update() {// Implement the push of all the comments etc to the actual modules for display.
+      } // update
+      // Maybe no query is required anyway? Each project would have its own annotations, which are always loaded anyway? Unless you go into a list of users and remove them?
+
+    }]);
+
+    return ProxyServerStore;
+  }(); // ProxyServerStore
 
   /* To do: 
     DONE: - allow scrolling
@@ -4903,59 +5344,70 @@
     DONE: - dragging frames around
     - auto selecting the height of the viewport in pixels
     - pinch gestures
-
     - play multiple views at once.
     - loading buffering && data limitation, and subsequent viewframe number limitation.
     
-    - expandable description and tools section?
-    - adding chapter annotations
+    DONE: - expandable description and tools section?
+    DONE: - adding chapter annotations
         The annotations are not really chapters. They can be, but they should also support having a start AND end points, and be allowed to overlap. The playbar san still show them in order of appearance, but a more general view of the tag annotations should be available.
     DONE comments, reintroduce tags as threads
     - spatial arranging and metadata connection
-    - tree hierarchy
+    DONE: - tree hierarchy
+  	  Need to still connect the tag adding to update the navigation tree. Maybe in this smaller example it's better to have the tree just under the title?
     - grouping (hierarchy operates on tags, and is thus independent of grouping)
+    - lasso
     
     - put it all on a github webpage??
     
   */
-  // The mesh renderer implements the frag and color shaders, and runs the main drawing loop.
-  // "C:/Users/ak2164/Documents/CAMBRIDGE/PhD/github_repos/webgldrawing/src/components/ui/commenting/commentingServerCommunications.js"
-  // Make some makeshift metadata here. From here it should flow down to hte geometry etc.
-  // In this case the metadata holds the reference to the unsteady simulation metadata, which then holds the references to the actual files required for rendering.
-  // There should be an overhead object attached to eachtask? So that the filtering still happens on hte actual object read from hte json, but all the other metadata - tags,... are stored in hte overhead?
+
+  /*
+
+  Arranging by metadata: some metadata will change with respect to time. But those will have to be collected on the go - because the players can be navigated to different times. It's easiest to have this metadata attached to the timesteps. This is ok for now.
+
+  Unsteady dbslice: How should the unsteady dbslice handle this data? Should every timestep be a different row in the metadata? Or should unsteady metadata be structured differently, with each attribute being an array of time-value pairs?
+
+  */
+  // Hierarchy expects each task object to have some tags. Maybe the metadata should be loaded in from some database, and then converted to an object which includes the tags?
 
   var metadata = [{
+    taskId: "0",
     label: "Maybe we",
-    slice: "./data/testmetadata.json",
-    tags: []
+    slice: "./data/testmetadata.json"
   }, {
+    taskId: "1",
     label: "should add",
-    slice: "./data/testmetadata_copy0.json",
-    tags: []
+    slice: "./data/testmetadata_copy0.json"
   }, {
+    taskId: "2",
     label: "some more",
-    slice: "./data/testmetadata_copy1.json",
-    tags: []
+    slice: "./data/testmetadata_copy1.json"
   }, {
+    taskId: "3",
     label: "tasks.",
-    slice: "./data/testmetadata_copy2.json",
-    tags: []
+    slice: "./data/testmetadata_copy2.json"
   }]; // metadata
-  var renderer = new MeshRenderer2D(); // Add the players in. The HTML will position hte frames.
+  var canvas = document.getElementById("canvas");
+  var container = document.getElementById("table-top"); // The MeshRenderer implements the frag and color shaders, and runs the main drawing loop.
+  var renderer = new MeshRenderer2D(canvas, container); // Add the players in. The HTML will position hte frames.
 
   for (var i = 0; i < 4; i++) {
     var m = metadata[i]; // Player is added within the MeshRenderer because it needs the 'gl'.
 
     var p = renderer.add(m.slice);
     p.title(m.label);
-    p.metadata = m;
+    p.ui.metadata = m;
   } // for
   // The renderer starts updating straight away. It's the responsibility of the geometries to provide something to draw. In the end some initial geometry is provided as default, as the buffers are initialised straight away.
 
 
   renderer.draw();
-  console.log(renderer); // Add the dragging externally. The tabletop was positioned absolutely, with top: 0px. If this is not so the dragging will move the items on the initial drag start by the offset amount.
-  addDraggingToSiblingItems(renderer.items, 80); // COMMENTING: Add the login info.
+  console.log(renderer); // Knowledge manager handles the communication with the server, the updating of the relevant modules, and the grouping, navigation, and spatial arrangement.
+  var km = new KnowledgeManager(container, renderer.items); // Add the treenavigation graphic.
+
+  document.querySelector("svg.hud").querySelector("g.tree").appendChild(km.grouping.navigation.node);
+  km.grouping.navigation.update();
+  console.log(km); // COMMENTING: Add the login info.
 
   var login = document.querySelector("div.login").querySelector("input");
 
@@ -4964,33 +5416,6 @@
       item.ui.user = login.value;
     }); // forEach
   }; // oninput
-  getRequiredComments(renderer.items.map(function (item) {
-    return item.ui.commenting;
-  }));
-  /*
-  Chapter are actually added as ordinal variables - they have a name, and a timestep value. So they are not simple tags. But the metadata ordinal variables definitely should not appear as chapters. But the correlation between both should be available.
-  */
-  // The tags in the metadata and the comments are separate things! So comments can just keep track of their own tags, but the full annotations of the metadata are required for the navigation. The small multiples can just add to their metadata. Eventually the server should just be pushing the new updated annotations to the client all the time to keep it up to speed, which will be a good time to update the maps. Maybe it can even be done periodically?
-  // For navigation the tags must be like: {id: "Root", author: "session"};
-  // Tag adding works directly on the metadata. That means it's not exposed here - which means its more difficult to decide when to update. If it's on a hidden HUD then when it's toggled on. But what about the small map?
-
-  var navigationdiv = document.querySelector("div.navigation-background");
-  var navigationsvg = navigationdiv.querySelector("svg.navigation");
-  var treenavigation = new TreeRender(metadata);
-  navigationsvg.appendChild(treenavigation.node);
-  treenavigation.update();
-
-  document.querySelector("button.navigation").onclick = function () {
-    navigationdiv.style.display = "none";
-  };
-
-  navigationdiv.onclick = function (event) {
-    navigationdiv.style.display = "none";
-  };
-
-  navigationsvg.onclick = function (event) {
-    event.stopPropagation();
-  }; // Maybe htere should be two separate trees. One that shows all the data at once, and another that just shows the small multiples in the view?
 
 }());
 //# sourceMappingURL=webgldrawing.js.map

@@ -46,11 +46,11 @@ let template = `
 
 
 export default class TreeRender {
-	constructor(data){
+	constructor(){
 		let obj = this;
 		
 		// Hierarchy
-		obj.hierarchy = new TreeHierarchy(data);
+		obj.hierarchy = new TreeHierarchy();
 		
 		
 		// Drawing
@@ -103,7 +103,7 @@ export default class TreeRender {
 			
 			
 			// Clicking on hte node just collapses branches.
-			obj.node.querySelector("g.marker").onclick = function(){
+			nodeobj.node.querySelector("g.marker").onclick = function(){
 				nodeobj.hidden = !nodeobj.hidden;
 				obj.interact();
 			} // onclick
@@ -123,8 +123,9 @@ export default class TreeRender {
 		}) // forEach
 	} // updatelines
 	
-	moveto(group){
-		console.log("Move to", group)
+	moveto(nodeobj){
+		// I want to move to the group which contains only tasks given by "nodeobj.connections.group.members", but I also want to show all the groups within that grop.
+		console.log("Move to", nodeobj.connections.group.members)
 	} // moveto
 	
 } // TreeRender

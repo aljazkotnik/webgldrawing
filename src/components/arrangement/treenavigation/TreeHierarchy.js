@@ -2,10 +2,10 @@ import TreeNode from "./TreeNode.js";
 import {array2tree, calculateLevelNumbers} from "./hierarchy.js";
 
 export default class TreeHierarchy{
-  constructor(data){
+  constructor(){
 	  let obj = this;
 	  
-	  obj.data = data;
+	  obj.data = [];
 	  obj.collapsednodes = [];
 	  
 	  obj.update();

@@ -143,20 +143,17 @@ function findAllTagBasedGroups(array){
 	let dict = {};
 	let groups = [];
 	
-	array.forEach(taskobj=>{
-		taskobj.tags.forEach(tag=>{
-			// If you tag something in the session, then that tag is reserved for a particular group. If you tag other elements with it, it'll become a part of that group.
-			let groupid = [tag.id, tag.author].join("-");
-			if(!dict[groupid]){
-				// Here just pass the tag in. The group will need to hold on to it.
-				dict[groupid] = new taskgroup([tag]);
-				groups.push(dict[groupid]);
-			} // if
-			
-			// Add teh task to the specific group, but also to the root group.
-			dict[groupid].addtask(taskobj)
-			
-		}) // forEach
+	array.forEach(tag=>{
+		// If you tag something in the session, then that tag is reserved for a particular group. If you tag other elements with it, it'll become a part of that group.
+		let groupid = [tag.label, tag.author].join("-");
+		if(!dict[groupid]){
+			// Here just pass the tag in. The group will need to hold on to it.
+			dict[groupid] = new taskgroup([tag]);
+			groups.push(dict[groupid]);
+		} // if
+		
+		// Add teh task to the specific group, but also to the root group.
+		dict[groupid].addtask(tag.taskId)
 	}) // forEach
 	
 	
@@ -174,11 +171,11 @@ function findAllTagBasedGroups(array){
 function makeRootGroup(array){
 	
 	// The root MUST always contain all of the data!! It will also allow navigation all the way to the start.
-	let root = new taskgroup([{id: "Root", author: "session", timestamp: new Date()}]);
+	let root = new taskgroup([{id: "Root", label: "Root", author: "session", timestamp: new Date()}]);
 	
 	// Root should contain all tasks.
-	array.forEach(task=>{
-		root.addtask(task);
+	array.forEach(tag=>{
+		root.addtask(tag.taskId);
 	}) // forEach
 	
 	return root

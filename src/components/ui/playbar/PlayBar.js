@@ -98,4 +98,19 @@ export default class PlayBar{
 		chapter.update( obj.t_play, obj.t_buffer );
 	})
   } // update
+  
+  addchapter(tag){
+	// The player may need to be updated when the serverr pushes updates. Also if other users update the annotations it should appear straightaway.
+	let obj = this;
+	
+	// tags are required to have a 'starttime'.
+	if(tag.starttime){
+		let i = obj.annotations.findIndex(a=>a.id==tag.id);
+		obj.annotations.splice(i, 1, tag);
+	
+		// Update the bar.
+		obj.rebuild();
+		obj.update();
+	} // if
+  } // addchapter
 } // PlayBar

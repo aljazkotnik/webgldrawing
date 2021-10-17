@@ -138,7 +138,7 @@ export default class TreeNode{
 	// Label to be displayed next to it. Shouldn't be larger than the node_label_width.
 	get label(){
 		let obj = this;
-		let name = obj.connections.group.tags[0].id;
+		let name = obj.connections.group.tags[0].label;
 		
 		// Temporarily changed to show n tasks for troubleshooting.
 		// let n = obj.connections.descendants.length;

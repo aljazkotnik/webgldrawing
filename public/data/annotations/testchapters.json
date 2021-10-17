@@ -1,0 +1,6 @@
+[
+{"taskId": "0", "label": "Event 0", "author": "Aljaz", "starttime": 20, "id": "Aljaz Thu Oct 14 2021 15:53:59 GMT+0100 (British Summer Time)"}, 
+{"taskId": "0", "label": "Event 0", "author": "Aljaz", "starttime": 40, "endtime": 80, "id": "Aljaz Thu Oct 14 2021 15:53:59 GMT+0100 (British Summer Time)"}, 
+{"taskId": "2", "label":"Event 1", "author": "Graham", "starttime": 60, "id": "Graham Thu Oct 14 2021 15:53:59 GMT+0100 (British Summer Time)"},
+{"taskId": "3", "label":"Event 2", "author": "Aljaz", "starttime": 50, "id": "Aljaz Thu Oct 14 2021 15:53:59 GMT+0100 (British Summer Time)"}
+]

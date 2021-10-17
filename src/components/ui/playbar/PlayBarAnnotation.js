@@ -46,27 +46,27 @@ export default class PlayBarAnnotation{
   update(t_play, t_buffer){
 	let obj = this;
 	
-	  let y = obj.y;
-	  let x = obj.tscale.dom2range(obj.config.starttime);
+	let y = obj.y;
+	let x = obj.tscale.dom2range(obj.config.starttime);
 
-      obj.background.setAttribute("y", y)
-	  obj.background.setAttribute("x", x);
-	  obj.background.setAttribute("width", obj.width)
-	  obj.background.setAttribute("height", obj.height)
+    obj.background.setAttribute("y", y)
+	obj.background.setAttribute("x", x);
+	obj.background.setAttribute("width", obj.width)
+	obj.background.setAttribute("height", obj.height)
+	 
+	obj.buffering.setAttribute("y", y)
+	obj.buffering.setAttribute("x", x);
+	obj.buffering.setAttribute("width", obj.width*obj.timeFraction(t_buffer))
+	obj.buffering.setAttribute("height", obj.height)
 	  
-	  obj.buffering.setAttribute("y", y)
-	  obj.buffering.setAttribute("x", x);
-	  obj.buffering.setAttribute("width", obj.width*obj.timeFraction(t_buffer))
-	  obj.buffering.setAttribute("height", obj.height)
+	obj.foreground.setAttribute("y", y)
+	obj.foreground.setAttribute("x", x);
+	obj.foreground.setAttribute("width", obj.width*obj.timeFraction(t_play))
+	obj.foreground.setAttribute("height", obj.height)
 	  
-	  obj.foreground.setAttribute("y", y)
-	  obj.foreground.setAttribute("x", x);
-	  obj.foreground.setAttribute("width", obj.width*obj.timeFraction(t_play))
-	  obj.foreground.setAttribute("height", obj.height)
-	  
-	  obj.label.setAttribute("y", 12)
-	  obj.label.setAttribute("x", x)
-	  obj.label.innerHTML = obj.config.label
+	obj.label.setAttribute("y", 12)
+	obj.label.setAttribute("x", x)
+	obj.label.innerHTML = obj.config.label
 
   } // update
   
@@ -75,7 +75,8 @@ export default class PlayBarAnnotation{
 	let obj = this;
 	let x0 = obj.tscale.dom2range(obj.config.starttime);
 	let x1 = obj.tscale.dom2range(obj.config.endtime);
-	return x1 - x0;
+	// At the beginning hte widths may be negative because the starttime of the comment exceeds the time domain of the playbar that hasn't yet been updated to the right interval. Returen 0 while this is so.
+	return x1 - x0 < 0 ? 0 : x1 - x0;
   } // width
   
   timeFraction(t){

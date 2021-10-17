@@ -13,51 +13,52 @@
   DONE: - dragging frames around
   - auto selecting the height of the viewport in pixels
   - pinch gestures
-
   - play multiple views at once.
   - loading buffering && data limitation, and subsequent viewframe number limitation.
   
-  - expandable description and tools section?
-  - adding chapter annotations
+  DONE: - expandable description and tools section?
+  DONE: - adding chapter annotations
       The annotations are not really chapters. They can be, but they should also support having a start AND end points, and be allowed to overlap. The playbar san still show them in order of appearance, but a more general view of the tag annotations should be available.
   DONE comments, reintroduce tags as threads
   - spatial arranging and metadata connection
-  - tree hierarchy
+  DONE: - tree hierarchy
+	  Need to still connect the tag adding to update the navigation tree. Maybe in this smaller example it's better to have the tree just under the title?
   - grouping (hierarchy operates on tags, and is thus independent of grouping)
+  - lasso
   
   - put it all on a github webpage??
   
 */
 
-// The mesh renderer implements the frag and color shaders, and runs the main drawing loop.
+/*
+
+Arranging by metadata: some metadata will change with respect to time. But those will have to be collected on the go - because the players can be navigated to different times. It's easiest to have this metadata attached to the timesteps. This is ok for now.
+
+Unsteady dbslice: How should the unsteady dbslice handle this data? Should every timestep be a different row in the metadata? Or should unsteady metadata be structured differently, with each attribute being an array of time-value pairs?
+
+*/
 
 
 
-
-// "C:/Users/ak2164/Documents/CAMBRIDGE/PhD/github_repos/webgldrawing/src/components/ui/commenting/commentingServerCommunications.js"
-
-
-
-
-// Make some makeshift metadata here. From here it should flow down to hte geometry etc.
-// In this case the metadata holds the reference to the unsteady simulation metadata, which then holds the references to the actual files required for rendering.
-// There should be an overhead object attached to eachtask? So that the filtering still happens on hte actual object read from hte json, but all the other metadata - tags,... are stored in hte overhead?
+// Hierarchy expects each task object to have some tags. Maybe the metadata should be loaded in from some database, and then converted to an object which includes the tags?
 var metadata = [
-{label: "Maybe we", slice: "./data/testmetadata.json", tags: []},
-{label: "should add", slice: "./data/testmetadata_copy0.json", tags: []},
-{label: "some more", slice: "./data/testmetadata_copy1.json", tags: []},
-{label: "tasks.", slice: "./data/testmetadata_copy2.json", tags: []},
+{taskId: "0", label: "Maybe we", slice: "./data/testmetadata.json"},
+{taskId: "1", label: "should add", slice: "./data/testmetadata_copy0.json"},
+{taskId: "2", label: "some more", slice: "./data/testmetadata_copy1.json"},
+{taskId: "3", label: "tasks.", slice: "./data/testmetadata_copy2.json"},
 ] // metadata
 
+// The actual metadata to use during arrangement etc is stored on the timesteps that are loaded by the individual players. In hte end all the metadata should be in the metadata above, and the players should recieve all the rows that correspond to a single task.
+let ordinal = ["s"]
 
 
 
+let canvas = document.getElementById("canvas");
+let container = document.getElementById("table-top");
 
-
-
-// The MeshRenderer is the engine that draws the scene.
+// The MeshRenderer implements the frag and color shaders, and runs the main drawing loop.
 import MeshRenderer2D from "./renderers/MeshRenderer2D.js";
-let renderer = new MeshRenderer2D();
+let renderer = new MeshRenderer2D(canvas, container);
 
 // Add the players in. The HTML will position hte frames.
 for(let i=0; i<4; i++){
@@ -65,7 +66,7 @@ for(let i=0; i<4; i++){
 	// Player is added within the MeshRenderer because it needs the 'gl'.
 	let p = renderer.add(m.slice);
 	p.title(m.label);
-	p.metadata = m;
+	p.ui.metadata = m;
 } // for
 
 // The renderer starts updating straight away. It's the responsibility of the geometries to provide something to draw. In the end some initial geometry is provided as default, as the buffers are initialised straight away.
@@ -78,12 +79,19 @@ console.log(renderer)
 
 
 
-// Add the dragging externally. The tabletop was positioned absolutely, with top: 0px. If this is not so the dragging will move the items on the initial drag start by the offset amount.
-import { addDraggingToSiblingItems } from "./components/arrangement/dragging.js";addDraggingToSiblingItems(renderer.items, 80);
 
+// Knowledge manager handles the communication with the server, the updating of the relevant modules, and the grouping, navigation, and spatial arrangement.
+import KnowledgeManager from "./components/KnowledgeManager.js";
+let km = new KnowledgeManager( container, renderer.items );
 
+// Add the treenavigation graphic.
+document
+  .querySelector("svg.hud")
+  .querySelector("g.tree")
+  .appendChild(km.grouping.navigation.node)
+km.grouping.navigation.update()
 
-
+console.log(km)
 
 
 // COMMENTING: Add the login info.
@@ -93,42 +101,6 @@ login.oninput = function(){
 	item.ui.user = login.value;
   }) // forEach
 } // oninput
-
-
-
-
-
-
-// Load some test comments.
-import { getRequiredComments, sendCommentChanges } from "./components/ui/commenting/commentingServerCommunications.js";
-getRequiredComments( renderer.items.map( item=>item.ui.commenting ) )
-
-
-/*
-Chapter are actually added as ordinal variables - they have a name, and a timestep value. So they are not simple tags. But the metadata ordinal variables definitely should not appear as chapters. But the correlation between both should be available.
-*/
-
-
-
-
-// The tags in the metadata and the comments are separate things! So comments can just keep track of their own tags, but the full annotations of the metadata are required for the navigation. The small multiples can just add to their metadata. Eventually the server should just be pushing the new updated annotations to the client all the time to keep it up to speed, which will be a good time to update the maps. Maybe it can even be done periodically?
-
-// For navigation the tags must be like: {id: "Root", author: "session"};
-
-// Tag adding works directly on the metadata. That means it's not exposed here - which means its more difficult to decide when to update. If it's on a hidden HUD then when it's toggled on. But what about the small map?
-let navigationdiv = document.querySelector("div.navigation-background");
-let navigationsvg = navigationdiv.querySelector("svg.navigation");
-import TreeRender from "./components/ui/treenavigation/TreeRender.js"
-let treenavigation = new TreeRender(metadata);
-navigationsvg.appendChild(treenavigation.node)
-treenavigation.update()
-
-document.querySelector("button.navigation").onclick = function(){navigationdiv.style.display = "none"}; 
-navigationdiv.onclick = function(event){ navigationdiv.style.display = "none"; }
-navigationsvg.onclick = function(event){ event.stopPropagation(); }
-
-// Maybe htere should be two separate trees. One that shows all the data at once, and another that just shows the small multiples in the view?
-
 
 
 
