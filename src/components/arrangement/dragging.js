@@ -26,51 +26,13 @@ export function addDraggingToSiblingItems(items, headeroffset){
 		} // function
 		addDraggingToItem(item, onstart)
 		
-		/*
-		// Add an object to facilitate the dragging.
-		item.dragging = {
-			active: false,
-			itemRelativePosition: [0, 0]
-		} // dragging
-
-		item.node.onmousedown = function(e){
-			if(e.target == item.node){
-				let rect = item.node.getBoundingClientRect();
-				
-				item.dragging.active = true;
-				item.dragging.itemRelativePosition = [
-					e.clientX - rect.x,
-					e.clientY - rect.y
-				];
-				
-				// Move this item to the end of the drawing queue to ensure it's drawn on top.
-				items.splice(items.indexOf(item), 1);
-				items.push(item)
-				
-				// Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
-				item.node.parentNode.insertBefore(item.node, null);
-			} // if
-		} // onmousedown
-		item.node.onmousemove = function(e){
-			if(item.dragging.active){
-				let x = e.pageX - item.dragging.itemRelativePosition[0];
-				let y = e.pageY - item.dragging.itemRelativePosition[1];
-				
-				item.node.style.left = x + "px"
-				item.node.style.top  = y + "px"
-			} // if
-		} // mousemove
-		item.node.onmouseup   = function(){
-			item.dragging.active = false;
-		} // onmouseup
-		*/
 	}) // forEach
 	
 } // addDraggingToSiblingItems
 
 
 // How to make the addition of dragging more general?? There are some things that have to happen. Pass them in as additional functions?
-export function addDraggingToItem(item, onstart){
+export function addDraggingToItem(item, onstart, ondrag){
 	// Add an object to facilitate the dragging.
 	item.dragging = {
 		active: false,
@@ -78,7 +40,7 @@ export function addDraggingToItem(item, onstart){
 	} // dragging
 
 	item.node.onmousedown = function(e){
-		if(e.target == item.node){
+		if(e.target == item.node || e.target == item.wrappednode){
 			let rect = item.node.getBoundingClientRect();
 			
 			item.dragging.active = true;
@@ -101,6 +63,8 @@ export function addDraggingToItem(item, onstart){
 			
 			item.node.style.left = x + "px"
 			item.node.style.top  = y + "px"
+			
+			if(ondrag){ondrag()};
 		} // if
 	} // mousemove
 	item.node.onmouseup   = function(){

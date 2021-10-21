@@ -1,6 +1,6 @@
 import * as twgl from 'twgl.js';
 
-function html2element$4(html){
+function html2element$3(html){
   let template = document.createElement('template'); 
   template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
   return template.content.firstChild;
@@ -249,7 +249,7 @@ Could the mesh renderer just do the rendering all the time, and teh ViewFrames d
 
 // div must have opacity to register the mouse events!!
 // Furthermore the overall wrapper is defined here so that after the class is inherited from there is space to append other modules. The class is inherited from (as opposed to plugged in as a module)
-let template$f = `
+let template$e = `
 <div class="item">
   <div class="label">Label</div>
   <div class="view" style="width:300px; height:200px; opacity:0.001;">
@@ -264,7 +264,7 @@ class ViewFrame2D{
 	let obj = this;
 	
 	obj.gl = gl;
-	obj.node = html2element$4(template$f);
+	obj.node = html2element$3(template$e);
 	
 	// obj.view is a convenience reference that points to the node. Transforms.view is the view transformation matrix.
 	obj.view = obj.node.querySelector("div.view");
@@ -736,7 +736,7 @@ function loadBinData(filename){
 }
 */
 
-function html2element$3(html){
+function html2element$2(html){
   let template = document.createElement('template'); 
   template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
   return template.content.firstChild;
@@ -839,7 +839,7 @@ function pause(width, y){
 } // pausePath
 
 
-let template$e = `
+let template$d = `
 <g style="cursor: pointer;">
   <path fill="tomato" d=""></path>
 </g>
@@ -860,7 +860,7 @@ class PlayButton{
 	
   constructor(){
     let obj = this;
-	obj.node = svg2element$1( template$e );
+	obj.node = svg2element$1( template$d );
   } // constructor
   
   update(playing){
@@ -871,7 +871,7 @@ class PlayButton{
 } // PlayButton
 
 let defaultRectAttributes = `stroke="white" stroke-width="2px"`;
-let template$d = `<g class="chapter">
+let template$c = `<g class="chapter">
   <rect class="background" fill="gainsboro" ${ defaultRectAttributes }"></rect>
   <rect class="buffering" fill="gray" ${ defaultRectAttributes }"></rect>
   <rect class="foreground" fill="tomato" ${ defaultRectAttributes }"></rect>
@@ -888,7 +888,7 @@ class PlayBarAnnotation{
   
   constructor(config, tscale){
     let obj = this;
-	obj.node = svg2element$1(template$d);
+	obj.node = svg2element$1(template$c);
 	
 	obj.background = obj.node.querySelector("rect.background");
 	obj.buffering = obj.node.querySelector("rect.buffering");
@@ -984,7 +984,7 @@ function unhighlightRectangle(r, y, h){
 
 // This class is in charge of drawing the play bar. It takes in user prescribed annotations and the min and maximum times. It fills the gaps between the user prescribed annotations and the min/max times with empty chapters. The process is repeated anytime a new annotation is added.
 
-let template$c = `<g style="cursor: pointer;"></g>`; // template
+let template$b = `<g style="cursor: pointer;"></g>`; // template
 
 class PlayBar{
 	
@@ -1003,7 +1003,7 @@ class PlayBar{
 	
   constructor(){
 	let obj = this;
-	obj.node = svg2element$1( template$c );
+	obj.node = svg2element$1( template$b );
 	
 	obj._tscale = new scaleLinear();
   } // constructor
@@ -1101,7 +1101,7 @@ PLAYBAR only controls the appearance of the playbar, but does not control the pl
 */
 
 // The canvas will be positioned, and this should be relative to that positioning. Maybe there should be an overall div that contains the canvas and a sibling div that contains all the markup.
-let template$b = `
+let template$a = `
 <div class="player-controls">
   <svg id="playbar" width="100%" height="32px">
     <g class="playbutton"></g>
@@ -1123,7 +1123,7 @@ class PlayControls{
   constructor(){
 	let obj = this;
 	
-	obj.node = html2element$3(template$b);
+	obj.node = html2element$2(template$a);
 	
 	let y = obj.textHeight + obj.textBottomMargin + obj.highlightHeightDelta;
 	
@@ -1219,7 +1219,7 @@ class PlayControls{
   
 } // PlayControls
 
-function html2element$2(html){
+function html2element$1(html){
   let template = document.createElement('template'); 
   template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
   return template.content.firstChild;
@@ -1255,7 +1255,7 @@ function joinDataToElements(data, elements, idAccessor){
 /*
 Maybe this one should be remade into a manager so it can keep add comments to itself. Otherwise they have to be routed outside.
 */
-let css$3 = {
+let css$4 = {
   textarea: `
     width: 100%;
     border: none;
@@ -1274,10 +1274,10 @@ let css$3 = {
 
 
 
-let template$a = `
+let template$9 = `
 <div>
-  <textarea class="comment" type="text" rows="1" placeholder="What do you think?" style="${css$3.textarea}"></textarea>
-  <button class="submit" style="${css$3.submitbutton}"><b>Submit</b></button>
+  <textarea class="comment" type="text" rows="1" placeholder="What do you think?" style="${css$4.textarea}"></textarea>
+  <button class="submit" style="${css$4.submitbutton}"><b>Submit</b></button>
 </div>
 `; // template
 
@@ -1288,7 +1288,7 @@ class AddCommentForm{
   constructor(id){
     let obj = this;
 	
-	obj.node = html2element$2(template$a);
+	obj.node = html2element$1(template$9);
 	obj.viewid = id;
 	
 	// Author input got omitted because the author also needs to be known when voting on a comment, and I didn't want to implement an input there. That's why now there will be an overall login box that will control everything.
@@ -1343,7 +1343,7 @@ class AddCommentForm{
   
 } // AddCommentForm
 
-let css$2 = {
+let css$3 = {
 	
   button: `
     border: none;
@@ -1367,23 +1367,23 @@ let css$2 = {
   `
 }; // css
 
-let template$9 = `
+let template$8 = `
 <div class="comment">
   <div class="header">
     <b class="author"></b>
-	<span class="timestamp" style="${ css$2.timestampspan }"></span>
+	<span class="timestamp" style="${ css$3.timestampspan }"></span>
   </div>
   <div class="body"></div>
   <div class="footer">
-    <button class="upvote" style="${ css$2.button }">
+    <button class="upvote" style="${ css$3.button }">
 	  <i class="fa fa-thumbs-up"></i>
 	  <i class="vote-number"></i>
 	</button>
-	<button class="downvote" style="${ css$2.button }">
+	<button class="downvote" style="${ css$3.button }">
 	  <i class="fa fa-thumbs-down"></i>
-	  <i class="vote-number" style="${ css$2.votenumberi }"></i>
+	  <i class="vote-number" style="${ css$3.votenumberi }"></i>
 	</button>
-	<button class="reply" style="${css$2.button} ${ css$2.replybutton }"><b>REPLY</b></button>
+	<button class="reply" style="${css$3.button} ${ css$3.replybutton }"><b>REPLY</b></button>
   </div>
 </div>
 `; // template
@@ -1398,7 +1398,7 @@ class Comment{
 	let obj = this;
 	
 	// Make a new node.
-	obj.node = html2element$2(template$9);
+	obj.node = html2element$1(template$8);
 	
 	// Fill the template with the options from the config. There must be a comment, and there must be an author.
 	obj.config = config;
@@ -1589,7 +1589,7 @@ class ReplyComment extends Comment{
 
 
 // This is just a template for the controls which allow the replies to be expanded or collapsed. These are invisible at first.
-let template$8 = `
+let template$7 = `
 <div style="display: none;">
   <div class="expand-controls" style="color: blue; cursor: pointer;">
     <i class="fa fa-caret-down"></i>
@@ -1609,7 +1609,7 @@ class GeneralComment extends Comment{
 	let obj = this;
 	
 	// The general comment can have replies associated with it. Handle these here. Furthermore an additional control for expanding, reducing hte comments is required.
-	obj.replynode = html2element$2(template$8);
+	obj.replynode = html2element$1(template$7);
 	obj.node.appendChild( obj.replynode );
 	
 	// Add the functionality to the caret.
@@ -1705,12 +1705,12 @@ function findArrayItemById$1(A, id){
   return candidates.length > 0 ? candidates[0] : false;
 } // findArrayItemById
 
-let template$7 = `
+let template$6 = `
 <div style="margin-bottom: 5px;"></div>
 `; // template
 
 // Maybe make them grey with italis writing?
-let css$1 = `
+let css$2 = `
 border: none;
 background-color: gainsboro;
 margin-right: 2px;
@@ -1718,7 +1718,7 @@ cursor: pointer;
 `; // css
 
 let tagtemplate = `
-<button style="${ css$1 }"><i></i></button>
+<button style="${ css$2 }"><i></i></button>
 `;
 
 // A general tag should always be present. This tag should then show all comments without tags.
@@ -1730,7 +1730,7 @@ class DiscussionSelector{
   
   constructor(){
     let obj = this;
-	obj.node = html2element$2(template$7);
+	obj.node = html2element$1(template$6);
 	
 	
   } // constructor
@@ -1748,7 +1748,7 @@ class DiscussionSelector{
 	let buttons = joinDataToElements(obj.tags, obj.node.querySelectorAll("button"), d=>d);
 	
 	buttons.enter.forEach(d=>{
-		let el = html2element$2(tagtemplate);
+		let el = html2element$1(tagtemplate);
 		obj.node.appendChild( el );
 		el.querySelector("i").innerText = d;
 		el.__data__ = d;
@@ -1780,7 +1780,7 @@ class DiscussionSelector{
 } // DiscussionSelector
 
 // Needs a way to minimise the commenting completely.
-let template$6 = `
+let template$5 = `
 <div class="commenting" style="width:300px;">
   <div class="hideShowText" style="cursor: pointer; margin-bottom: 5px; color: gray;">
     <b class="text">Show comments</b>
@@ -1800,7 +1800,7 @@ let template$6 = `
 class CommentingManager{
   constructor(id){
     let obj = this;
-	obj.node = html2element$2( template$6 );
+	obj.node = html2element$1( template$5 );
 	obj.viewid = id;
 	obj.comments = [];
 	
@@ -1995,7 +1995,7 @@ function findArrayItemById(A, id){
   return candidates.length > 0 ? candidates[0] : false;
 } // findArrayItemById
 
-let css = {
+let css$1 = {
   button: `
     border: none;
 	cursor: pointer;
@@ -2013,15 +2013,15 @@ let css = {
 }; // css
 
 
-let template$5 = `
+let template$4 = `
 <div style="300px">
   <input type="text" placeholder="#tag-name" style="width: 100px;"></input>
   
   <div style="display: inline-block; float: right;">
-  <button class="starttime" style="${ css.button } ${css.timebutton}">start</button>
+  <button class="starttime" style="${ css$1.button } ${css$1.timebutton}">start</button>
   <i>-</i>
-  <button class="endtime" style="${ css.button } ${css.timebutton}">end</button>
-  <button class="submit" style="${ css.button } ${css.submitbutton}">
+  <button class="endtime" style="${ css$1.button } ${css$1.timebutton}">end</button>
+  <button class="submit" style="${ css$1.button } ${css$1.submitbutton}">
     Submit
   </button>
   </div>
@@ -2036,7 +2036,7 @@ class ChapterForm{
   
   constructor(){
     let obj = this;
-	obj.node = html2element$3(template$5);
+	obj.node = html2element$2(template$4);
 	
 	obj.input = obj.node.querySelector("input");
 	
@@ -2678,51 +2678,13 @@ function addDraggingToSiblingItems(items, headeroffset){
 		}; // function
 		addDraggingToItem(item, onstart);
 		
-		/*
-		// Add an object to facilitate the dragging.
-		item.dragging = {
-			active: false,
-			itemRelativePosition: [0, 0]
-		} // dragging
-
-		item.node.onmousedown = function(e){
-			if(e.target == item.node){
-				let rect = item.node.getBoundingClientRect();
-				
-				item.dragging.active = true;
-				item.dragging.itemRelativePosition = [
-					e.clientX - rect.x,
-					e.clientY - rect.y
-				];
-				
-				// Move this item to the end of the drawing queue to ensure it's drawn on top.
-				items.splice(items.indexOf(item), 1);
-				items.push(item)
-				
-				// Also move the viewFrame div up so that dragging over otehr higher divs is uninterrupted.
-				item.node.parentNode.insertBefore(item.node, null);
-			} // if
-		} // onmousedown
-		item.node.onmousemove = function(e){
-			if(item.dragging.active){
-				let x = e.pageX - item.dragging.itemRelativePosition[0];
-				let y = e.pageY - item.dragging.itemRelativePosition[1];
-				
-				item.node.style.left = x + "px"
-				item.node.style.top  = y + "px"
-			} // if
-		} // mousemove
-		item.node.onmouseup   = function(){
-			item.dragging.active = false;
-		} // onmouseup
-		*/
 	}); // forEach
 	
 } // addDraggingToSiblingItems
 
 
 // How to make the addition of dragging more general?? There are some things that have to happen. Pass them in as additional functions?
-function addDraggingToItem(item, onstart){
+function addDraggingToItem(item, onstart, ondrag){
 	// Add an object to facilitate the dragging.
 	item.dragging = {
 		active: false,
@@ -2730,7 +2692,7 @@ function addDraggingToItem(item, onstart){
 	}; // dragging
 
 	item.node.onmousedown = function(e){
-		if(e.target == item.node){
+		if(e.target == item.node || e.target == item.wrappednode){
 			let rect = item.node.getBoundingClientRect();
 			
 			item.dragging.active = true;
@@ -2753,18 +2715,13 @@ function addDraggingToItem(item, onstart){
 			
 			item.node.style.left = x + "px";
 			item.node.style.top  = y + "px";
-		} // if
+			
+			if(ondrag){ondrag();}		} // if
 	}; // mousemove
 	item.node.onmouseup   = function(){
 		item.dragging.active = false;
 	}; // onmouseup
 } // addDraggingToItem
-
-function html2element$1(html){
-	let template = document.createElement('template'); 
-	template.innerHTML = html.trim(); // Never return a text node of whitespace as the result
-	return template.content.firstChild;
-} // html2element
 
 function svg2element(svg){
   let g = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -2908,7 +2865,7 @@ class DrawLink{
 } // DrawLink
 
 // Lines are drawn in bundles. The links are drawn as two pats, one in color, and the other white. The white paths are in the background and help make the transitions over lines neater. If links were drawn individually then the bundle itself would have an overlap somewhere.	
-let template$4 = `
+let template$3 = `
 <g class="bundle">
   <path stroke="white" stroke-width="5" fill="none"></path>
   <path stroke="black" stroke-width="2" fill="none"></path>
@@ -2931,7 +2888,7 @@ class treebundle{
 		// A seed node is passed in to define the bundle parents and thus instantiate a bundle. After instantialisation only the children of the bundle can change.
 		// NOTE: seednode is a `treenode' instance, but parents and children are `taskgroup' instances. The level is only defined for the node because it can change when the user interacts with the tree.
 		let obj = this;
-		obj.node = svg2element( template$4 );
+		obj.node = svg2element( template$3 );
 		
 		obj.author = author,
 		obj.level = seednode.level;
@@ -3292,7 +3249,7 @@ function dimensioning(nodes){
 
 // d, node=>node.path
 // text -> 	"x", node => node.labelx, "y", node => node.labely, label node=>node.label
-let template$3 = `
+let template$2 = `
 <g class="node" cursor="pointer">
   <g class="marker">
     <path class="outline" stroke="black" stroke-width="8" stroke-linecap="round"></path>
@@ -3322,7 +3279,7 @@ class TreeNode{
 	
 	constructor(treegroup){
 		let obj = this;
-		obj.node = svg2element( template$3 );
+		obj.node = svg2element( template$2 );
 		// The treegroup holds all the connections of a particular group.
 		obj.connections = treegroup;
 		
@@ -3774,7 +3731,7 @@ class TreeHierarchy{
 
 
 
-let template$2 = `
+let template$1 = `
 <g transform="translate(20, 20)">
   <g class="bundles"></g>
   <g class="nodes"></g>
@@ -3794,7 +3751,7 @@ class TreeRender {
 		
 		
 		// Drawing
-		obj.node = svg2element( template$2 );
+		obj.node = svg2element( template$1 );
 		obj.gnodes = obj.node.querySelector("g.nodes");
 		obj.gbundles = obj.node.querySelector("g.bundles");
 		
@@ -3880,26 +3837,92 @@ function html2element(html){
 // This class should just act as an UI and it should use the constituent items for the actual drawing.
 // The main difficulty with this is drawing the standard deviation plot. How would that look like in 3D anyway?
 
-let template$1 = `
-<div class="item item-group" style="position: absolute;">
-  <div class="label">
-    Group
-	<button class="ungroup" style="float: right; background-color: white; border: none; color: gainsboro;"><i class="fa fa-times" style="font-size: 20px;"></i></button>
-  </div>
-  <div class="view" style="width:300px; height:200px; opacity:0.001;">
-  </div>
+
+let css = {
+  view: `
+	width: 300px;
+	height: 200px;
+  `,
+  
+  ungroupbutton: `
+    float: right;  
+	border: none;
+	background-color: transparent;
+	color: gainsboro; 
+	cursor: pointer;
+  `,
+  
+  bookmark: `
+    height: 20px; 
+	width: 20px; 
+	background-color: gainsboro;
+  `
+}; // css
+
+
+// The div.item is the top element when the user clicks to drag. The dragging checks whether drag is the appropriate action (as opposed to view interactions) by checking if the event target equals the item node. For the group that is not so because it has an additional wrapper.
+let template = `
+<div class="item-group" style="position: absolute;">
+  <table style="border-collapse: collapse;">
+    <tbody>
+	<tr>
+	  <td>
+		<div class="item">
+		  <div class="label">
+			Group 1
+			<button class="ungroup" style="${ css.ungroupbutton }">
+			  <i class="fa fa-times" style="font-size: 20px;"></i>
+			</button>
+		  </div>
+		  <div class="view" style="${ css.view }"></div>
+		  <div class="playcontrols"></div>
+		  <div class="commenting"></div>
+		</div>
+	  </td>
+	  <td style="vertical-align: top;">
+		<div class="bookmarks">
+		</div>
+	  </td>
+	</tr>
+	</tbody>
+  </table>
 </div>
 `; // template
+
+
+let bookmarktemplate = `<div class="mark" style="${ css.bookmark }"></div>`;
+
+/*
+let template = `
+<div style="position: absolute;">
+    <div class="label">
+      Group
+	  <button class="ungroup" style="${ css.ungroupbutton }"><i class="fa fa-times" style="font-size: 20px;"></i></button>
+    </div>
+	<div class="view" style="${ css.view }"></div>
+	<div class="bookmarks" style="${ css.bookmarks }"></div>
+</div>
+`; // template
+
+
+
+If the group were to be a separate ViewFrame subclass, then the grouping cannot just be tagged on. 
+*/
 
 
 // When made it should have a series of squares, which when moused over will move between the individual items. Where should these controls be placed though? How should the title be made visible?
 // Maybe controls should be above, and the name should change? Then the comments can always be below. Should there be a comment section for all of them at once? I guess so, so that they can all be characterised together.
 // Ok, comment sections can be turned off - only the playbar is needed! It also needs a way to remove the group alltogether. A cross in the right top.
 
+// This needs to reorder the items in the rendering.items so that te moused over one is the one drawn on top. Fo that it needs access to that array.
 class Group{
-  constructor(members){
+  constructor(drawingorder, members){
 	let obj = this;
-	obj.node = html2element(template$1);
+	obj.node = html2element(template);
+	obj.wrappednode = obj.node.querySelector("div.item");
+	obj.bookmarks = obj.node.querySelector("div.bookmarks");
+	
+	obj.drawingorder = drawingorder;
 	obj.members = members;
 	
 	// Calculate where the node should be added:
@@ -3920,6 +3943,9 @@ class Group{
 		item.node.style.left = obj.pos.group[0] + "px";
 		item.node.style.top = obj.pos.group[1] + "px";
 		
+		item.node.style.boxShadow = "none";
+		item.node.querySelector("div.label").style.color = "transparent";
+		
 		item.ui.chapterform.node.style.display = "none";
 		item.ui.commenting.node.style.display = "none";
 	}); // forEach
@@ -3927,31 +3953,113 @@ class Group{
 	
 	// Removal of the group.
 	obj.node.querySelector("button.ungroup").onclick = function(){
-	  obj.node.remove();
-		
-	  // Redistribute the items according to their original positions.`	
-		
-	  obj.members.forEach((item, i)=>{
-		item.node.style.left = obj.pos.items[i][0] + "px";
-	    item.node.style.top = obj.pos.items[i][1] + "px";
-		
-		item.ui.chapterform.node.style.display = "";
-		item.ui.commenting.node.style.display = "";
-	  });
+	  obj.remove();
 	}; // onclick
+	
+	
+	// The view events should be passed down to the current item.
+	obj.current = obj.members[obj.members.length-1];
+	
+	let view = obj.node.querySelector("div.view");
+	view.onmousedown  = function(e){ obj.current.cameraMoveStart(e); };
+	view.onmousemove  = function(e){ obj.current.cameraMove(e); };
+	view.onmouseup    = function(e){ obj.current.cameraMoveEnd(); };
+	view.onmouseleave = function(e){ obj.current.cameraMoveEnd(); };
+	view.addEventListener("wheel", (e)=>{
+	  e.preventDefault();
+	  obj.current.cameraZoom(e);
+	}, {passive: false});
+	
+	// Move the playbar from the member to the group for interaction.
+	obj.borrowPlayerControls();
+	
+	
+	
+	// Add ina commenting module. Which id should it use? Maybe the one of the current object?
+	obj.commenting = new CommentingManager( obj.current.ui.commenting.viewid );
+	obj.node.querySelector("div.commenting").appendChild( obj.commenting.node );
+	
+	
+	obj.update();
 	
   } // constructor
   
-  remove(){
-	  // All the members should be made visible again, and their comment sections should be turned back on, and they should be staggered to their relative psitions.
-	  let obj = this;
+  
+  update(){
+	let obj = this;
+	// Make a bookmark tab for each of the members. When the tab is moused over, the view should change. How will I see this? All hte data is the same currently? Maybe set them to different time steps?
+	// Items should also be moved in order to update the view. And they should be triggered to draw.
+	obj.members.forEach((item, i)=>{
+		let bookmark = html2element( bookmarktemplate );
+		obj.bookmarks.appendChild(bookmark);
+		bookmark.onmouseenter = function(){
+			obj.highlightBookmark(bookmark);
+			obj.returnPlayerControls();
+			
+			// Place the item at the end of the draing line.
+			obj.drawingorder.splice(obj.drawingorder.indexOf(item), 1);
+			obj.drawingorder.push(item);
+			
+			obj.current = item;
+			obj.commenting.viewid = obj.current.ui.commenting.viewid;
+			obj.borrowPlayerControls();
+		}; // onmouseover
+		
+		if(obj.current == item){ obj.highlightBookmark(bookmark); } // if
+	}); // forEach
 	  
-	  obj.members.forEach(item=>{
+	// Collect all hte member comments, and put them into a combined commenting item.
+	let allComments = obj.members.reduce((acc, member)=>{
+		return acc.concat(member.ui.commenting.comments);
+	}, []).map(commentobj=>commentobj.config).sort(function(a,b){
+		return Date.parse(a.time)-Date.parse(b.time);
+	}); // reduce().sort()
+	console.log(allComments,obj);
+	allComments.forEach(comment=>{
+		obj.commenting.add(comment);
+	}); // forEach
+  } // update
+  
+  highlightBookmark(b){
+	let obj = this;
+	let allBookmarks = obj.bookmarks.querySelectorAll("div.mark");
+	for(let i=0; i<allBookmarks.length; i++){
+		allBookmarks[i].style.backgroundColor = b == allBookmarks[i] ? "gray" : "gainsboro";
+	} // for
+  } // highlightBookmarks
+  
+  borrowPlayerControls(){
+	let obj = this;
+	obj.node.querySelector("div.playcontrols").appendChild(obj.current.ui.playcontrols.node);
+  } // borrowPlayerControls
+  
+  returnPlayerControls(){
+	let obj = this;
+	obj.current.ui.node.insertBefore(obj.current.ui.playcontrols.node, undefined);
+  } // returnPlayerControls
+  
+  
+  remove(){
+	// All the members should be made visible again, and their comment sections should be turned back on, and they should be staggered to their relative psitions.
+	let obj = this;
+	
+	
+	// Move the playbar back to its rightfl owner.
+	obj.returnPlayerControls();
+	  
+	obj.node.remove();
+		
+	// Redistribute the items according to their original positions.`		
+	obj.members.forEach((item, i)=>{
+		item.node.style.left = obj.pos.items[i][0] + "px";
+	    item.node.style.top = obj.pos.items[i][1] + "px";
+		
+		item.node.style.boxShadow = "1px 2px 4px 0px rgba(0,0,0,0.25)";
+		item.node.querySelector("div.label").style.color = "#888";
+		
 		item.ui.chapterform.node.style.display = "";
 		item.ui.commenting.node.style.display = "";
-	  }); // forEach
-	  
-	  obj.node.remove();
+	});
   } // remove
 } // Group
 
@@ -3965,12 +4073,11 @@ If navigation is constrained to the navigation tree, then groups can just be an 
 	
 
 */
-let template = `<div></div>`; // template
 
 class GroupingCoordinator {
-  constructor(items){
+  constructor(container, items){
     let obj = this;
-	obj.node = html2element$1( template );
+	obj.container = container;
 	obj.items = items;
 	obj.tasks = items.map(item=>item.ui.metadata.taskId);
 	obj.groups = [];
@@ -4032,6 +4139,13 @@ class GroupingCoordinator {
   makeDirectDescendantGroups(nodeobj){
 	let obj = this;
 	
+	// First remove all existing groups.
+	obj.groups.forEach(group=>{
+		group.remove();
+	}); // forEach
+	
+	
+	// Find all groups that should appear.
 	let descendants = nodeobj.connections.descendants;
 	let directDescendants = descendants.filter(group=>{
 		return !descendants.some(d=>{
@@ -4043,18 +4157,28 @@ class GroupingCoordinator {
 	}); // filter
 	
 	
+	// Make all groups that should appear.
 	directDescendants.forEach(d=>{
 		// Pass the actual item objects to the group.
 		let members = obj.items.filter(item=>{
 			return d.members.includes(item.ui.metadata.taskId);
 		}); // filter
-		let groupitem = new Group(members);
+		
+		// 'obj.items' needs to always be passed in so that when the bookmarks are moused over the drawing order can change.
+		let groupitem = new Group(obj.items, members);
 		obj.groups.push( groupitem );
-		obj.node.appendChild( groupitem.node );
-		addDraggingToItem( groupitem );
-	});
+		obj.container.appendChild( groupitem.node );
+		
+		let ondrag = function(){
+			groupitem.members.forEach(item=>{
+				item.node.style.left = groupitem.node.style.left;
+				item.node.style.top = groupitem.node.style.top;
+			});
+		};
+		addDraggingToItem( groupitem, undefined, ondrag );
+	}); // forEach
 	
-	console.log(obj.groups);
+	
   } // makeDirectDescendantGroups
   
   
@@ -4113,8 +4237,7 @@ class KnowledgeManager{
 	// Add the dragging externally. The tabletop was positioned absolutely, with top: 0px. If this is not so the dragging will move the items on the initial drag start by the offset amount.
 	// The grouping coordinator does: adds dragging, positioning of the items by metadata values, retrieveng position and metadata pairs, grouping, and grouping navigation.
 	// Groups need to be added to the same container as the actual items, otherwise either the items cant be dragged over the groups, or vice versa.
-	obj.grouping = new GroupingCoordinator(items);
-	obj.container.appendChild(obj.grouping.node);
+	obj.grouping = new GroupingCoordinator(container, items);
 	
 	
 	/*

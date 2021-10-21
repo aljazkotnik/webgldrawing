@@ -46,8 +46,7 @@ export default class KnowledgeManager{
 	// Add the dragging externally. The tabletop was positioned absolutely, with top: 0px. If this is not so the dragging will move the items on the initial drag start by the offset amount.
 	// The grouping coordinator does: adds dragging, positioning of the items by metadata values, retrieveng position and metadata pairs, grouping, and grouping navigation.
 	// Groups need to be added to the same container as the actual items, otherwise either the items cant be dragged over the groups, or vice versa.
-	obj.grouping = new GroupingCoordinator(items);
-	obj.container.appendChild(obj.grouping.node);
+	obj.grouping = new GroupingCoordinator(container, items);
 	
 	
 	/*

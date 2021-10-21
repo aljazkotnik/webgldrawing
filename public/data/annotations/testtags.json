@@ -1,5 +1,8 @@
 [
 {"taskId": "0", "label": "Branch 0", "author": "Aljaz"}, 
 {"taskId": "1", "label": "Branch 1", "author": "Aljaz"}, 
-{"taskId": "1", "label": "Feature X", "author": "Graham"}
+{"taskId": "1", "label": "Feature X", "author": "Graham"},
+{"taskId": "0", "label": "Big group", "author": "Aljaz"}, 
+{"taskId": "1", "label": "Big group", "author": "Aljaz"},
+{"taskId": "2", "label": "Big group", "author": "Aljaz"}
 ]

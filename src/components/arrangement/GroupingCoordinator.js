@@ -1,5 +1,5 @@
 import { addDraggingToSiblingItems, addDraggingToItem } from "./dragging.js";
-import { html2element, arrayIncludesAll } from "./treenavigation/helpers.js"
+import { arrayIncludesAll } from "./treenavigation/helpers.js"
 import TreeRender from "./treenavigation/TreeRender.js";
 import Group from "./Group.js";
 
@@ -13,12 +13,11 @@ If navigation is constrained to the navigation tree, then groups can just be an 
 	
 
 */
-let template = `<div></div>`; // template
 
 export default class GroupingCoordinator {
-  constructor(items){
+  constructor(container, items){
     let obj = this;
-	obj.node = html2element( template );
+	obj.container = container;
 	obj.items = items;
 	obj.tasks = items.map(item=>item.ui.metadata.taskId);
 	obj.groups = [];
@@ -80,6 +79,13 @@ export default class GroupingCoordinator {
   makeDirectDescendantGroups(nodeobj){
 	let obj = this;
 	
+	// First remove all existing groups.
+	obj.groups.forEach(group=>{
+		group.remove();
+	}) // forEach
+	
+	
+	// Find all groups that should appear.
 	let descendants = nodeobj.connections.descendants;
 	let directDescendants = descendants.filter(group=>{
 		return !descendants.some(d=>{
@@ -91,18 +97,28 @@ export default class GroupingCoordinator {
 	}) // filter
 	
 	
+	// Make all groups that should appear.
 	directDescendants.forEach(d=>{
 		// Pass the actual item objects to the group.
 		let members = obj.items.filter(item=>{
 			return d.members.includes(item.ui.metadata.taskId);
 		}) // filter
-		let groupitem = new Group(members);
+		
+		// 'obj.items' needs to always be passed in so that when the bookmarks are moused over the drawing order can change.
+		let groupitem = new Group(obj.items, members);
 		obj.groups.push( groupitem );
-		obj.node.appendChild( groupitem.node );
-		addDraggingToItem( groupitem );
-	})
+		obj.container.appendChild( groupitem.node );
+		
+		let ondrag = function(){
+			groupitem.members.forEach(item=>{
+				item.node.style.left = groupitem.node.style.left;
+				item.node.style.top = groupitem.node.style.top;
+			})
+		};
+		addDraggingToItem( groupitem, undefined, ondrag );
+	}) // forEach
 	
-	console.log(obj.groups)
+	
   } // makeDirectDescendantGroups
   
   
