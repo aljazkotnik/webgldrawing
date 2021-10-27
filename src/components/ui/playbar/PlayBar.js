@@ -77,10 +77,8 @@ export default class PlayBar{
 		return acc
 	}, [ makeChapterObj("", obj.t_min, obj.t_max) ])
 	
-	
-	
-	
-	obj.chapters = chapters.map(c=>{
+	// Cpters need to be sorted by starttime in order for all start points to be visible.
+	obj.chapters = chapters.sort((a,b)=>a.starttime-b.starttime).map(c=>{
 		let a = new PlayBarAnnotation(c, obj.tscale);
 		a.y = obj.y;
 		return a;
