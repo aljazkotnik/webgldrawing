@@ -23,8 +23,10 @@
   - spatial arranging and metadata connection
   DONE: - tree hierarchy
 	  Need to still connect the tag adding to update the navigation tree. Maybe in this smaller example it's better to have the tree just under the title?
-  - grouping (hierarchy operates on tags, and is thus independent of grouping)
+  DONE grouping (hierarchy operates on tags, and is thus independent of grouping)
   - lasso
+	  How do I want the lasso to work? Do I want the toolbar? Or is it better to just make the group straightaway? In that case where should the option to make ordinal tags be?
+	  Because it' grouping, categorical tags (can use the chapter form), and ordinal tags.
   
   - put it all on a github webpage??
   
@@ -55,6 +57,7 @@ let ordinal = ["s"]
 
 let canvas = document.getElementById("canvas");
 let container = document.getElementById("table-top");
+let svg = document.querySelector("svg.hud");
 
 // The MeshRenderer implements the frag and color shaders, and runs the main drawing loop.
 import MeshRenderer2D from "./renderers/MeshRenderer2D.js";
@@ -82,16 +85,14 @@ console.log(renderer)
 
 // Knowledge manager handles the communication with the server, the updating of the relevant modules, and the grouping, navigation, and spatial arrangement.
 import KnowledgeManager from "./components/KnowledgeManager.js";
-let km = new KnowledgeManager( container, renderer.items );
-
-// Add the treenavigation graphic.
-document
-  .querySelector("svg.hud")
-  .querySelector("g.tree")
-  .appendChild(km.grouping.navigation.node)
-km.grouping.navigation.update()
-
+let km = new KnowledgeManager( renderer.items, container, svg );
 console.log(km)
+
+
+
+
+
+
 
 
 // COMMENTING: Add the login info.
@@ -99,6 +100,11 @@ let login = document.querySelector("div.login").querySelector("input");
 login.oninput = function(){
   renderer.items.forEach(item=>{
 	item.ui.user = login.value;
+  }) // forEach
+  
+  // Groups also need the author to be updated.
+  km.grouping.groups.forEach(group=>{
+	group.user = login.value;
   }) // forEach
 } // oninput
 
@@ -112,7 +118,20 @@ login.oninput = function(){
 
 
 
+/*
+Adding/removing items to/from groups changes the groups. The changes should only be saved on demand. There should be a button that allows appears when changes were made. 
 
+The changes should allow only a new group to be made, or the old one dissolved. To dissolve a group it's annotations need to be removed. For this the annotations will require to have annotation ids.
+
+Only allow the author of hte group to dissolve it. Also means the groups need to follow the current author.
+
+
+Dissolving deletes the annotations by the current user.
+Saving the edited changes just makes new annotations? Or first deletes all theold ones, and then saves the new ones?
+
+
+Change the chapterform also! It should allow submitting annotations without a starttime, but only those with a starttime can be added as chapters.
+*/
 
 
 

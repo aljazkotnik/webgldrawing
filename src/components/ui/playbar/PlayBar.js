@@ -106,7 +106,7 @@ export default class PlayBar{
 	// tags are required to have a 'starttime'.
 	if(tag.starttime){
 		let i = obj.annotations.findIndex(a=>a.id==tag.id);
-		obj.annotations.splice(i, 1, tag);
+		obj.annotations.splice(i>-1 ? i : 0, i>-1, tag);
 	
 		// Update the bar.
 		obj.rebuild();

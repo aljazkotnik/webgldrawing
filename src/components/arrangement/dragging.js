@@ -4,35 +4,10 @@
 
 // The initial positions must be collected all at the same time, as otherwise the rest of the "position: relative;" divs will get repositioned to where the previous div was.
 
-export function addDraggingToSiblingItems(items, headeroffset){
-	// To add the dragging an additional "dragging" attribute is introduced to the items. The items are ViewFrame objects that all have their nodes inside the same parent node. The parent node must be the same as the initial positions of the frames are calculated based on their current positions within hte parent div.
-
-	let positions = items.reduce((acc,item)=>{
-		acc.push([item.node.offsetLeft, item.node.offsetTop + headeroffset])
-		return acc
-	},[])
-
-	items.forEach((item,i)=>{
-			
-		item.node.style.position = "absolute";
-		item.node.style.left = positions[i][0] + "px"
-		item.node.style.top = positions[i][1] + "px"
-		
-		
-		let onstart = function(){
-			// Move this item to the end of the drawing queue to ensure it's drawn on top.
-			items.splice(items.indexOf(item), 1);
-			items.push(item)
-		} // function
-		addDraggingToItem(item, onstart)
-		
-	}) // forEach
-	
-} // addDraggingToSiblingItems
 
 
 // How to make the addition of dragging more general?? There are some things that have to happen. Pass them in as additional functions?
-export function addDraggingToItem(item, onstart, ondrag){
+export function addDraggingToItem(item, onstart, ondrag, onend){
 	// Add an object to facilitate the dragging.
 	item.dragging = {
 		active: false,
@@ -69,6 +44,7 @@ export function addDraggingToItem(item, onstart, ondrag){
 	} // mousemove
 	item.node.onmouseup   = function(){
 		item.dragging.active = false;
+		if(onend){onend()};
 	} // onmouseup
 } // addDraggingToItem
 

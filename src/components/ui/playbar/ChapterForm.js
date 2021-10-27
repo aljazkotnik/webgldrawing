@@ -73,6 +73,10 @@ export default class ChapterForm{
 		} // if
 	} // onclick
 	
+	obj.input.oninput = function(){
+		obj.update();
+	} // oninput
+	
   } // constructor
   
   update(){

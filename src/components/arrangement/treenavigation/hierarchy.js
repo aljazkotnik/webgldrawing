@@ -8,67 +8,6 @@ Won't be able to remove the initial dialogue in the small multiples visualisatio
 */
 
 
-// THIS ONE SHOULD CREATE THE NODES, LEVELS, and BUNDLES.
-
-// FROM A DEFINED TREE TO AN ARRAY. TAG AND TASK ONLY USED BY TREE2ARRAY!
-class tag{
-	constructor(id, author, timestamp){
-		let obj = this;
-		obj.id = id;
-		obj.author = author;
-		obj.timestamp = timestamp;
-	} // constructor
-} // tag
-
-class task{
-	constructor(id){
-		let obj = this;
-		obj.id = id;
-		obj.tags = []
-	} // constructor
-	
-	addtag(id, author, timestamp){
-		let obj = this;
-		// Implement a check to see if this tag is already there.
-		obj.tags.push( new tag(id,author,timestamp) )
-	} // addtag
-} // task
-
-export function tree2array(trees){
-	// Convert the tree data structure to an array of tasks in which the level nodes are expressed only as tags.
-	
-	// Create a dictionary that points from taskIds to the task objects.
-	let dict = {};
-	
-	let A = [];
-	
-	trees.forEach(tree=>{
-		tree.nodes.forEach(node=>{
-			node.tasks.forEach(taskId=>{
-				
-				// Create a new object and add it to both teh dictionary and the array. The dictionary is just an internal utility, and the array is the output.
-				if(!dict[taskId]){
-					dict[taskId] = new task(taskId);
-					A.push(dict[taskId])
-				} // if
-				let taskobj = dict[taskId];
-				
-				
-				taskobj.addtag(node.id, tree.author, "")
-				
-			}) // forEach
-		}) // forEach
-	}) // forEach
-	
-	
-	return A
-	
-} // tree2array
-
-// DONT LOOK ABOVE!!
-
-
-
 
 
 
@@ -112,8 +51,8 @@ class treegroup{
 } // treegroup
 
 class taskgroup{
-	constructor(tags){
-		this.tags = tags;
+	constructor(){
+		this.tags = [];
 		this.members = [];
 	} // constructor
 	
@@ -124,13 +63,11 @@ class taskgroup{
 		} // if
 	} // addtask
 	
-	addtags(tags){
+	addtag(tag){
 		let obj = this;
-		tags.forEach(tag=>{
-			if(!obj.tags.includes(tag)){
-				obj.tags.push(tag);
-			} // if
-		}) // forEach
+		if( !obj.tags.some(existing=>existing.id == tag.id) ){
+			obj.tags.push(tag);
+		} // if
 	} // addtags
 } // group
 
@@ -144,16 +81,17 @@ function findAllTagBasedGroups(array){
 	let groups = [];
 	
 	array.forEach(tag=>{
-		// If you tag something in the session, then that tag is reserved for a particular group. If you tag other elements with it, it'll become a part of that group.
+		// If you tag something in the session, then that tag is reserved for a particular group. If you tag other elements with it, it'll become a part of that group. Actual tags need to be retained in order to be able to edit them, and therefore edit the groups.
 		let groupid = [tag.label, tag.author].join("-");
 		if(!dict[groupid]){
 			// Here just pass the tag in. The group will need to hold on to it.
-			dict[groupid] = new taskgroup([tag]);
+			dict[groupid] = new taskgroup();
 			groups.push(dict[groupid]);
 		} // if
 		
 		// Add teh task to the specific group, but also to the root group.
-		dict[groupid].addtask(tag.taskId)
+		dict[groupid].addtask(tag.taskId);
+		dict[groupid].addtag(tag);
 	}) // forEach
 	
 	
@@ -192,7 +130,9 @@ function mergeIdenticalGroups(groups){
 		
 		if(identicalg.length > 0){
 			// Add another author to existing group.
-			identicalg[0].addtags(g.tags);
+			g.tags.forEach(tag=>{
+				identicalg[0].addtag(tag);
+			})
 		} else {
 			// Add this group to the unique ones.
 			acc = acc.concat(g);

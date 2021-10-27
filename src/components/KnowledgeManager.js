@@ -34,10 +34,9 @@ Broad characterisation of the data. 'taskId' based.
 import GroupingCoordinator from "./arrangement/GroupingCoordinator.js";
 
 export default class KnowledgeManager{
-  constructor(container, items){
+  constructor(items, container, svg){
 	// All knowedge must be pushed to individual IPUI (Interactive Player User Interfaces) when received.
 	let obj = this;
-	obj.container = container;
 	obj.items = items;
 	
 	// Tags and chapters should be available for correlations. Tags and chapters are time invariant, but the metadata IS time variant. So even the metadata needs to be queried!
@@ -46,7 +45,9 @@ export default class KnowledgeManager{
 	// Add the dragging externally. The tabletop was positioned absolutely, with top: 0px. If this is not so the dragging will move the items on the initial drag start by the offset amount.
 	// The grouping coordinator does: adds dragging, positioning of the items by metadata values, retrieveng position and metadata pairs, grouping, and grouping navigation.
 	// Groups need to be added to the same container as the actual items, otherwise either the items cant be dragged over the groups, or vice versa.
-	obj.grouping = new GroupingCoordinator(container, items);
+	obj.grouping = new GroupingCoordinator(items, container, svg);
+	
+	
 	
 	
 	/*
@@ -79,12 +80,26 @@ export default class KnowledgeManager{
 	}; // update
 	
 	
+	// REMOVING TAGS NEEDS TO BE DONE BY ACTUAL ANNOTATION ID!!!
+	// What should the grouping do when the annotations are made/dissolved through it?
+	obj.grouping.dissolveexternal = function(a){
+		// Only the tags get dissolved:
+		a.forEach(a_=>{
+			obj.tags.remove(a_);
+		}) // forEach
+	} // dissolveexternal
+	
+	obj.grouping.createexternal = function(a){
+		a.forEach(a_=>{
+			obj.tags.add(a_);
+		}) // forEach
+	} // createexternal
 	
 	
 	// Make the forms submit the annotations to the appropriate stores, which will then in turn update the display modules.
 	obj.items.forEach(item=>{
 		
-	  // The chapter annotations should update the playbar, the discussion tags, and the navigation tree.
+	  // Chapter annotations should update the playbar, the discussion tags, and the navigation tree.
 	  item.ui.chapterform.submit = function(chapter){
 		obj.chapters.add(chapter);
 	  } // submit
@@ -110,31 +125,39 @@ export default class KnowledgeManager{
 	let obj = this;
 	
 	obj.chapters.data.forEach(ch=>{
-	  ch.starttime = ch.starttime ? Number(ch.starttime) : undefined;
-	  ch.endtime   = ch.endtime   ? Number(ch.endtime)   : undefined;
-
 	  obj.items.forEach(item=>{
 		if(item.ui.metadata.taskId == ch.taskId){
 		  item.ui.playcontrols.bar.addchapter(ch);
+		  
+		  let discussiontags = item.ui.playcontrols.bar.annotations.map(a=>a.label);
+		  item.ui.commenting.discussion.update(discussiontags);
 		} // if  
 	  }) // forEach
 	}) // forEach
+	
+	obj.updateNavigationTree();
 	
   } // updatePlaybarChapters
   
   updateTagAnnotations(){
 	let obj = this;
-	
+	// Just the navigation tree needs to be updated. However, the chapters are treated as tags also - if the group is dissolved, does it mean the chapters will get dissolved also? Orshould chapters be exempt from dissolving? Where should that be handled? Just not calling the chapter database for removal, and banking that no tag has the same id?
+	obj.updateNavigationTree();  
+  } // updateTagAnnotations
+  
+  updateNavigationTree(){
+	let obj = this;
 	// Previously the tasks were pushed to the hierarchy, with the tags attached. Now the tags are standalone, and the task ids should be given to the hierarchy separately. Maybe just make them as new tags and merge them together here?
 	let tasktags = obj.items.map(item=>{return {
 		taskId: item.ui.metadata.taskId, 
 		label: "Root", 
 		author: "session"
 	}});
-	obj.grouping.navigation.hierarchy.data = tasktags.concat(obj.tags.data);
+	
+	obj.grouping.navigation.hierarchy.data = tasktags.concat(obj.tags.data).concat(obj.chapters.data);
 	obj.grouping.navigation.update();
-	  
-  } // updateTagAnnotations
+	
+  } // updateNavigationTree
   
   
 } // KnowledgeManager
@@ -142,7 +165,7 @@ export default class KnowledgeManager{
 
 
 
-
+// Should know whether to use taskId/id? What should use taskId to find the relevant
 class ProxyServerStore{
 	constructor(filename){
 		let obj = this;
@@ -160,13 +183,22 @@ class ProxyServerStore{
 	add(item){
 		// Check if the item is already present. Replace it, or just update the delta? Bank on the idea that no two queries will be simultaneous?
 		let obj = this;
-		let i = obj.data.findIndex(d=>d.taskId==item.taskId);
-		obj.data.splice(i,1,item);
+		let i = obj.data.findIndex(d=>d.id==item.id);
+		obj.data.splice(i>-1 ? i : 0, i>-1, item);
 		obj.update();
 	} // add
 	
+	
+	remove(item){
+		let obj = this;
+		let i = obj.data.findIndex(d=>d.id==item.id);
+		obj.data.splice(i, i>-1)
+		obj.update();
+	} // remove
+	
 	update(){
 		// Implement the push of all the comments etc to the actual modules for display.
+		console.log("server pushes changes");
 	} // update
 	
 	// Maybe no query is required anyway? Each project would have its own annotations, which are always loaded anyway? Unless you go into a list of users and remove them?

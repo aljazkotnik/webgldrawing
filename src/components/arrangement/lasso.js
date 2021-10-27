@@ -30,20 +30,23 @@ export default class lasso{
 		obj.boundary = [];
 
 		obj.svg.addEventListener("mousedown", function(event){
-			console.log("Start lasso draw")
-			//obj.clearBoundary()
+			obj.clearBoundary()
+			obj.active = true;
 		}) // mousedown
 
 		obj.svg.addEventListener("mousemove", function(event){
-			console.log("Add lasso point")
-			//obj.addBoundaryPoint(event)
-			//obj.draw()
+			if(obj.active){
+				obj.addBoundaryPoint(event)
+				obj.draw()
+			} // if
 		}) // mousedown
 		
 		obj.svg.addEventListener("mouseup", function(event){
-			console.log("End lasso draw")
-			//obj.hide()
-			//obj.updateExposedBoundary();
+			obj.hide()
+			
+			// The bounadry.replace was mobx functionality.
+			obj.boundary = obj._boundary;
+			obj.active = false;
 		}) // mousedown
 	
 	} // constructor
@@ -61,17 +64,13 @@ export default class lasso{
 		let svgbox = obj.svg.getBoundingClientRect();
 		
 		obj._boundary.push({
-			x: event.sourceEvent.clientX - svgbox.x,
-			y: event.sourceEvent.clientY - svgbox.y
+			x: event.clientX - svgbox.x,
+			y: event.clientY - svgbox.y
 		})
 		
 	} // addBoundaryPoint
 	
-	updateExposedBoundary(){
-		let obj = this;
-		
-		obj.boundary.replace(obj._boundary);
-	} // updateExposedBoundary
+	
 	
 	  
 	isPointInside(point){
@@ -95,22 +94,17 @@ export default class lasso{
 		} // if
 		
 		return isInside
-		
-		
-	
-		
-	
 	} // isPointInside
 		
 	draw(){
 		let obj = this;
-		obj.polygon.attr("points", obj._boundary.map(p=>`${p.x},${p.y}`).join(" "))
+		obj.polygon.setAttribute("points", obj._boundary.map(p=>`${p.x},${p.y}`).join(" "))
 	} // draw
 	
 	hide(){
 		// Remove the selection drawing.
 		let obj = this
-		obj.polygon.attr("points", "")
+		obj.polygon.setAttribute("points", "")
 	} // remove
 	
 } // lasso

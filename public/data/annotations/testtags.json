@@ -1,8 +1,8 @@
 [
-{"taskId": "0", "label": "Branch 0", "author": "Aljaz"}, 
-{"taskId": "1", "label": "Branch 1", "author": "Aljaz"}, 
-{"taskId": "1", "label": "Feature X", "author": "Graham"},
-{"taskId": "0", "label": "Big group", "author": "Aljaz"}, 
-{"taskId": "1", "label": "Big group", "author": "Aljaz"},
-{"taskId": "2", "label": "Big group", "author": "Aljaz"}
+{"id": "Aljaz Fri Oct 22 2021 16:16:05","taskId": "0", "label": "Branch 0", "author": "Aljaz"}, 
+{"id": "Aljaz Fri Oct 22 2021 16:16:06","taskId": "1", "label": "Branch 1", "author": "Aljaz"}, 
+{"id": "Aljaz Fri Oct 22 2021 16:16:07","taskId": "1", "label": "Feature X", "author": "Graham"},
+{"id": "Aljaz Fri Oct 22 2021 16:16:08","taskId": "0", "label": "Big group", "author": "Aljaz"}, 
+{"id": "Aljaz Fri Oct 22 2021 16:16:09","taskId": "1", "label": "Big group", "author": "Aljaz"},
+{"id": "Aljaz Fri Oct 22 2021 16:16:10","taskId": "2", "label": "Big group", "author": "Aljaz"}
 ]

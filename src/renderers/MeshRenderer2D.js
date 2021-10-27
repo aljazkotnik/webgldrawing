@@ -237,6 +237,7 @@ export default class MeshRenderer2D{
   } // updateAttributesAndUniforms
   
  
+  // This should focus solely on hte view div rectangle!!
   isItemVisible(item){
 	// Check whether the current item is visible. (!!!!) Extend later to check whether other items obscure the current item.
 	let obj = this;
@@ -244,12 +245,12 @@ export default class MeshRenderer2D{
 	// The idea is to collect all the boundingClientRects, and check if any of the following items overlap it, in which case skip the drawing.
 	// The limit is 16 items drawn at once. There can be more items in analysis at the same time, but only 16 drawn at once. This means that if the items overlap, there can be any number of them, as long as they are in maximum 15 piles.
 	// It all really depends on the connection speed and the size of the files...
-	let rect = item.node.getBoundingClientRect();
+	let rect = item.node.querySelector("div.view").getBoundingClientRect();
 	let isCovered = false;
 	for(let i=obj.items.indexOf(item)+1; i<obj.items.length; i++){
 		// Check if the i-th viewFrame covers this one. This is a simple version that skirts the problem of figuring out if a bunch of viewFrames collectively cover this viewFrame.
 		// Maybe later on there can just be group interfaces added as a separate attribute, and those can be made to hide the other frames,
-		let higherRect = obj.items[i].node.getBoundingClientRect();
+		let higherRect = obj.items[i].node.querySelector("div.view").getBoundingClientRect();
 		isCovered = isCovered ? true : isRectInHigherRect(rect, higherRect);
 	} // for
 	

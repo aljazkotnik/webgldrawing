@@ -107,6 +107,15 @@ export default class CommentingManager{
 	this.add(config);
   } // submit
   
+  clear(){
+	let obj = this;
+	obj.comments = [];
+	let commentsToRemove = obj.node.querySelector("div.comments").children;
+	for(let i=0; i<commentsToRemove.length; i++){
+		commentsToRemove[i].remove();
+	} // for
+  } // clear
+  
   
   add(config){
 	// When the comments are loaded from the server they will be added through this interface. Therefore it must handle both the primary and secondary comments.

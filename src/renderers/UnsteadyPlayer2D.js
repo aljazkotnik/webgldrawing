@@ -33,6 +33,7 @@ export default class UnsteadyPlayer2D extends ViewFrame2D {
     super(gl)
 	let obj = this;
 	
+	
 	// Actual geometry to be drawn.
 	obj.geometry = new Mesh2D(gl, unsteadyMetadataFilename);
 	

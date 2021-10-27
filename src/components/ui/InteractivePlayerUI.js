@@ -1,3 +1,4 @@
+import {html2element} from "./playbar/helpers.js";
 import PlayControls from "./playbar/PlayControls.js";
 import CommentingManager from "./commenting/src/CommentingManager.js";
 import ChapterForm from "./playbar/ChapterForm.js";
@@ -13,27 +14,36 @@ import ChapterForm from "./playbar/ChapterForm.js";
 	
 // What about showing the most popular annotations by default?? Ideally, the annotations would show up when the comment addressing them would be hovered over.
 
-
+let template = `
+<div>
+  <div class="playcontrols-wrapper"></div>
+  <div class="chapterform-wrapper"></div>
+  <div class="commenting-wrapper"></div>
+</div>
+`; // template
 
 
 export default class interactivePlayerUI{
   constructor(id){
 	let obj = this;
 	obj.viewid = id;
-	obj.node = document.createElement("div");
+	obj.node = html2element(template);
+	obj.playControlsWrapperNode = obj.node.querySelector("div.playcontrols-wrapper");
+	obj.chapterFormWrapperNode  = obj.node.querySelector("div.chapterform-wrapper");
+	obj.commentingWrapperNode   = obj.node.querySelector("div.commenting-wrapper");
 	
 	// Add in a playbar
 	obj.playcontrols = new PlayControls();
-	obj.node.appendChild( obj.playcontrols.node );
+	obj.playControlsWrapperNode.appendChild( obj.playcontrols.node );
 	
 	
 	// The tag adding.
 	obj.chapterform = new ChapterForm();
-	obj.node.appendChild( obj.chapterform.node )
+	obj.chapterFormWrapperNode.appendChild( obj.chapterform.node )
 	
 	// Add in the commenting system. The metadata filename is used as the id of this 'video', and thus this player. The node needs to be added also.
 	obj.commenting = new CommentingManager( id );
-	obj.node.appendChild( obj.commenting.node );
+	obj.commentingWrapperNode.appendChild( obj.commenting.node );
 	
 	
 	//  Tags need to be pushed to the playbar, but also to the commenting! Should individual tags be allowed to influence the navigation? I guess so?
@@ -56,7 +66,7 @@ export default class interactivePlayerUI{
   } // constructor
   
   
-  
+
   
   
   
